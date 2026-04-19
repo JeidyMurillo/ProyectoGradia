@@ -107,7 +107,7 @@ fun FinalGradeScreen() {
             )
             Spacer(modifier = Modifier.width(16.dp))
             GradeInputField(
-                label = "Nota acumulada:",
+                label = "Nota actual (acumulada):",
                 value = acumulado,
                 onValueChange = { acumulado = it },
                 placeholder = "Ej: 4.5",
