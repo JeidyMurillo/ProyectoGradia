@@ -38,7 +38,8 @@ import com.example.gradia.ui.theme.*
 @Composable
 fun LoginScreen(
     onBackClick: () -> Unit,
-    onRegisterClick: () -> Unit
+    onRegisterClick: () -> Unit,
+    onLoginSuccess: () -> Unit
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -143,7 +144,7 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             // Botón Principal con animación
-            LoginPrimaryButton(text = "Inicia Sesión", onClick = { /* TODO */ })
+            LoginPrimaryButton(text = "Inicia Sesión", onClick = onLoginSuccess)
 
             Spacer(modifier = Modifier.height(32.dp))
 
@@ -302,6 +303,6 @@ fun SocialIconLogin(painter: androidx.compose.ui.graphics.painter.Painter) {
 @Composable
 fun LoginScreenPreview() {
     GradiaTheme {
-        LoginScreen(onBackClick = {}, onRegisterClick = {})
+        LoginScreen(onBackClick = {}, onRegisterClick = {}, onLoginSuccess = {})
     }
 }

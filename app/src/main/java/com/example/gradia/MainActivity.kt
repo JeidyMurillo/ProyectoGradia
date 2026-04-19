@@ -10,6 +10,7 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.gradia.ui.HomeScreen
 import com.example.gradia.ui.LoginScreen
 import com.example.gradia.ui.SingUpScreen
 import com.example.gradia.ui.WelcomeScreen
@@ -63,13 +64,27 @@ class MainActivity : ComponentActivity() {
                     composable("login") {
                         LoginScreen(
                             onBackClick = { navController.popBackStack() },
-                            onRegisterClick = { navController.navigate("register") }
+                            onRegisterClick = { navController.navigate("register") },
+                            onLoginSuccess = {
+                                navController.navigate("home") {
+                                    popUpTo("welcome") { inclusive = true }
+                                }
+                            }
                         )
                     }
                     composable("register") {
                         SingUpScreen(
                             onBackClick = { navController.popBackStack() },
                             onLoginClick = { navController.navigate("login") }
+                        )
+                    }
+                    composable("home") {
+                        HomeScreen(
+                            onLogout = {
+                                navController.navigate("welcome") {
+                                    popUpTo("home") { inclusive = true }
+                                }
+                            }
                         )
                     }
                 }
