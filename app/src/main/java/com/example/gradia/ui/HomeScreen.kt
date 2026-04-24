@@ -1,5 +1,7 @@
 package com.example.gradia.ui
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -10,12 +12,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -35,7 +39,10 @@ import kotlinx.coroutines.launch
 @Composable
 fun HomeScreen(onLogout: () -> Unit = {}) {
     var selectedTab by remember { mutableIntStateOf(0) }
+    var previousTab by remember { mutableIntStateOf(0) }
     var selectedDrawerItem by remember { mutableStateOf("Home") }
+    var isQuickAddOpen by remember { mutableStateOf(false) }
+    
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
@@ -49,6 +56,11 @@ fun HomeScreen(onLogout: () -> Unit = {}) {
                 onItemClick = { item ->
                     if (item == "Log Out") {
                         onLogout()
+                    } else if (item == "Ajustes") {
+                        previousTab = selectedTab
+                        selectedTab = 7 // New index for Settings
+                        selectedDrawerItem = item
+                        scope.launch { drawerState.close() }
                     } else {
                         selectedDrawerItem = item
                         scope.launch { drawerState.close() }
@@ -57,74 +69,212 @@ fun HomeScreen(onLogout: () -> Unit = {}) {
             )
         }
     ) {
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = {
-                        Text(
-                            if (selectedTab == 0) "Home" else if (selectedTab == 1) "Nota Final" else "Gradia",
-                            modifier = Modifier.fillMaxWidth(),
-                            textAlign = TextAlign.Center,
-                            style = MaterialTheme.typography.titleLarge.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF4A4A4A)
-                            )
-                        )
-                    },
-                    navigationIcon = {
-                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(
-                                imageVector = Icons.Default.Menu,
-                                contentDescription = "Menu",
-                                tint = PurpleGradia,
-                                modifier = Modifier.size(24.dp)
-                            )
-                        }
-                    },
-                    actions = {
-                        Box(modifier = Modifier.padding(end = 8.dp)) {
-                            IconButton(
-                                onClick = { /* TODO */ },
-                                modifier = Modifier
-                                    .background(SocialIconBg, CircleShape)
-                                    .size(40.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Notifications,
-                                    contentDescription = "Notifications",
-                                    tint = PurpleGradia,
-                                    modifier = Modifier.size(24.dp)
+        Box(modifier = Modifier.fillMaxSize()) {
+            Scaffold(
+                topBar = {
+                    TopAppBar(
+                        title = {
+                            Text(
+                                when (selectedTab) {
+                                    0 -> "Home"
+                                    1 -> "Nota Final"
+                                    2 -> "Añadir"
+                                    3 -> "Materias"
+                                    4 -> "Calendario"
+                                    5 -> "Notas"
+                                    6 -> "Tareas"
+                                    7 -> "Ajustes"
+                                    else -> "Gradia"
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.Center,
+                                style = MaterialTheme.typography.titleLarge.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF4A4A4A)
                                 )
-                            }
-                            // Badge rojo
-                            Box(
-                                modifier = Modifier
-                                    .size(10.dp)
-                                    .background(Color.Red, CircleShape)
-                                    .align(Alignment.TopEnd)
-                                    .offset(x = (-2).dp, y = 2.dp)
                             )
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
-                )
-            },
-            bottomBar = {
-                GradiaBottomBar(selectedTab = selectedTab, onTabSelected = { selectedTab = it })
-            },
-            containerColor = Color(0xFFFBF8FF)
-        ) { innerPadding ->
-            Box(modifier = Modifier.padding(innerPadding)) {
-                when (selectedTab) {
-                    0 -> HomeContent()
-                    1 -> FinalGradeScreen()
-                    else -> {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Text("Próximamente", style = MaterialTheme.typography.titleLarge)
+                        },
+                        navigationIcon = {
+                            if (selectedTab in 3..7) {
+                                IconButton(onClick = { selectedTab = previousTab }) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                        contentDescription = "Back",
+                                        tint = PurpleGradia,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                            } else {
+                                IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Menu,
+                                        contentDescription = "Menu",
+                                        tint = PurpleGradia,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                            }
+                        },
+                        actions = {
+                            if (selectedTab in 3..7) {
+                                IconButton(onClick = { /* TODO */ }) {
+                                    Icon(
+                                        imageVector = Icons.Default.MoreVert,
+                                        contentDescription = "More",
+                                        tint = PurpleGradia,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                            } else {
+                                Box(modifier = Modifier.padding(end = 8.dp)) {
+                                    IconButton(
+                                        onClick = { /* TODO */ },
+                                        modifier = Modifier
+                                            .background(SocialIconBg, CircleShape)
+                                            .size(40.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Notifications,
+                                            contentDescription = "Notifications",
+                                            tint = PurpleGradia,
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                    }
+                                    // Badge rojo
+                                    Box(
+                                        modifier = Modifier
+                                            .size(10.dp)
+                                            .background(Color.Red, CircleShape)
+                                            .align(Alignment.TopEnd)
+                                            .offset(x = (-2).dp, y = 2.dp)
+                                    )
+                                }
+                            }
+                        },
+                        colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
+                    )
+                },
+                bottomBar = {
+                    GradiaBottomBar(
+                        selectedTab = selectedTab,
+                        onTabSelected = { 
+                            if (it == 2) {
+                                isQuickAddOpen = !isQuickAddOpen
+                            } else {
+                                if (it != selectedTab) {
+                                    previousTab = selectedTab
+                                }
+                                selectedTab = it
+                                isQuickAddOpen = false
+                            }
+                        },
+                        isQuickAddOpen = isQuickAddOpen
+                    )
+                },
+                containerColor = Color(0xFFFBF8FF)
+            ) { innerPadding ->
+                Box(modifier = Modifier.padding(innerPadding)) {
+                    when (selectedTab) {
+                        0 -> HomeContent()
+                        1 -> FinalGradeScreen()
+                        3 -> SubjectsScreen()
+                        4 -> CalendarScreen()
+                        5 -> NotesScreen()
+                        6 -> TasksScreen()
+                        7 -> SettingsScreen()
+                        else -> {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Text("Próximamente", style = MaterialTheme.typography.titleLarge)
+                            }
                         }
                     }
                 }
             }
+
+            // Quick Add Menu Overlay with Animation
+            AnimatedVisibility(
+                visible = isQuickAddOpen,
+                enter = fadeIn(animationSpec = tween(300)),
+                exit = fadeOut(animationSpec = tween(300))
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color(0xCC453284)) // Purple with 80% opacity
+                        .clickable { isQuickAddOpen = false }
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(bottom = 100.dp)
+                            .animateEnterExit(
+                                enter = slideInVertically(
+                                    initialOffsetY = { it },
+                                    animationSpec = tween(400)
+                                ) + fadeIn(),
+                                exit = slideOutVertically(
+                                    targetOffsetY = { it },
+                                    animationSpec = tween(400)
+                                ) + fadeOut()
+                            ),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        QuickAddMenuItem(
+                            label = "Agregar nota", 
+                            iconRes = R.drawable.sticky,
+                            onClick = {
+                                previousTab = selectedTab
+                                selectedTab = 5
+                                isQuickAddOpen = false
+                            }
+                        )
+                        QuickAddMenuItem(
+                            label = "To-do List", 
+                            iconRes = R.drawable.todo,
+                            onClick = {
+                                previousTab = selectedTab
+                                selectedTab = 6
+                                isQuickAddOpen = false
+                            }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun QuickAddMenuItem(label: String, iconRes: Int, onClick: () -> Unit) {
+    Surface(
+        shape = RoundedCornerShape(24.dp),
+        color = Color(0xFFF3EDF7), 
+        modifier = Modifier
+            .width(220.dp)
+            .height(55.dp)
+            .clickable(onClick = onClick)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 20.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                painter = painterResource(id = iconRes),
+                contentDescription = null,
+                tint = Color.Unspecified,
+                modifier = Modifier.size(26.dp)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(
+                text = label,
+                color = PurpleGradia,
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp,
+                fontFamily = InterFontFamily
+            )
         }
     }
 }
@@ -145,16 +295,18 @@ fun GradiaDrawerContent(
                 .fillMaxSize()
                 .padding(24.dp)
         ) {
-            // Close Button
+            // Close Button - More Visible
             IconButton(
                 onClick = onClose,
-                modifier = Modifier.align(Alignment.End)
+                modifier = Modifier
+                    .align(Alignment.End)
+                    .size(48.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Close,
                     contentDescription = "Close",
                     tint = PurpleGradia,
-                    modifier = Modifier.size(28.dp)
+                    modifier = Modifier.size(36.dp) // Increased size for better visibility
                 )
             }
 
@@ -200,22 +352,22 @@ fun GradiaDrawerContent(
             // Menu Items
             DrawerMenuItem(
                 label = "Perfil",
-                outlineIcon = R.drawable.user_outline,
-                boldIcon = R.drawable.user_bold,
+                outlineIconId = R.drawable.user_outline,
+                boldIconId = R.drawable.user_bold,
                 isSelected = selectedItem == "Perfil",
                 onClick = { onItemClick("Perfil") }
             )
             DrawerMenuItem(
                 label = "Estadísticas",
-                outlineIcon = R.drawable.stats_chart_outline,
-                boldIcon = R.drawable.stats_chart,
+                outlineIconId = R.drawable.stats_chart_outline,
+                boldIconId = R.drawable.stats_chart,
                 isSelected = selectedItem == "Estadísticas",
                 onClick = { onItemClick("Estadísticas") }
             )
             DrawerMenuItem(
                 label = "Ajustes",
-                outlineIcon = R.drawable.settings_linear,
-                boldIcon = R.drawable.settings_rounded,
+                outlineIconId = R.drawable.settings_linear,
+                boldIconId = R.drawable.settings_rounded,
                 isSelected = selectedItem == "Ajustes",
                 onClick = { onItemClick("Ajustes") }
             )
@@ -225,15 +377,15 @@ fun GradiaDrawerContent(
             // Bottom Items
             DrawerMenuItem(
                 label = "Tema Oscuro",
-                outlineIcon = R.drawable.sun_light,
-                boldIcon = R.drawable.sun_light, // Use same if bold version doesn't exist
+                outlineIconId = R.drawable.sun_light,
+                boldIconId = R.drawable.sun_light, 
                 isSelected = selectedItem == "Tema Oscuro",
                 onClick = { onItemClick("Tema Oscuro") }
             )
             DrawerMenuItem(
                 label = "Log Out",
-                outlineIcon = R.drawable.log_out,
-                boldIcon = R.drawable.logout_bold,
+                outlineIconId = R.drawable.log_out,
+                boldIconId = R.drawable.logout_bold,
                 isSelected = selectedItem == "Log Out",
                 onClick = { onItemClick("Log Out") }
             )
@@ -246,8 +398,8 @@ fun GradiaDrawerContent(
 @Composable
 fun DrawerMenuItem(
     label: String,
-    outlineIcon: Int,
-    boldIcon: Int,
+    outlineIconId: Int,
+    boldIconId: Int,
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
@@ -262,7 +414,7 @@ fun DrawerMenuItem(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
-            painter = painterResource(id = if (isSelected) boldIcon else outlineIcon),
+            painter = painterResource(id = if (isSelected) boldIconId else outlineIconId),
             contentDescription = null,
             tint = PurpleGradia,
             modifier = Modifier.size(28.dp)
@@ -504,7 +656,7 @@ fun CourseItem(course: Course) {
 }
 
 @Composable
-fun GradiaBottomBar(selectedTab: Int, onTabSelected: (Int) -> Unit) {
+fun GradiaBottomBar(selectedTab: Int, onTabSelected: (Int) -> Unit, isQuickAddOpen: Boolean) {
     Surface(
         modifier = Modifier
             .padding(horizontal = 24.dp, vertical = 16.dp)
@@ -520,35 +672,53 @@ fun GradiaBottomBar(selectedTab: Int, onTabSelected: (Int) -> Unit) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             BottomBarItem(
-                isSelected = selectedTab == 0,
+                isSelected = selectedTab == 0 && !isQuickAddOpen,
                 onClick = { onTabSelected(0) },
                 whiteIconId = R.drawable.home_white,
                 purpleIconId = R.drawable.home_purple,
                 contentDescription = "Home"
             )
             BottomBarItem(
-                isSelected = selectedTab == 1,
+                isSelected = selectedTab == 1 && !isQuickAddOpen,
                 onClick = { onTabSelected(1) },
                 whiteIconId = R.drawable.calculator_white,
                 purpleIconId = R.drawable.calculator_purple,
                 contentDescription = "Calculator"
             )
-            BottomBarItem(
-                isSelected = selectedTab == 2,
+            
+            // Special Plus Button (The "Add" icon selected when in Notes or Tasks from Quick Add)
+            val isAddIconSelected = isQuickAddOpen || selectedTab == 5 || selectedTab == 6
+            IconButton(
                 onClick = { onTabSelected(2) },
-                whiteIconId = R.drawable.plus_white,
-                purpleIconId = R.drawable.plus_purple,
-                contentDescription = "Plus"
-            )
+                modifier = if (isAddIconSelected) {
+                    Modifier
+                        .background(Color.White, RoundedCornerShape(12.dp))
+                        .size(35.dp)
+                } else {
+                    Modifier.size(40.dp)
+                }
+            ) {
+                Icon(
+                    painter = if (isAddIconSelected) {
+                        painterResource(id = R.drawable.plus_purple)
+                    } else {
+                        painterResource(id = R.drawable.plus_white)
+                    },
+                    contentDescription = "Quick Add",
+                    tint = if (isAddIconSelected) PurpleGradia else Color.White,
+                    modifier = Modifier.size(26.dp)
+                )
+            }
+
             BottomBarItem(
-                isSelected = selectedTab == 3,
+                isSelected = selectedTab == 3 && !isQuickAddOpen,
                 onClick = { onTabSelected(3) },
                 whiteIconId = R.drawable.books_add_white,
                 purpleIconId = R.drawable.books_add_purple,
                 contentDescription = "Books"
             )
             BottomBarItem(
-                isSelected = selectedTab == 4,
+                isSelected = selectedTab == 4 && !isQuickAddOpen,
                 onClick = { onTabSelected(4) },
                 whiteIconId = R.drawable.calendar_white,
                 purpleIconId = R.drawable.calendar_purple,
