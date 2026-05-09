@@ -6,12 +6,20 @@ import com.example.gradia.data.repository.AsignaturaRepository
 import com.example.gradia.data.repository.EventoRepository
 import com.example.gradia.data.repository.FakeSubjectRepository
 import com.example.gradia.data.repository.NotaRepository
+import com.example.gradia.data.repository.NoteRepositoryImpl
 import com.example.gradia.data.repository.UserRepository
+import com.example.gradia.domain.repository.NoteRepository
 import com.example.gradia.domain.repository.SubjectRepository
 import com.example.gradia.domain.usecase.CalculateCurrentAverageUseCase
 import com.example.gradia.domain.usecase.CalculateRemainingPercentageUseCase
 import com.example.gradia.domain.usecase.CalculateRequiredGradeUseCase
+import com.example.gradia.domain.usecase.notes.CreateCategoryUseCase
+import com.example.gradia.domain.usecase.notes.DeleteNoteUseCase
+import com.example.gradia.domain.usecase.notes.GetCategoriesUseCase
+import com.example.gradia.domain.usecase.notes.GetNotesUseCase
+import com.example.gradia.domain.usecase.notes.SaveNoteUseCase
 import com.example.gradia.presentation.viewmodel.FinalGradeViewModel
+import com.example.gradia.presentation.viewmodel.NotesViewModel
 
 class GradiaApplication : Application() {
 
@@ -24,8 +32,15 @@ class GradiaApplication : Application() {
 
     val subjectRepository: SubjectRepository by lazy { FakeSubjectRepository() }
 
-    val calculateCurrentAverageUseCase by lazy { CalculateCurrentAverageUseCase() }
+    val noteRepository: NoteRepository by lazy {
+        NoteRepositoryImpl(
+            notaDao = database.notaContenidoDao(),
+            categoriaDao = database.categoriaDao(),
+            notaCategoriaDao = database.notaCategoriaDao()
+        )
+    }
 
+    val calculateCurrentAverageUseCase by lazy { CalculateCurrentAverageUseCase() }
     val calculateRemainingPercentageUseCase by lazy { CalculateRemainingPercentageUseCase() }
 
     val calculateRequiredGradeUseCase by lazy {
@@ -35,12 +50,28 @@ class GradiaApplication : Application() {
         )
     }
 
+    val getNotesUseCase by lazy { GetNotesUseCase(noteRepository) }
+    val saveNoteUseCase by lazy { SaveNoteUseCase(noteRepository) }
+    val deleteNoteUseCase by lazy { DeleteNoteUseCase(noteRepository) }
+    val getCategoriesUseCase by lazy { GetCategoriesUseCase(noteRepository) }
+    val createCategoryUseCase by lazy { CreateCategoryUseCase(noteRepository) }
+
     fun provideFinalGradeViewModel(): FinalGradeViewModel {
         return FinalGradeViewModel(
             subjectRepository = subjectRepository,
             calculateCurrentAverage = calculateCurrentAverageUseCase,
             calculateRemainingPercentage = calculateRemainingPercentageUseCase,
             calculateRequiredGrade = calculateRequiredGradeUseCase
+        )
+    }
+
+    fun provideNotesViewModel(): NotesViewModel {
+        return NotesViewModel(
+            getNotesUseCase = getNotesUseCase,
+            saveNoteUseCase = saveNoteUseCase,
+            deleteNoteUseCase = deleteNoteUseCase,
+            getCategoriesUseCase = getCategoriesUseCase,
+            createCategoryUseCase = createCategoryUseCase
         )
     }
 }
