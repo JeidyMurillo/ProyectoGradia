@@ -1,12 +1,15 @@
 package com.example.gradia.ui
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
@@ -48,6 +51,7 @@ import androidx.compose.ui.layout.ContentScale
 import java.io.File
 import java.io.FileOutputStream
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun NotesScreen(viewModel: NotesViewModel? = null) {
     val app = LocalContext.current.applicationContext as GradiaApplication
@@ -69,7 +73,9 @@ fun NotesScreen(viewModel: NotesViewModel? = null) {
                 categories = state.allCategories,
                 selectedIds = state.selectedCategoryIds,
                 onCategoryClick = vm::toggleCategorySelection,
-                onCreateCategory = { name, color -> vm.createCategory(name, color) }
+                onCreateCategory = { name, color -> vm.createCategory(name, color) },
+                onEditCategory = { cat -> vm.updateCategory(cat.id, cat.name, cat.color) },
+                onDeleteCategory = vm::deleteCategory
             )
         }
 
@@ -86,6 +92,38 @@ fun NotesScreen(viewModel: NotesViewModel? = null) {
             )
         }
 
+        if (state.selectedNoteIds.isNotEmpty()) {
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(0xFFF3EDF7), RoundedCornerShape(12.dp))
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        "${state.selectedNoteIds.size} seleccionada(s)",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        TextButton(onClick = vm::clearNoteSelection) {
+                            Text("Cancelar", fontSize = 13.sp)
+                        }
+                        Button(
+                            onClick = vm::deleteSelectedNotes,
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Red.copy(alpha = 0.8f)),
+                            shape = RoundedCornerShape(8.dp),
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
+                        ) {
+                            Text("Eliminar", color = Color.White, fontSize = 13.sp)
+                        }
+                    }
+                }
+            }
+        }
+
         val notes = state.savedNotes
         if (notes.isNotEmpty()) {
             items(notes.chunked(2)) { rowItems ->
@@ -96,8 +134,10 @@ fun NotesScreen(viewModel: NotesViewModel? = null) {
                     rowItems.forEach { note ->
                         NoteGridItem(
                             note = note,
+                            isSelected = note.id in state.selectedNoteIds,
                             onEdit = vm::loadNoteForEditing,
                             onDelete = vm::deleteNote,
+                            onLongClick = { vm.toggleNoteSelection(note.id) },
                             modifier = Modifier.weight(1f)
                         )
                     }
@@ -112,14 +152,19 @@ fun NotesScreen(viewModel: NotesViewModel? = null) {
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CategoryRow(
     categories: List<com.example.gradia.domain.model.Category>,
     selectedIds: Set<Long>,
     onCategoryClick: (Long) -> Unit,
-    onCreateCategory: (String, Long) -> Unit
+    onCreateCategory: (String, Long) -> Unit,
+    onEditCategory: (com.example.gradia.domain.model.Category) -> Unit = {},
+    onDeleteCategory: (Long) -> Unit = {}
 ) {
     var showCreateDialog by remember { mutableStateOf(false) }
+    var categoryToEdit by remember { mutableStateOf<com.example.gradia.domain.model.Category?>(null) }
+    var categoryToDelete by remember { mutableStateOf<com.example.gradia.domain.model.Category?>(null) }
 
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -131,7 +176,8 @@ fun CategoryRow(
                 label = category.name,
                 backgroundColor = Color(category.color),
                 isSelected = category.id in selectedIds,
-                onClick = { onCategoryClick(category.id) }
+                onClick = { onCategoryClick(category.id) },
+                onLongClick = { categoryToEdit = category }
             )
         }
         item {
@@ -156,15 +202,53 @@ fun CategoryRow(
             }
         )
     }
+
+    categoryToEdit?.let { cat ->
+        EditCategoryDialog(
+            category = cat,
+            onDismiss = { categoryToEdit = null },
+            onSave = { name, color ->
+                onEditCategory(cat.copy(name = name, color = color))
+                categoryToEdit = null
+            },
+            onDelete = {
+                categoryToDelete = cat
+                categoryToEdit = null
+            }
+        )
+    }
+
+    categoryToDelete?.let { cat ->
+        AlertDialog(
+            onDismissRequest = { categoryToDelete = null },
+            title = { Text("Eliminar categoría", fontWeight = FontWeight.Bold) },
+            text = { Text("¿Eliminar la categoría \"${cat.name}\"? Las notas no se eliminarán, solo se desvincularán.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onDeleteCategory(cat.id)
+                        categoryToDelete = null
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red.copy(alpha = 0.8f))
+                ) { Text("Eliminar") }
+            },
+            dismissButton = {
+                TextButton(onClick = { categoryToDelete = null }) { Text("Cancelar") }
+            }
+        )
+    }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun CategoryChip(label: String, backgroundColor: Color, isSelected: Boolean = false, onClick: () -> Unit = {}) {
+fun CategoryChip(label: String, backgroundColor: Color, isSelected: Boolean = false, onClick: () -> Unit = {}, onLongClick: () -> Unit = {}) {
     Surface(
         shape = RoundedCornerShape(12.dp),
         color = if (isSelected) backgroundColor else Color.White,
         border = if (!isSelected) androidx.compose.foundation.BorderStroke(1.dp, Color.LightGray.copy(alpha = 0.5f)) else null,
-        modifier = Modifier.height(32.dp).clickable(onClick = onClick)
+        modifier = Modifier
+            .height(32.dp)
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick)
     ) {
         Box(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
@@ -237,6 +321,82 @@ fun CreateCategoryDialog(
                 colors = ButtonDefaults.buttonColors(containerColor = PurpleGradia)
             ) {
                 Text("Crear")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancelar") }
+        }
+    )
+}
+
+@Composable
+fun EditCategoryDialog(
+    category: com.example.gradia.domain.model.Category,
+    onDismiss: () -> Unit,
+    onSave: (String, Long) -> Unit,
+    onDelete: () -> Unit
+) {
+    var name by remember { mutableStateOf(category.name) }
+    var selectedColor by remember { mutableStateOf(category.color) }
+    val colorOptions = listOf(
+        0xFFD0EFFF to "Azul",
+        0xFFFFE0E0 to "Rojo",
+        0xFFD1AFF5 to "Morado",
+        0xFFE0FFD0 to "Verde",
+        0xFFFFF5CC to "Amarillo"
+    )
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Editar categoría", fontWeight = FontWeight.Bold) },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Nombre") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Text("Color:", style = MaterialTheme.typography.bodySmall)
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    colorOptions.forEach { (color, _) ->
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Color(color))
+                                .border(
+                                    if (selectedColor == color) 2.dp else 0.dp,
+                                    if (selectedColor == color) Color.DarkGray else Color.Transparent,
+                                    RoundedCornerShape(8.dp)
+                                )
+                                .clickable { selectedColor = color }
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                HorizontalDivider()
+                Spacer(modifier = Modifier.height(8.dp))
+                TextButton(
+                    onClick = onDelete,
+                    colors = ButtonDefaults.textButtonColors(contentColor = Color.Red)
+                ) {
+                    Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Eliminar esta categoría")
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { onSave(name, selectedColor) },
+                enabled = name.isNotBlank(),
+                colors = ButtonDefaults.buttonColors(containerColor = PurpleGradia)
+            ) {
+                Text("Guardar")
             }
         },
         dismissButton = {
@@ -367,27 +527,46 @@ fun NoteEditorCard(
                         val newText = newValue.text
                         val oldLen = oldText.length
                         val newLen = newText.length
-                        if (isBulletActive && newText.length > oldText.length) {
-                            val common = oldText.commonPrefixWith(newText)
-                            val inserted = newText.substring(common.length)
-                            if (inserted.contains("\n")) {
-                                val nlPos = common.length + inserted.indexOf("\n")
-                                val after = newText.substring(nlPos + 1)
-                                val modified = if (after.isEmpty() || !after.startsWith("• ")) {
-                                    newText.substring(0, nlPos + 1) + "• " + after
-                                } else {
-                                    newText
+                        var handled = false
+
+                        if (newLen > oldLen) {
+                            val cursorPos = newValue.selection.start
+                            if (cursorPos > 0 && cursorPos <= newLen && newText[cursorPos - 1] == '\n') {
+                                val nlPos = cursorPos - 1
+                                val lineStart = newText.lastIndexOf('\n', nlPos - 1) + 1
+                                val beforeLine = newText.substring(lineStart, nlPos)
+
+                                if (beforeLine.startsWith("• ")) {
+                                    val afterLine = newText.substring(nlPos + 1)
+                                    if (beforeLine.substring(2).isBlank()) {
+                                        val result = newText.substring(0, lineStart) + afterLine
+                                        boldRanges = adjustRanges(boldRanges, oldLen, result.length, isBoldActive)
+                                        italicRanges = adjustRanges(italicRanges, oldLen, result.length, isItalicActive)
+                                        tfValue = TextFieldValue(result, TextRange(lineStart))
+                                        isBulletActive = false
+                                    } else if (!afterLine.startsWith("• ")) {
+                                        val result = newText.substring(0, nlPos + 1) + "• " + afterLine
+                                        boldRanges = adjustRanges(boldRanges, oldLen, result.length, isBoldActive)
+                                        italicRanges = adjustRanges(italicRanges, oldLen, result.length, isItalicActive)
+                                        tfValue = TextFieldValue(result, TextRange(nlPos + 3))
+                                    } else {
+                                        boldRanges = adjustRanges(boldRanges, oldLen, newLen, isBoldActive)
+                                        italicRanges = adjustRanges(italicRanges, oldLen, newLen, isItalicActive)
+                                        tfValue = newValue
+                                    }
+                                    handled = true
+                                } else if (isBulletActive) {
+                                    val afterLine = newText.substring(nlPos + 1)
+                                    val result = newText.substring(0, nlPos + 1) + "• " + afterLine
+                                    boldRanges = adjustRanges(boldRanges, oldLen, result.length, isBoldActive)
+                                    italicRanges = adjustRanges(italicRanges, oldLen, result.length, isItalicActive)
+                                    tfValue = TextFieldValue(result, TextRange(nlPos + 3))
+                                    handled = true
                                 }
-                                val cursorShift = if (newValue.selection.start > nlPos && modified != newText) 2 else 0
-                                boldRanges = adjustRanges(boldRanges, oldLen, modified.length, isBoldActive)
-                                italicRanges = adjustRanges(italicRanges, oldLen, modified.length, isItalicActive)
-                                tfValue = TextFieldValue(modified, TextRange(newValue.selection.start + cursorShift))
-                            } else {
-                                boldRanges = adjustRanges(boldRanges, oldLen, newLen, isBoldActive)
-                                italicRanges = adjustRanges(italicRanges, oldLen, newLen, isItalicActive)
-                                tfValue = newValue
                             }
-                        } else {
+                        }
+
+                        if (!handled) {
                             boldRanges = adjustRanges(boldRanges, oldLen, newLen, isBoldActive)
                             italicRanges = adjustRanges(italicRanges, oldLen, newLen, isItalicActive)
                             tfValue = newValue
@@ -508,7 +687,31 @@ fun NoteEditorCard(
                         contentDescription = "Bullets",
                         tint = if (isBulletActive) Color(0xFF4A0072) else PurpleGradia,
                         modifier = Modifier.size(18.dp).clickable {
-                            isBulletActive = !isBulletActive
+                            val text = tfValue.text
+                            val cursor = tfValue.selection.start
+                            val lineStart = text.lastIndexOf('\n', cursor - 1) + 1
+                            val lineEnd = text.indexOf('\n', cursor).let { if (it == -1) text.length else it }
+                            val lineText = text.substring(lineStart, lineEnd)
+
+                            if (isBulletActive) {
+                                if (lineText.startsWith("• ")) {
+                                    val newText = text.substring(0, lineStart) + text.substring(lineStart + 2)
+                                    val newCursor = (cursor - 2).coerceIn(0, newText.length)
+                                    boldRanges = adjustRanges(boldRanges, text.length, newText.length, isBoldActive)
+                                    italicRanges = adjustRanges(italicRanges, text.length, newText.length, isItalicActive)
+                                    tfValue = TextFieldValue(newText, TextRange(newCursor))
+                                }
+                                isBulletActive = false
+                            } else {
+                                if (!lineText.startsWith("• ")) {
+                                    val newText = text.substring(0, lineStart) + "• " + text.substring(lineStart)
+                                    val newCursor = (cursor + 2).coerceIn(0, newText.length)
+                                    boldRanges = adjustRanges(boldRanges, text.length, newText.length, isBoldActive)
+                                    italicRanges = adjustRanges(italicRanges, text.length, newText.length, isItalicActive)
+                                    tfValue = TextFieldValue(newText, TextRange(newCursor))
+                                }
+                                isBulletActive = true
+                            }
                         }
                     )
                     Icon(
@@ -534,12 +737,15 @@ fun NoteEditorCard(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun NoteGridItem(
     note: Note,
     modifier: Modifier = Modifier,
+    isSelected: Boolean = false,
     onEdit: (Note) -> Unit = {},
-    onDelete: (Long) -> Unit = {}
+    onDelete: (Long) -> Unit = {},
+    onLongClick: () -> Unit = {}
 ) {
     var showFullNote by remember { mutableStateOf(false) }
     val previewText = RichTextUtil.extractPlainText(note.content)
@@ -549,28 +755,51 @@ fun NoteGridItem(
     Card(
         modifier = modifier
             .shadow(4.dp, RoundedCornerShape(12.dp))
-            .clickable { showFullNote = true },
+            .combinedClickable(
+                onClick = { showFullNote = true },
+                onLongClick = onLongClick
+            ),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = bgColor)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Text(
-                text = note.title.ifEmpty { "Sin título" },
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            HorizontalDivider(color = Color.Black.copy(alpha = 0.1f), thickness = 0.5.dp)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = previewText.ifEmpty { "Sin contenido" },
-                style = MaterialTheme.typography.bodySmall,
-                maxLines = 4,
-                overflow = TextOverflow.Ellipsis
-            )
+        Box {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text(
+                    text = note.title.ifEmpty { "Sin título" },
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                HorizontalDivider(color = Color.Black.copy(alpha = 0.1f), thickness = 0.5.dp)
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = previewText.ifEmpty { "Sin contenido" },
+                    style = MaterialTheme.typography.bodySmall,
+                    maxLines = 4,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
+            if (isSelected) {
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .background(Color(0xCC453284), RoundedCornerShape(12.dp)),
+                    contentAlignment = Alignment.TopEnd
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CheckCircle,
+                        contentDescription = "Selected",
+                        tint = Color.White,
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .size(24.dp)
+                    )
+                }
+            }
         }
     }
 

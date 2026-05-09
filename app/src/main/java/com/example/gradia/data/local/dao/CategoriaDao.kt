@@ -21,4 +21,7 @@ interface CategoriaDao {
 
     @Query("DELETE FROM categorias WHERE id = :id")
     suspend fun deleteCategoriaById(id: Long)
+
+    @Query("UPDATE categorias SET name = :name, color = :color WHERE id = :id")
+    suspend fun updateCategoria(id: Long, name: String, color: Long)
 }

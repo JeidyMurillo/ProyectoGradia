@@ -5,10 +5,12 @@ import androidx.lifecycle.viewModelScope
 import com.example.gradia.domain.model.Category
 import com.example.gradia.domain.model.Note
 import com.example.gradia.domain.usecase.notes.CreateCategoryUseCase
+import com.example.gradia.domain.usecase.notes.DeleteCategoryUseCase
 import com.example.gradia.domain.usecase.notes.DeleteNoteUseCase
 import com.example.gradia.domain.usecase.notes.GetCategoriesUseCase
 import com.example.gradia.domain.usecase.notes.GetNotesUseCase
 import com.example.gradia.domain.usecase.notes.SaveNoteUseCase
+import com.example.gradia.domain.usecase.notes.UpdateCategoryUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,7 +30,8 @@ data class NotesUiState(
     val noteCategories: List<Category> = emptyList(),
     val editingNoteId: Long = 0,
     val isSaving: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val selectedNoteIds: Set<Long> = emptySet()
 )
 
 class NotesViewModel(
@@ -36,7 +39,9 @@ class NotesViewModel(
     private val saveNoteUseCase: SaveNoteUseCase,
     private val deleteNoteUseCase: DeleteNoteUseCase,
     private val getCategoriesUseCase: GetCategoriesUseCase,
-    private val createCategoryUseCase: CreateCategoryUseCase
+    private val createCategoryUseCase: CreateCategoryUseCase,
+    private val updateCategoryUseCase: UpdateCategoryUseCase,
+    private val deleteCategoryUseCase: DeleteCategoryUseCase
 ) : ViewModel() {
 
     private val _selectedCategoryIds = MutableStateFlow<Set<Long>>(emptySet())
@@ -159,6 +164,47 @@ class NotesViewModel(
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = e.message) }
             }
+        }
+    }
+
+    fun updateCategory(id: Long, name: String, color: Long) {
+        viewModelScope.launch {
+            try {
+                updateCategoryUseCase(Category(id = id, name = name, color = color))
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = e.message) }
+            }
+        }
+    }
+
+    fun deleteCategory(id: Long) {
+        viewModelScope.launch {
+            try {
+                deleteCategoryUseCase(id)
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = e.message) }
+            }
+        }
+    }
+
+    fun toggleNoteSelection(id: Long) {
+        _uiState.update { state ->
+            val current = state.selectedNoteIds
+            if (id in current) state.copy(selectedNoteIds = current - id)
+            else state.copy(selectedNoteIds = current + id)
+        }
+    }
+
+    fun clearNoteSelection() {
+        _uiState.update { it.copy(selectedNoteIds = emptySet()) }
+    }
+
+    fun deleteSelectedNotes() {
+        val ids = _uiState.value.selectedNoteIds.toList()
+        if (ids.isEmpty()) return
+        viewModelScope.launch {
+            ids.forEach { id -> deleteNoteUseCase(id) }
+            _uiState.update { it.copy(selectedNoteIds = emptySet()) }
         }
     }
 

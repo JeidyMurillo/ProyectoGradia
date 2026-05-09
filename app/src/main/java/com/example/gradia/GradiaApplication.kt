@@ -14,10 +14,12 @@ import com.example.gradia.domain.usecase.CalculateCurrentAverageUseCase
 import com.example.gradia.domain.usecase.CalculateRemainingPercentageUseCase
 import com.example.gradia.domain.usecase.CalculateRequiredGradeUseCase
 import com.example.gradia.domain.usecase.notes.CreateCategoryUseCase
+import com.example.gradia.domain.usecase.notes.DeleteCategoryUseCase
 import com.example.gradia.domain.usecase.notes.DeleteNoteUseCase
 import com.example.gradia.domain.usecase.notes.GetCategoriesUseCase
 import com.example.gradia.domain.usecase.notes.GetNotesUseCase
 import com.example.gradia.domain.usecase.notes.SaveNoteUseCase
+import com.example.gradia.domain.usecase.notes.UpdateCategoryUseCase
 import com.example.gradia.presentation.viewmodel.FinalGradeViewModel
 import com.example.gradia.presentation.viewmodel.NotesViewModel
 
@@ -55,6 +57,8 @@ class GradiaApplication : Application() {
     val deleteNoteUseCase by lazy { DeleteNoteUseCase(noteRepository) }
     val getCategoriesUseCase by lazy { GetCategoriesUseCase(noteRepository) }
     val createCategoryUseCase by lazy { CreateCategoryUseCase(noteRepository) }
+    val updateCategoryUseCase by lazy { UpdateCategoryUseCase(noteRepository) }
+    val deleteCategoryUseCase by lazy { DeleteCategoryUseCase(noteRepository) }
 
     fun provideFinalGradeViewModel(): FinalGradeViewModel {
         return FinalGradeViewModel(
@@ -71,7 +75,9 @@ class GradiaApplication : Application() {
             saveNoteUseCase = saveNoteUseCase,
             deleteNoteUseCase = deleteNoteUseCase,
             getCategoriesUseCase = getCategoriesUseCase,
-            createCategoryUseCase = createCategoryUseCase
+            createCategoryUseCase = createCategoryUseCase,
+            updateCategoryUseCase = updateCategoryUseCase,
+            deleteCategoryUseCase = deleteCategoryUseCase
         )
     }
 }

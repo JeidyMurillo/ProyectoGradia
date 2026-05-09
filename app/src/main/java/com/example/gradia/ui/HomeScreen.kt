@@ -25,13 +25,16 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.gradia.GradiaApplication
 import com.example.gradia.R
+import com.example.gradia.presentation.viewmodel.NotesViewModel
 import com.example.gradia.ui.theme.*
 import kotlinx.coroutines.launch
 
@@ -42,9 +45,15 @@ fun HomeScreen(onLogout: () -> Unit = {}) {
     var previousTab by remember { mutableIntStateOf(0) }
     var selectedDrawerItem by remember { mutableStateOf("Home") }
     var isQuickAddOpen by remember { mutableStateOf(false) }
-    
+    var showMenu by remember { mutableStateOf(false) }
+    var showCategoryManager by remember { mutableStateOf(false) }
+
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+
+    val app = LocalContext.current.applicationContext as GradiaApplication
+    val notesViewModel = remember { app.provideNotesViewModel() }
+    val notesState by notesViewModel.uiState.collectAsState()
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -117,13 +126,44 @@ fun HomeScreen(onLogout: () -> Unit = {}) {
                         },
                         actions = {
                             if (selectedTab in 3..7) {
-                                IconButton(onClick = { /* TODO */ }) {
-                                    Icon(
-                                        imageVector = Icons.Default.MoreVert,
-                                        contentDescription = "More",
-                                        tint = PurpleGradia,
-                                        modifier = Modifier.size(24.dp)
-                                    )
+                                Box {
+                                    IconButton(onClick = { showMenu = true }) {
+                                        Icon(
+                                            imageVector = Icons.Default.MoreVert,
+                                            contentDescription = "More",
+                                            tint = PurpleGradia,
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                    }
+                                    DropdownMenu(
+                                        expanded = showMenu,
+                                        onDismissRequest = { showMenu = false },
+                                        shape = RoundedCornerShape(16.dp)
+                                    ) {
+                                        if (selectedTab == 5 && notesState.selectedNoteIds.isNotEmpty()) {
+                                            DropdownMenuItem(
+                                                text = { Text("Eliminar seleccionadas (${notesState.selectedNoteIds.size})", color = Color.Red) },
+                                                onClick = {
+                                                    showMenu = false
+                                                    notesViewModel.deleteSelectedNotes()
+                                                },
+                                                leadingIcon = {
+                                                    Icon(Icons.Default.Delete, contentDescription = null, tint = Color.Red)
+                                                }
+                                            )
+                                            HorizontalDivider()
+                                        }
+                                        DropdownMenuItem(
+                                            text = { Text("Gestionar categorías") },
+                                            onClick = {
+                                                showMenu = false
+                                                showCategoryManager = true
+                                            },
+                                            leadingIcon = {
+                                                Icon(Icons.Default.Edit, contentDescription = null)
+                                            }
+                                        )
+                                    }
                                 }
                             } else {
                                 Box(modifier = Modifier.padding(end = 8.dp)) {
@@ -179,7 +219,7 @@ fun HomeScreen(onLogout: () -> Unit = {}) {
                         1 -> FinalGradeScreen()
                         3 -> SubjectsScreen()
                         4 -> CalendarScreen()
-                        5 -> NotesScreen()
+                        5 -> NotesScreen(viewModel = notesViewModel)
                         6 -> TasksScreen()
                         7 -> SettingsScreen()
                         else -> {
@@ -189,6 +229,53 @@ fun HomeScreen(onLogout: () -> Unit = {}) {
                         }
                     }
                 }
+            }
+
+            if (showCategoryManager) {
+                AlertDialog(
+                    onDismissRequest = { showCategoryManager = false },
+                    title = { Text("Gestionar categorías", fontWeight = FontWeight.Bold) },
+                    text = {
+                        Column {
+                            if (notesState.allCategories.isEmpty()) {
+                                Text("No hay categorías creadas.", color = Color.Gray)
+                            } else {
+                                notesState.allCategories.forEach { cat ->
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 4.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(16.dp)
+                                                .clip(RoundedCornerShape(4.dp))
+                                                .background(Color(cat.color))
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(
+                                            text = cat.name,
+                                            modifier = Modifier.weight(1f),
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                        TextButton(onClick = {
+                                            notesViewModel.deleteCategory(cat.id)
+                                        }) {
+                                            Text("Eliminar", color = Color.Red, fontSize = 12.sp)
+                                        }
+                                    }
+                                    HorizontalDivider(color = Color.LightGray.copy(alpha = 0.3f))
+                                }
+                            }
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(onClick = { showCategoryManager = false }) {
+                            Text("Cerrar")
+                        }
+                    }
+                )
             }
 
             // Quick Add Menu Overlay with Animation

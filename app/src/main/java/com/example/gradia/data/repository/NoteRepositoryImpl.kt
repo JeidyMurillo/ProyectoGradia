@@ -62,6 +62,10 @@ class NoteRepositoryImpl(
         return categoriaDao.insertCategoria(category.toEntity())
     }
 
+    override suspend fun updateCategory(category: Category) {
+        categoriaDao.updateCategoria(category.id, category.name, category.color)
+    }
+
     override suspend fun deleteCategory(id: Long) {
         categoriaDao.deleteCategoriaById(id)
     }
