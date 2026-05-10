@@ -22,6 +22,7 @@ import com.example.gradia.domain.usecase.notes.SaveNoteUseCase
 import com.example.gradia.domain.usecase.notes.UpdateCategoryUseCase
 import com.example.gradia.presentation.viewmodel.FinalGradeViewModel
 import com.example.gradia.presentation.viewmodel.NotesViewModel
+import com.example.gradia.presentation.viewmodel.TasksViewModel
 
 class GradiaApplication : Application() {
 
@@ -78,6 +79,14 @@ class GradiaApplication : Application() {
             createCategoryUseCase = createCategoryUseCase,
             updateCategoryUseCase = updateCategoryUseCase,
             deleteCategoryUseCase = deleteCategoryUseCase
+        )
+    }
+
+    fun provideTasksViewModel(): TasksViewModel {
+        return TasksViewModel(
+            eventoRepository = eventoRepository,
+            asignaturaRepository = asignaturaRepository,
+            userRepository = userRepository
         )
     }
 }
