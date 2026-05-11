@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.sp
 import com.example.gradia.GradiaApplication
 import com.example.gradia.R
 import com.example.gradia.presentation.viewmodel.NotesViewModel
+import com.example.gradia.presentation.viewmodel.TasksViewModel
 import com.example.gradia.ui.theme.*
 import kotlinx.coroutines.launch
 
@@ -54,6 +55,8 @@ fun HomeScreen(onLogout: () -> Unit = {}) {
     val app = LocalContext.current.applicationContext as GradiaApplication
     val notesViewModel = remember { app.provideNotesViewModel() }
     val notesState by notesViewModel.uiState.collectAsState()
+    val tasksViewModel = remember { app.provideTasksViewModel() }
+    val tasksState by tasksViewModel.uiState.collectAsState()
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -153,16 +156,31 @@ fun HomeScreen(onLogout: () -> Unit = {}) {
                                             )
                                             HorizontalDivider()
                                         }
-                                        DropdownMenuItem(
-                                            text = { Text("Gestionar categorías") },
-                                            onClick = {
-                                                showMenu = false
-                                                showCategoryManager = true
-                                            },
-                                            leadingIcon = {
-                                                Icon(Icons.Default.Edit, contentDescription = null)
-                                            }
-                                        )
+                                        if (selectedTab == 6 && tasksState.selectedTaskIds.isNotEmpty()) {
+                                            DropdownMenuItem(
+                                                text = { Text("Eliminar seleccionadas (${tasksState.selectedTaskIds.size})", color = Color.Red) },
+                                                onClick = {
+                                                    showMenu = false
+                                                    tasksViewModel.deleteSelectedTasks()
+                                                },
+                                                leadingIcon = {
+                                                    Icon(Icons.Default.Delete, contentDescription = null, tint = Color.Red)
+                                                }
+                                            )
+                                            HorizontalDivider()
+                                        }
+                                        if (selectedTab == 5) {
+                                            DropdownMenuItem(
+                                                text = { Text("Gestionar categorías") },
+                                                onClick = {
+                                                    showMenu = false
+                                                    showCategoryManager = true
+                                                },
+                                                leadingIcon = {
+                                                    Icon(Icons.Default.Edit, contentDescription = null)
+                                                }
+                                            )
+                                        }
                                     }
                                 }
                             } else {
@@ -219,8 +237,8 @@ fun HomeScreen(onLogout: () -> Unit = {}) {
                         1 -> FinalGradeScreen()
                         3 -> SubjectsScreen()
                         4 -> CalendarScreen()
-                        5 -> NotesScreen(viewModel = notesViewModel)
-                        6 -> TasksScreen()
+                5 -> NotesScreen(viewModel = notesViewModel)
+                6 -> TasksScreen(viewModel = tasksViewModel)
                         7 -> SettingsScreen()
                         else -> {
                             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
