@@ -68,3 +68,5 @@ apk-lib/
 # IDEs and IAs
 .idea
 .claude
+.idea/
+.claude/
