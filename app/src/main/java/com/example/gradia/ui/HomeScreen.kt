@@ -37,6 +37,7 @@ import com.example.gradia.R
 import com.example.gradia.presentation.viewmodel.NotesViewModel
 import com.example.gradia.presentation.viewmodel.TasksViewModel
 import com.example.gradia.ui.theme.*
+import com.example.gradia.ui.ProfileScreen
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -73,6 +74,11 @@ fun HomeScreen(onLogout: () -> Unit = {}) {
                         selectedTab = 7 // New index for Settings
                         selectedDrawerItem = item
                         scope.launch { drawerState.close() }
+                    } else if (item == "Perfil") {
+                        previousTab = selectedTab
+                        selectedTab = 8 // New index for Profile
+                        selectedDrawerItem = item
+                        scope.launch { drawerState.close() }
                     } else {
                         selectedDrawerItem = item
                         scope.launch { drawerState.close() }
@@ -96,6 +102,7 @@ fun HomeScreen(onLogout: () -> Unit = {}) {
                                     5 -> "Notas"
                                     6 -> "Tareas"
                                     7 -> "Ajustes"
+                                    8 -> "Perfil"
                                     else -> "Gradia"
                                 },
                                 modifier = Modifier.fillMaxWidth(),
@@ -107,7 +114,7 @@ fun HomeScreen(onLogout: () -> Unit = {}) {
                             )
                         },
                         navigationIcon = {
-                            if (selectedTab in 3..7) {
+                            if (selectedTab in 3..8) {
                                 IconButton(onClick = { selectedTab = previousTab }) {
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -128,7 +135,7 @@ fun HomeScreen(onLogout: () -> Unit = {}) {
                             }
                         },
                         actions = {
-                            if (selectedTab in 3..7) {
+                            if (selectedTab in 3..8) {
                                 Box {
                                     IconButton(onClick = { showMenu = true }) {
                                         Icon(
@@ -240,6 +247,7 @@ fun HomeScreen(onLogout: () -> Unit = {}) {
                 5 -> NotesScreen(viewModel = notesViewModel)
                 6 -> TasksScreen(viewModel = tasksViewModel)
                         7 -> SettingsScreen()
+                        8 -> ProfileScreen()
                         else -> {
                             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                 Text("Próximamente", style = MaterialTheme.typography.titleLarge)
