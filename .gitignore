@@ -1,37 +1,34 @@
-# Built application files
+# Android build files
 *.apk
 *.ap_
 *.aab
-
-# Files for the ART/Dalvik VM
 *.dex
-
-# Java class files
 *.class
 
-# Generated files
 bin/
 gen/
 out/
 build/
+intermediates/
+dexed/
+libs/
+apk-lib/
 
-# Local configuration file (sdk path, etc)
+# Local config
 local.properties
 
-# Log Files
+# Logs
 *.log
 
-# Android Studio Navigation editor temp files
+# Android Studio
 .navigation/
-
-# Android Studio captures folder
 captures/
 
-# Keystore files
+# Keystores
 *.jks
 *.keystore
 
-# External native build folder generated in Android Studio 2.2 and later
+# Native build
 .externalNativeBuild
 .cxx/
 
@@ -50,23 +47,13 @@ fastlane/screenshots
 fastlane/test_output
 fastlane/readme.md
 
-# Version control
-vcs.xml
-
-# lint
-intermediates/
-dexed/
-libs/
-apk-lib/
-
-# Kotlin
-*.class
-
-# Local cache
+# Kotlin / cache
 *.lock
 
-# IDEs and IAs
-.idea
-.claude
+# IDEs / AI tools
 .idea/
 .claude/
+.gradle/
+
+# IntelliJ
+*.iml

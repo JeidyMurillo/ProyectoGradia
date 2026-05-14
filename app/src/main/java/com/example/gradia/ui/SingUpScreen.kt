@@ -11,19 +11,25 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -38,14 +44,19 @@ import com.example.gradia.ui.theme.*
 @Composable
 fun SingUpScreen(
     onBackClick: () -> Unit,
-    onLoginClick: () -> Unit
+    onLoginClick: () -> Unit,
+    onTermsClick: () -> Unit = {}
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var rememberMe by remember { mutableStateOf(false) }
+    var hasVisitedTerms by rememberSaveable { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             // Box para el botón de volver respetando el Safe Area (Status Bar)
             Box(
@@ -109,7 +120,29 @@ fun SingUpScreen(
                 isPassword = true
             )
 
-            // Fila de Recuérdame y Olvidaste contraseña
+            // Aceptación de Términos y Condiciones
+            val annotatedTermsText = remember {
+                buildAnnotatedString {
+                    withStyle(SpanStyle(
+                        color = Color.Gray,
+                        fontFamily = InterFontFamily,
+                        fontSize = 14.sp
+                    )) {
+                        append("He leído y acepto los ")
+                    }
+                    pushStringAnnotation(tag = "TERMS", annotation = "terms")
+                    withStyle(SpanStyle(
+                        color = PurpleGradia,
+                        fontFamily = InterFontFamily,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        textDecoration = TextDecoration.Underline
+                    )) {
+                        append("Términos y Condiciones.")
+                    }
+                    pop()
+                }
+            }
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -117,23 +150,52 @@ fun SingUpScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Start
             ) {
-                Checkbox(
-                    checked = rememberMe,
-                    onCheckedChange = { rememberMe = it },
-                    colors = CheckboxDefaults.colors(checkedColor = PurpleGradia)
-                )
-                Text(
-                    text = "Acepto términos y condiciones",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = Color.Gray,
-                    modifier = Modifier.clickable { rememberMe = !rememberMe }
+                Box {
+                    Checkbox(
+                        checked = rememberMe,
+                        onCheckedChange = { rememberMe = it },
+                        enabled = hasVisitedTerms,
+                        colors = CheckboxDefaults.colors(checkedColor = PurpleGradia)
+                    )
+                    if (!hasVisitedTerms) {
+                        Box(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null
+                                ) {
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar(
+                                            "Primero lee los Términos y Condiciones"
+                                        )
+                                    }
+                                }
+                        )
+                    }
+                }
+                ClickableText(
+                    text = annotatedTermsText,
+                    modifier = Modifier.weight(1f),
+                    onClick = { offset ->
+                        annotatedTermsText
+                            .getStringAnnotations(tag = "TERMS", start = offset, end = offset)
+                            .firstOrNull()?.let {
+                                hasVisitedTerms = true
+                                onTermsClick()
+                            }
+                    }
                 )
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
             // Botón Principal con animación
-            SingUpPrimaryButton(text = "Registrarse", onClick = { /* TODO */ })
+            SingUpPrimaryButton(
+                text = "Registrarse",
+                onClick = { /* TODO */ },
+                enabled = rememberMe
+            )
 
             Spacer(modifier = Modifier.height(32.dp))
 
@@ -174,7 +236,7 @@ fun SingUpScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             Text(
-                text = "Ya estas registrado?",
+                text = "¿Ya estás registrado?",
                 color = Color.Gray,
                 style = MaterialTheme.typography.bodyLarge
             )
@@ -245,19 +307,23 @@ fun SingUpTextField(
 }
 
 @Composable
-fun SingUpPrimaryButton(text: String, onClick: () -> Unit) {
+fun SingUpPrimaryButton(text: String, onClick: () -> Unit, enabled: Boolean = true) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(if (isPressed) 0.95f else 1f, label = "btnScale")
 
     Button(
         onClick = onClick,
+        enabled = enabled,
         interactionSource = interactionSource,
         modifier = Modifier
             .fillMaxWidth(0.6f)
             .height(50.dp)
             .scale(scale),
-        colors = ButtonDefaults.buttonColors(containerColor = PurpleGradia),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = PurpleGradia,
+            disabledContainerColor = PurpleGradia.copy(alpha = 0.4f)
+        ),
         shape = RoundedCornerShape(25.dp),
         elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
     ) {
