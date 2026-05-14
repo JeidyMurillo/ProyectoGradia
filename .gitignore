@@ -70,3 +70,6 @@ apk-lib/
 .claude
 .idea/
 .claude/
+
+#gradle
+.gradle/
