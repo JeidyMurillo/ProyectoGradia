@@ -36,6 +36,7 @@ class FakeSubjectRepository : SubjectRepository {
     )
 
     private var nextItemId = 100L
+    private var nextSubjectId = 10L
 
     override fun getSubjects(): Flow<List<Subject>> = subjects.asStateFlow()
 
@@ -44,6 +45,12 @@ class FakeSubjectRepository : SubjectRepository {
 
     override fun getGradeItemsBySubject(subjectId: Long): Flow<List<GradeItem>> =
         gradeItems.map { list -> list.filter { it.subjectId == subjectId } }
+
+    override suspend fun insertSubject(subject: Subject): Long {
+        val newSubject = subject.copy(id = nextSubjectId++)
+        subjects.value += newSubject
+        return newSubject.id
+    }
 
     override suspend fun insertGradeItem(gradeItem: GradeItem): Long {
         val newItem = gradeItem.copy(id = nextItemId++)

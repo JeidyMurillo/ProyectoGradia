@@ -49,6 +49,8 @@ fun HomeScreen(onLogout: () -> Unit = {}) {
     var isQuickAddOpen by remember { mutableStateOf(false) }
     var showMenu by remember { mutableStateOf(false) }
     var showCategoryManager by remember { mutableStateOf(false) }
+    var selectedSubjectId by remember { mutableStateOf<Long?>(null) }
+    var selectedSubjectName by remember { mutableStateOf("") }
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -103,6 +105,7 @@ fun HomeScreen(onLogout: () -> Unit = {}) {
                                     6 -> "Tareas"
                                     7 -> "Ajustes"
                                     8 -> "Perfil"
+                                    9 -> selectedSubjectName.ifBlank { "Materia" }
                                     else -> "Gradia"
                                 },
                                 modifier = Modifier.fillMaxWidth(),
@@ -114,7 +117,7 @@ fun HomeScreen(onLogout: () -> Unit = {}) {
                             )
                         },
                         navigationIcon = {
-                            if (selectedTab in 3..8) {
+                            if (selectedTab in 3..9) {
                                 IconButton(onClick = { selectedTab = previousTab }) {
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -135,7 +138,7 @@ fun HomeScreen(onLogout: () -> Unit = {}) {
                             }
                         },
                         actions = {
-                            if (selectedTab in 3..8) {
+                            if (selectedTab in 3..9) {
                                 Box {
                                     IconButton(onClick = { showMenu = true }) {
                                         Icon(
@@ -240,14 +243,29 @@ fun HomeScreen(onLogout: () -> Unit = {}) {
             ) { innerPadding ->
                 Box(modifier = Modifier.padding(innerPadding)) {
                     when (selectedTab) {
-                        0 -> HomeContent()
+                        0 -> HomeContent(
+                            onCourseClick = { course ->
+                                selectedSubjectId = course.subjectId
+                                selectedSubjectName = course.name
+                                previousTab = selectedTab
+                                selectedTab = 9
+                            }
+                        )
                         1 -> FinalGradeScreen()
-                        3 -> SubjectsScreen()
+                        3 -> SubjectsScreen(
+                            onSubjectClick = { subject ->
+                                selectedSubjectId = subject.id
+                                selectedSubjectName = subject.name
+                                previousTab = selectedTab
+                                selectedTab = 9
+                            }
+                        )
                         4 -> CalendarScreen()
                 5 -> NotesScreen(viewModel = notesViewModel)
                 6 -> TasksScreen(viewModel = tasksViewModel)
                         7 -> SettingsScreen()
                         8 -> ProfileScreen()
+                        9 -> selectedSubjectId?.let { SubjectDetailScreen(subjectId = it) }
                         else -> {
                             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                 Text("Próximamente", style = MaterialTheme.typography.titleLarge)
@@ -546,7 +564,7 @@ fun DrawerMenuItem(
 }
 
 @Composable
-fun HomeContent() {
+fun HomeContent(onCourseClick: (Course) -> Unit = {}) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -626,7 +644,7 @@ fun HomeContent() {
         }
 
         items(courseList) { course ->
-            CourseItem(course)
+            CourseItem(course = course, onClick = { onCourseClick(course) })
         }
         
         item { Spacer(modifier = Modifier.height(80.dp)) } // Espacio para la bottom bar
@@ -675,21 +693,23 @@ data class Course(
     val percentage: Int,
     val info: String,
     val icon: ImageVector,
-    val infoIcon: ImageVector
+    val infoIcon: ImageVector,
+    val subjectId: Long
 )
 
 val courseList = listOf(
-    Course("Calculo IV", 0.8f, 80, "Próximo Examen: Lunes", Icons.Default.Info, Icons.Default.Info),
-    Course("Diseño UI", 0.6f, 60, "Entrega: Miércoles", Icons.Default.Edit, Icons.Default.Info),
-    Course("Física II", 0.9f, 90, "12 Tareas Completas", Icons.Default.Star, Icons.Default.CheckCircle)
+    Course("Calculo IV", 0.8f, 80, "Próximo Examen: Lunes", Icons.Default.Info, Icons.Default.Info, subjectId = 1),
+    Course("Programación", 0.6f, 60, "Entrega: Miércoles", Icons.Default.Edit, Icons.Default.Info, subjectId = 3),
+    Course("Física II", 0.9f, 90, "12 Tareas Completas", Icons.Default.Star, Icons.Default.CheckCircle, subjectId = 2)
 )
 
 @Composable
-fun CourseItem(course: Course) {
+fun CourseItem(course: Course, onClick: () -> Unit = {}) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(90.dp),
+            .height(90.dp)
+            .clickable(onClick = onClick),
         shape = RoundedCornerShape(50.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)

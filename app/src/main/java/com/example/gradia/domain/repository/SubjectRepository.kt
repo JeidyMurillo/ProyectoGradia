@@ -12,6 +12,8 @@ interface SubjectRepository {
 
     fun getGradeItemsBySubject(subjectId: Long): Flow<List<GradeItem>>
 
+    suspend fun insertSubject(subject: Subject): Long
+
     suspend fun insertGradeItem(gradeItem: GradeItem): Long
 
     suspend fun updateGradeItem(gradeItem: GradeItem)
