@@ -14,6 +14,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.gradia.ui.HomeScreen
 import com.example.gradia.ui.LoginScreen
 import com.example.gradia.ui.SingUpScreen
+import com.example.gradia.ui.TermsAndConditionsScreen
 import com.example.gradia.ui.WelcomeScreen
 import com.example.gradia.ui.theme.GradiaTheme
 
@@ -80,7 +81,13 @@ class MainActivity : ComponentActivity() {
                     composable("register") {
                         SingUpScreen(
                             onBackClick = { navController.popBackStack() },
-                            onLoginClick = { navController.navigate("login") }
+                            onLoginClick = { navController.navigate("login") },
+                            onTermsClick = { navController.navigate("terms_and_conditions") }
+                        )
+                    }
+                    composable("terms_and_conditions") {
+                        TermsAndConditionsScreen(
+                            onBackClick = { navController.popBackStack() }
                         )
                     }
                     composable("home") {

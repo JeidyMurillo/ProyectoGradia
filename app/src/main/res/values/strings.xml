@@ -1,3 +1,62 @@
 <resources>
     <string name="app_name">Gradia</string>
+
+    <!-- Términos y Condiciones -->
+    <string name="terms_main_title">Términos y Condiciones de Uso - Gradia</string>
+    <string name="terms_last_updated">Última actualización: mayo de 2026</string>
+
+    <string name="terms_section1_title">1. Aceptación de los términos</string>
+    <string name="terms_section1_body">Al descargar, instalar o utilizar la aplicación Gradia, usted
+        acepta quedar vinculado por estos Términos y Condiciones.
+        Si no está de acuerdo con alguno de los términos aquí establecidos,
+        le pedimos que no utilice la aplicación.</string>
+
+    <string name="terms_section2_title">2. Descripción del servicio</string>
+    <string name="terms_section2_body">Gradia es una aplicación móvil diseñada para que estudiantes
+        universitarios puedan llevar el control de sus notas, materias por semestre,
+        metas académicas y progreso personal. La app es una herramienta de apoyo académico
+        y no tiene ninguna afiliación oficial con instituciones educativas.</string>
+
+    <string name="terms_section3_title">3. Registro y cuenta de usuario</string>
+    <string name="terms_section3_body">Usted es responsable de proporcionar información veraz al momento de registrarse.
+        Debe mantener la confidencialidad de sus credenciales de acceso. Gradia no se hace responsable por accesos no autorizados derivados del uso indebido de su contraseña.
+        Puede eliminar su cuenta en cualquier momento desde la configuración de la aplicación.</string>
+
+    <string name="terms_section4_title">4. Uso aceptable</string>
+    <string name="terms_section4_body">Usted se compromete a utilizar Gradia únicamente para fines
+        personales y académicos. Queda prohibido:
+        Intentar acceder a los datos de otros usuarios.
+        Usar la aplicación para fines comerciales sin autorización expresa.
+        Realizar ingeniería inversa, descompilar o modificar la aplicación.
+    </string>
+
+    <string name="terms_section5_title">5. Privacidad y manejo de datos</string>
+    <string name="terms_section5_body">Los datos académicos que usted ingresa (notas, materias, metas) se almacenan
+        localmente en su dispositivo y, si utiliza sincronización en la nube, en servidores protegidos.
+    No vendemos ni compartimos su información académica personal con terceros.
+    Podemos recopilar datos de uso anónimos para mejorar la experiencia de la aplicación.
+    Para más detalles, consulte nuestra Política de Privacidad.
+    </string>
+
+    <string name="terms_section6_title">6. Propiedad intelectual</string>
+    <string name="terms_section6_body">Todos los elementos de Gradia — incluyendo diseño, íconos, nombre,
+        logotipo y código — son propiedad de sus desarrolladores y están protegidos por las leyes de
+        propiedad intelectual aplicables. Queda prohibida su reproducción total o parcial sin autorización.</string>
+
+    <string name="terms_section7_title">7. Limitación de responsabilidad</string>
+    <string name="terms_section7_body">Gradia se proporciona "tal como está". Los desarrolladores no garantizan que la
+        aplicación esté libre de errores ni que funcione de manera ininterrumpida.
+        En ningún caso seremos responsables por pérdida de datos académicos, decisiones tomadas con base en la
+        información mostrada en la app, ni por daños indirectos derivados de su uso.</string>
+
+    <string name="terms_section8_title">8. Modificaciones</string>
+    <string name="terms_section8_body">Nos reservamos el derecho de actualizar estos Términos y Condiciones en cualquier momento.
+        Le notificaremos sobre cambios importantes a través de la aplicación.
+        El uso continuado de Gradia tras una actualización implica la aceptación de los nuevos términos.</string>
+
+    <string name="terms_section9_title">9. Contacto</string>
+    <string name="terms_section9_body">Si tiene preguntas sobre estos Términos y Condiciones,
+        puede contactarnos a través de la sección de soporte dentro de la
+        aplicación o escribirnos a soporte@gradia.app.</string>
+
 </resources>
