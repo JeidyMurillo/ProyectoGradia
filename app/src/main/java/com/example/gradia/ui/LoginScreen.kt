@@ -39,16 +39,32 @@ import com.example.gradia.ui.theme.*
 fun LoginScreen(
     onBackClick: () -> Unit,
     onRegisterClick: () -> Unit,
-    onLoginSuccess: () -> Unit
+    onLogin: (String, String, Boolean) -> Unit = { _, _, _ -> },
+    isLoading: Boolean = false,
+    errorMessage: String? = null
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var rememberMe by remember { mutableStateOf(false) }
+    var localError by remember { mutableStateOf<String?>(null) }
+
+    val displayError = localError ?: errorMessage
+
+    fun validate(): String? {
+        if (email.isBlank()) return "Ingresa tu correo electrónico"
+        if (!email.contains("@") || !email.contains(".")) return "El correo electrónico no es válido"
+        if (password.isBlank()) return "Ingresa tu contraseña"
+        if (password.length < 6) return "La contraseña debe tener al menos 6 caracteres"
+        return null
+    }
+
+    fun clearError() {
+        localError = null
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            // Box para el botón de volver respetando el Safe Area (Status Bar)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -79,14 +95,12 @@ fun LoginScreen(
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Logo (Usamos splash_logo que es el morado)
             Image(
                 painter = painterResource(id = R.drawable.splash_logo),
                 contentDescription = "Logo Gradia",
                 modifier = Modifier.size(140.dp)
             )
 
-            // Título con Martini (Definida en Type.kt)
             Text(
                 text = "Iniciar Sesión",
                 style = MaterialTheme.typography.displayLarge.copy(fontSize = 32.sp),
@@ -94,10 +108,9 @@ fun LoginScreen(
                 modifier = Modifier.padding(bottom = 24.dp)
             )
 
-            // Inputs con Inter
             LoginTextField(
                 value = email,
-                onValueChange = { email = it },
+                onValueChange = { email = it; clearError() },
                 placeholder = "Correo Electrónico"
             )
 
@@ -105,12 +118,11 @@ fun LoginScreen(
 
             LoginTextField(
                 value = password,
-                onValueChange = { password = it },
+                onValueChange = { password = it; clearError() },
                 placeholder = "Contraseña",
                 isPassword = true
             )
 
-            // Fila de Recuérdame y Olvidaste contraseña
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -141,14 +153,41 @@ fun LoginScreen(
                 modifier = Modifier.clickable { /* TODO */ }
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // Botón Principal con animación
-            LoginPrimaryButton(text = "Inicia Sesión", onClick = onLoginSuccess)
+            if (displayError != null) {
+                Text(
+                    text = displayError,
+                    color = Color(0xFFB00020),
+                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(0xFFFFF0F0), RoundedCornerShape(12.dp))
+                        .padding(12.dp)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
+            if (isLoading) {
+                CircularProgressIndicator(color = PurpleGradia, modifier = Modifier.padding(16.dp))
+            }
+
+            LoginPrimaryButton(
+                text = "Inicia Sesión",
+                onClick = {
+                    val error = validate()
+                    if (error != null) {
+                        localError = error
+                    } else {
+                        onLogin(email, password, rememberMe)
+                    }
+                },
+                enabled = !isLoading
+            )
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Divisor "o"
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
@@ -173,13 +212,12 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Social Buttons (Placeholders)
             Row(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                SocialIconLogin(painterResource(R.drawable.ic_github)) // Reemplazar por GitHub
-                SocialIconLogin(painterResource(R.drawable.ic_google)) // Reemplazar por Google
-                SocialIconLogin(painterResource(R.drawable.ic_facebook)) // Reemplazar por Facebook
+                SocialIconLogin(painterResource(R.drawable.ic_github))
+                SocialIconLogin(painterResource(R.drawable.ic_google))
+                SocialIconLogin(painterResource(R.drawable.ic_facebook))
             }
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -192,7 +230,6 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Botón de Registro secundario
             val registerInteractionSource = remember { MutableInteractionSource() }
             val isRegisterPressed by registerInteractionSource.collectIsPressedAsState()
             val registerScale by animateFloatAsState(
@@ -256,18 +293,19 @@ fun LoginTextField(
 }
 
 @Composable
-fun LoginPrimaryButton(text: String, onClick: () -> Unit) {
+fun LoginPrimaryButton(text: String, onClick: () -> Unit, enabled: Boolean = true) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(if (isPressed) 0.95f else 1f, label = "btnScale")
 
     Button(
         onClick = onClick,
+        enabled = enabled,
         interactionSource = interactionSource,
         modifier = Modifier
             .fillMaxWidth(0.6f)
             .height(50.dp)
-            .scale(scale),
+            .scale(if (enabled) scale else 1f),
         colors = ButtonDefaults.buttonColors(containerColor = PurpleGradia),
         shape = RoundedCornerShape(25.dp),
         elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
@@ -303,6 +341,6 @@ fun SocialIconLogin(painter: androidx.compose.ui.graphics.painter.Painter) {
 @Composable
 fun LoginScreenPreview() {
     GradiaTheme {
-        LoginScreen(onBackClick = {}, onRegisterClick = {}, onLoginSuccess = {})
+        LoginScreen(onBackClick = {}, onRegisterClick = {}, onLogin = { _, _, _ -> })
     }
 }
