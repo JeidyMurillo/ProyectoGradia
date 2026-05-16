@@ -1,8 +1,11 @@
 package com.example.gradia
 
 import android.app.Application
+import android.content.Context
+import com.example.gradia.data.firebase.FirebaseAuthService
 import com.example.gradia.data.local.AppDatabase
 import com.example.gradia.data.repository.AsignaturaRepository
+import com.example.gradia.data.repository.AuthRepository
 import com.example.gradia.data.repository.EventoRepository
 import com.example.gradia.data.repository.FakeSubjectRepository
 import com.example.gradia.data.repository.NotaRepository
@@ -43,6 +46,9 @@ class GradiaApplication : Application() {
         )
     }
 
+    val firebaseAuthService by lazy { FirebaseAuthService() }
+    val authRepository by lazy { AuthRepository(firebaseAuthService, userRepository) }
+
     val calculateCurrentAverageUseCase by lazy { CalculateCurrentAverageUseCase() }
     val calculateRemainingPercentageUseCase by lazy { CalculateRemainingPercentageUseCase() }
 
@@ -60,6 +66,12 @@ class GradiaApplication : Application() {
     val createCategoryUseCase by lazy { CreateCategoryUseCase(noteRepository) }
     val updateCategoryUseCase by lazy { UpdateCategoryUseCase(noteRepository) }
     val deleteCategoryUseCase by lazy { DeleteCategoryUseCase(noteRepository) }
+
+    private val prefs by lazy { getSharedPreferences("gradia_prefs", Context.MODE_PRIVATE) }
+
+    var isRememberMeEnabled: Boolean
+        get() = prefs.getBoolean("remember_me", false)
+        set(value) = prefs.edit().putBoolean("remember_me", value).apply()
 
     fun provideFinalGradeViewModel(): FinalGradeViewModel {
         return FinalGradeViewModel(
