@@ -42,7 +42,11 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(onLogout: () -> Unit = {}) {
+fun HomeScreen(
+    onLogout: () -> Unit = {},
+    userName: String = "Usuario",
+    userEmail: String = ""
+) {
     var selectedTab by remember { mutableIntStateOf(0) }
     var previousTab by remember { mutableIntStateOf(0) }
     var selectedDrawerItem by remember { mutableStateOf("Home") }
@@ -68,6 +72,8 @@ fun HomeScreen(onLogout: () -> Unit = {}) {
             GradiaDrawerContent(
                 selectedItem = selectedDrawerItem,
                 onClose = { scope.launch { drawerState.close() } },
+                userName = userName,
+                userEmail = userEmail,
                 onItemClick = { item ->
                     if (item == "Log Out") {
                         onLogout()
@@ -414,7 +420,9 @@ fun QuickAddMenuItem(label: String, iconRes: Int, onClick: () -> Unit) {
 fun GradiaDrawerContent(
     selectedItem: String,
     onClose: () -> Unit,
-    onItemClick: (String) -> Unit
+    onItemClick: (String) -> Unit,
+    userName: String = "Usuario",
+    userEmail: String = ""
 ) {
     ModalDrawerSheet(
         drawerContainerColor = Color.White,
@@ -459,7 +467,7 @@ fun GradiaDrawerContent(
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 Text(
-                    text = "Sophia Rose",
+                    text = userName,
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold,
                         fontFamily = InterFontFamily,
@@ -467,7 +475,7 @@ fun GradiaDrawerContent(
                     )
                 )
                 Text(
-                    text = "UX/UI Designer",
+                    text = userEmail,
                     style = MaterialTheme.typography.bodySmall.copy(
                         color = Color.Gray,
                         fontFamily = InterFontFamily,
