@@ -87,6 +87,11 @@ fun HomeScreen(
                         selectedTab = 8 // New index for Profile
                         selectedDrawerItem = item
                         scope.launch { drawerState.close() }
+                    } else if (item == "Estadísticas") {
+                        previousTab = selectedTab
+                        selectedTab = 10 // New index for Stats
+                        selectedDrawerItem = item
+                        scope.launch { drawerState.close() }
                     } else {
                         selectedDrawerItem = item
                         scope.launch { drawerState.close() }
@@ -112,6 +117,7 @@ fun HomeScreen(
                                     7 -> "Ajustes"
                                     8 -> "Perfil"
                                     9 -> selectedSubjectName.ifBlank { "Materia" }
+                                    10 -> "Estadísticas"
                                     else -> "Gradia"
                                 },
                                 modifier = Modifier.fillMaxWidth(),
@@ -123,7 +129,7 @@ fun HomeScreen(
                             )
                         },
                         navigationIcon = {
-                            if (selectedTab in 3..9) {
+                            if (selectedTab in 3..7 || selectedTab == 9) {
                                 IconButton(onClick = { selectedTab = previousTab }) {
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -144,7 +150,7 @@ fun HomeScreen(
                             }
                         },
                         actions = {
-                            if (selectedTab in 3..9) {
+                            if (selectedTab in 3..7 || selectedTab == 9) {
                                 Box {
                                     IconButton(onClick = { showMenu = true }) {
                                         Icon(
@@ -225,7 +231,10 @@ fun HomeScreen(
                                 }
                             }
                         },
-                        colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = Color.Transparent,
+                            scrolledContainerColor = Color.White
+                        )
                     )
                 },
                 bottomBar = {
@@ -267,11 +276,12 @@ fun HomeScreen(
                             }
                         )
                         4 -> CalendarScreen()
-                5 -> NotesScreen(viewModel = notesViewModel)
-                6 -> TasksScreen(viewModel = tasksViewModel)
+                        5 -> NotesScreen(viewModel = notesViewModel)
+                        6 -> TasksScreen(viewModel = tasksViewModel)
                         7 -> SettingsScreen()
                         8 -> ProfileScreen()
                         9 -> selectedSubjectId?.let { SubjectDetailScreen(subjectId = it) }
+                        10 -> StatsScreen()
                         else -> {
                             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                 Text("Próximamente", style = MaterialTheme.typography.titleLarge)

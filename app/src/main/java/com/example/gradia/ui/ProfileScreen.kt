@@ -1,6 +1,5 @@
 package com.example.gradia.ui
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -16,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
@@ -30,7 +30,9 @@ import com.example.gradia.R
 import com.example.gradia.ui.theme.*
 
 @Composable
-fun ProfileScreen() {
+fun ProfileScreen(
+    modifier: Modifier = Modifier
+) {
     var isEditing by remember { mutableStateOf(false) }
     var name by remember { mutableStateOf("Sophia Rose") }
     var email by remember { mutableStateOf("sophia.rose@university.edu") }
@@ -40,18 +42,18 @@ fun ProfileScreen() {
     var passwordVisible by remember { mutableStateOf(false) }
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(Color(0xFFFBF8FF))
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         Box(
             modifier = Modifier
-                .size(200.dp)
+                .size(240.dp)
                 .clickable { }
         ) {
             Image(
@@ -116,28 +118,34 @@ fun ProfileScreen() {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Semestre actual:",
+                text = "Semestre actual - Número:",
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontFamily = InterFontFamily,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.SemiBold,
                     color = Color(0xFF4A4A4A),
-                    fontSize = 14.sp
+                    fontSize = 16.sp
                 )
             )
 
-            Box(
+Box(
                 modifier = Modifier
-                    .width(120.dp)
+                    .width(140.dp)
+                    .shadow(
+                        elevation = 2.dp,
+                        shape = RoundedCornerShape(30.dp),
+                        ambientColor = Color.Black.copy(alpha = 0.15f),
+                        spotColor = Color.Black.copy(alpha = 0.3f)
+                    )
                     .background(
                         Color.White,
                         RoundedCornerShape(30.dp)
                     )
                     .border(
                         width = 1.dp,
-                        color = Color(0xFFD8CDF0),
+                        color = PurpleGradia,
                         shape = RoundedCornerShape(30.dp)
                     )
-                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .padding(horizontal = 16.dp, vertical = 10.dp)
             ) {
                 if (isEditing) {
                     Box(
@@ -148,8 +156,8 @@ fun ProfileScreen() {
                             value = semester,
                             onValueChange = { semester = it },
                             modifier = Modifier
-                                .width(60.dp)
-                                .heightIn(min = 24.dp),
+                                .width(80.dp)
+                                .heightIn(min = 20.dp),
                             singleLine = true,
                             textStyle = MaterialTheme.typography.bodyLarge.copy(
                                 fontFamily = InterFontFamily,
@@ -169,9 +177,11 @@ fun ProfileScreen() {
                             text = semester,
                             style = MaterialTheme.typography.bodyLarge.copy(
                                 fontFamily = InterFontFamily,
-                                color = Color(0xFF6B6B6B),
-                                fontSize = 16.sp
-                            )
+                                color = Color(0xFF4A4A4A),
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Normal
+                            ),
+                            textAlign = TextAlign.Center
                         )
                     }
                 }
@@ -191,30 +201,65 @@ fun ProfileScreen() {
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        Button(
-            onClick = { isEditing = !isEditing },
-            modifier = Modifier
-                .wrapContentWidth()
-                .height(48.dp),
-            shape = RoundedCornerShape(24.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = PurpleGradia),
-            contentPadding = PaddingValues(horizontal = 32.dp, vertical = 8.dp)
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                painter = painterResource(id = R.drawable.rename_box),
-                contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.size(18.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = if (isEditing) "Guardar" else "Editar Perfil",
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontWeight = FontWeight.SemiBold,
-                    fontFamily = InterFontFamily,
-                    color = Color.White
+            Button(
+                onClick = { isEditing = !isEditing },
+                modifier = Modifier
+                    .width(160.dp)
+                    .height(44.dp),
+                shape = RoundedCornerShape(24.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = PurpleGradia),
+                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 8.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.edit_save),
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(16.dp)
                 )
-            )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = if (isEditing) "Guardar" else "Editar",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = InterFontFamily,
+                        color = Color.White
+                    )
+                )
+            }
+
+            if (isEditing) {
+                Button(
+                    onClick = { isEditing = false },
+                    modifier = Modifier
+                        .width(160.dp)
+                        .height(44.dp),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF9E9E9E)
+                    ),
+                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.close),
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "Cancelar",
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontWeight = FontWeight.SemiBold,
+                            fontFamily = InterFontFamily,
+                            color = Color.White
+                        )
+                    )
+                }
+            }
         }
 
         Spacer(modifier = Modifier.height(100.dp))
@@ -234,27 +279,33 @@ fun ProfileField(
             text = "$label:",
             style = MaterialTheme.typography.bodyMedium.copy(
                 fontFamily = InterFontFamily,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.SemiBold,
                 color = Color(0xFF4A4A4A),
-                fontSize = 14.sp
+                fontSize = 16.sp
             )
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         Box(
             modifier = Modifier
                 .fillMaxWidth()
+                .shadow(
+                    elevation = 2.dp,
+                    shape = RoundedCornerShape(30.dp),
+                    ambientColor = Color.Black.copy(alpha = 0.15f),
+                    spotColor = Color.Black.copy(alpha = 0.3f)
+                )
                 .background(
                     Color.White,
                     RoundedCornerShape(30.dp)
                 )
                 .border(
                     width = 1.dp,
-                    color = Color(0xFFD8CDF0),
+                    color = PurpleGradia,
                     shape = RoundedCornerShape(30.dp)
                 )
-                .padding(horizontal = 20.dp, vertical = 12.dp)
+                .padding(horizontal = 16.dp, vertical = 10.dp)
         ) {
             if (isEditing) {
                 BasicTextField(
@@ -262,7 +313,7 @@ fun ProfileField(
                     onValueChange = onValueChange,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(min = 24.dp),
+                        .heightIn(min = 20.dp),
                     textStyle = MaterialTheme.typography.bodyLarge.copy(
                         fontFamily = InterFontFamily,
                         color = Color(0xFF4A4A4A),
@@ -276,8 +327,9 @@ fun ProfileField(
                     text = value,
                     style = MaterialTheme.typography.bodyLarge.copy(
                         fontFamily = InterFontFamily,
-                        color = Color(0xFF6B6B6B),
-                        fontSize = 16.sp
+                        color = Color(0xFF4A4A4A),
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Normal
                     )
                 )
             }
@@ -299,71 +351,67 @@ fun PasswordField(
             text = "$label:",
             style = MaterialTheme.typography.bodyMedium.copy(
                 fontFamily = InterFontFamily,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.SemiBold,
                 color = Color(0xFF4A4A4A),
-                fontSize = 14.sp
+                fontSize = 16.sp
             )
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         Box(
             modifier = Modifier
                 .fillMaxWidth()
+                .shadow(
+                    elevation = 2.dp,
+                    shape = RoundedCornerShape(30.dp),
+                    ambientColor = Color.Black.copy(alpha = 0.15f),
+                    spotColor = Color.Black.copy(alpha = 0.3f)
+                )
                 .background(
                     Color.White,
                     RoundedCornerShape(30.dp)
                 )
                 .border(
                     width = 1.dp,
-                    color = Color(0xFFD8CDF0),
+                    color = PurpleGradia,
                     shape = RoundedCornerShape(30.dp)
                 )
-                .padding(horizontal = 20.dp, vertical = 12.dp)
+                .padding(horizontal = 16.dp, vertical = 10.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                if (isEditing) {
-                    BasicTextField(
-                        value = value,
-                        onValueChange = onValueChange,
-                        modifier = Modifier
-                            .weight(1f)
-                            .heightIn(min = 24.dp),
-                        singleLine = true,
-                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                        textStyle = MaterialTheme.typography.bodyLarge.copy(
-                            fontFamily = InterFontFamily,
-                            color = Color(0xFF4A4A4A),
-                            fontSize = 16.sp
-                        ),
-                        cursorBrush = SolidColor(PurpleGradia)
-                    )
-                } else {
-                    Text(
-                        text = "••••••••",
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            fontFamily = InterFontFamily,
-                            color = Color(0xFF6B6B6B),
-                            fontSize = 16.sp
-                        ),
-                        modifier = Modifier.weight(1f)
-                    )
-                }
+                BasicTextField(
+                    value = value,
+                    onValueChange = { if (isEditing) onValueChange(it) },
+                    modifier = Modifier
+                        .weight(1f)
+                        .heightIn(min = 20.dp),
+                    enabled = isEditing,
+                    readOnly = !isEditing,
+                    singleLine = true,
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(
+                        fontFamily = InterFontFamily,
+                        color = Color(0xFF4A4A4A),
+                        fontSize = 16.sp
+                    ),
+                    cursorBrush = SolidColor(PurpleGradia)
+                )
 
                 IconButton(
                     onClick = onToggleVisibility,
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(24.dp)
                 ) {
                     Icon(
                         painter = painterResource(
-                            id = if (passwordVisible) R.drawable.visibility_off else R.drawable.visibility
+                            id = if (passwordVisible) R.drawable.visibility else R.drawable.visibility_off
                         ),
                         contentDescription = "Toggle password visibility",
                         tint = PurpleGradia,
-                        modifier = Modifier.size(22.dp)
+                        modifier = Modifier.size(18.dp)
                     )
                 }
             }
