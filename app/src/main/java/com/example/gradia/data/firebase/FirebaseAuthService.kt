@@ -2,6 +2,7 @@ package com.example.gradia.data.firebase
 
 import com.google.firebase.Firebase
 import com.google.firebase.auth.AuthCredential
+import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.auth
 import com.google.firebase.auth.userProfileChangeRequest
@@ -69,6 +70,15 @@ class FirebaseAuthService {
         }
     }
 
+    suspend fun deleteAccount(): Result<Unit> {
+        return try {
+            auth.currentUser?.delete()?.await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     fun signOut() {
         auth.signOut()
     }
@@ -79,5 +89,38 @@ class FirebaseAuthService {
 
     fun getCurrentUserId(): String? {
         return auth.currentUser?.uid
+    }
+
+    fun getLinkedProviders(): List<String> {
+        return auth.currentUser?.providerData?.map { it.providerId }?.distinct() ?: emptyList()
+    }
+
+    suspend fun linkWithEmail(email: String, password: String): Result<Unit> {
+        return try {
+            val credential = EmailAuthProvider.getCredential(email, password)
+            auth.currentUser?.linkWithCredential(credential)?.await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun linkWithGoogle(idToken: String): Result<Unit> {
+        return try {
+            val credential = GoogleAuthProvider.getCredential(idToken, null)
+            auth.currentUser?.linkWithCredential(credential)?.await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun unlinkProvider(providerId: String): Result<Unit> {
+        return try {
+            auth.currentUser?.unlink(providerId)?.await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 }

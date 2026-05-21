@@ -60,6 +60,17 @@ class AuthRepository(
         return authService.isEmailRegistered(email)
     }
 
+    suspend fun deleteAccount(clearLocalData: suspend () -> Unit): Result<Unit> {
+        val result = authService.deleteAccount()
+        result.fold(
+            onSuccess = {
+                clearLocalData()
+            },
+            onFailure = { }
+        )
+        return result
+    }
+
     fun signOut() {
         authService.signOut()
     }
@@ -70,6 +81,22 @@ class AuthRepository(
 
     fun getCurrentUserId(): String? {
         return authService.getCurrentUserId()
+    }
+
+    fun getLinkedProviders(): List<String> {
+        return authService.getLinkedProviders()
+    }
+
+    suspend fun linkWithEmail(email: String, password: String): Result<Unit> {
+        return authService.linkWithEmail(email, password)
+    }
+
+    suspend fun linkWithGoogle(idToken: String): Result<Unit> {
+        return authService.linkWithGoogle(idToken)
+    }
+
+    suspend fun unlinkProvider(providerId: String): Result<Unit> {
+        return authService.unlinkProvider(providerId)
     }
 
     suspend fun getLocalUser(userId: String): User? {

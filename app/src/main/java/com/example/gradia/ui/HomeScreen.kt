@@ -16,6 +16,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,6 +38,7 @@ import com.example.gradia.domain.model.Subject
 import com.example.gradia.presentation.viewmodel.NotesViewModel
 import com.example.gradia.presentation.viewmodel.TasksViewModel
 import com.example.gradia.ui.theme.*
+import com.example.gradia.ui.AccountScreen
 import com.example.gradia.ui.ProfileScreen
 import kotlinx.coroutines.launch
 
@@ -44,11 +46,13 @@ import kotlinx.coroutines.launch
 @Composable
 fun HomeScreen(
     onLogout: () -> Unit = {},
+    onDeleteAccount: () -> Unit = {},
+    onNavigateToTerms: () -> Unit = {},
     userName: String = "Usuario",
     userEmail: String = ""
 ) {
-    var selectedTab by remember { mutableIntStateOf(0) }
-    var previousTab by remember { mutableIntStateOf(0) }
+    var selectedTab by rememberSaveable { mutableIntStateOf(0) }
+    var previousTab by rememberSaveable { mutableIntStateOf(0) }
     var selectedDrawerItem by remember { mutableStateOf("Home") }
     var isQuickAddOpen by remember { mutableStateOf(false) }
     var showMenu by remember { mutableStateOf(false) }
@@ -63,7 +67,7 @@ fun HomeScreen(
     val currentUserId = app.authRepository.getCurrentUserId() ?: ""
     val notesViewModel = remember(currentUserId) { app.provideNotesViewModel(currentUserId) }
     val notesState by notesViewModel.uiState.collectAsState()
-    val tasksViewModel = remember(currentUserId) { app.provideTasksViewModel(currentUserId) }
+    val tasksViewModel = remember { app.provideTasksViewModel() }
     val tasksState by tasksViewModel.uiState.collectAsState()
 
     ModalNavigationDrawer(
@@ -130,7 +134,7 @@ fun HomeScreen(
                             )
                         },
                         navigationIcon = {
-                            if (selectedTab in 3..7 || selectedTab == 9) {
+                            if (selectedTab in 3..8 || selectedTab == 9) {
                                 IconButton(onClick = { selectedTab = previousTab }) {
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -151,7 +155,7 @@ fun HomeScreen(
                             }
                         },
                         actions = {
-                            if (selectedTab in 3..7 || selectedTab == 9) {
+                            if (selectedTab in 3..6 || selectedTab == 9) {
                                 Box {
                                     IconButton(onClick = { showMenu = true }) {
                                         Icon(
@@ -279,8 +283,24 @@ fun HomeScreen(
                         4 -> CalendarScreen()
                         5 -> NotesScreen(viewModel = notesViewModel)
                         6 -> TasksScreen(viewModel = tasksViewModel)
-                        7 -> SettingsScreen()
+                        7 -> SettingsScreen(
+                                onNavigateToAccount = {
+                                    previousTab = selectedTab
+                                    selectedTab = 11
+                                },
+                                onNavigateToTerms = onNavigateToTerms
+                            )
                         8 -> ProfileScreen()
+                        11 -> AccountScreen(
+                                onNavigateToProfile = {
+                                    previousTab = selectedTab
+                                    selectedTab = 8
+                                },
+                                onDeleteAccount = onDeleteAccount,
+                                onBack = {
+                                    selectedTab = previousTab
+                                }
+                            )
                         9 -> selectedSubjectId?.let { SubjectDetailScreen(subjectId = it) }
                         10 -> StatsScreen()
                         else -> {

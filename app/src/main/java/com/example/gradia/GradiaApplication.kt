@@ -103,9 +103,9 @@ class GradiaApplication : Application() {
         )
     }
 
-    fun provideTasksViewModel(userId: String): TasksViewModel {
+    fun provideTasksViewModel(): TasksViewModel {
         return TasksViewModel(
-            userId = userId,
+            userRepository = userRepository,
             eventoRepository = eventoRepository,
             asignaturaRepository = asignaturaRepository
         )
