@@ -34,6 +34,7 @@ fun SettingsScreen(
     var showAboutDialog by remember { mutableStateOf(false) }
     var showFaqDialog by remember { mutableStateOf(false) }
     var showPrivacyDialog by remember { mutableStateOf(false) }
+    var showComingSoonDialog by remember { mutableStateOf(false) }
 
     LazyColumn(
         modifier = Modifier
@@ -43,6 +44,14 @@ fun SettingsScreen(
     ) {
         item { Spacer(modifier = Modifier.height(8.dp)) }
 
+        item {
+            SettingsItem(
+                iconPainter = painterResource(id = R.drawable.language),
+                title = "Idioma",
+                value = "Español",
+                onClick = { showComingSoonDialog = true }
+            )
+        }
         item {
             SettingsItem(
                 iconPainter = painterResource(id = R.drawable.user_outline),
@@ -151,10 +160,29 @@ fun SettingsScreen(
                     Spacer(modifier = Modifier.height(12.dp))
                     Text("Desarrollado por:", fontWeight = FontWeight.Medium)
                     Text("- Jeidy Murillo", color = Color.Gray)
+                    Text("- Sebastián Campos", color = Color.Gray)
+                    Text("- Brandon Castro", color = Color.Gray)
                 }
             },
             confirmButton = {
                 TextButton(onClick = { showAboutDialog = false }) {
+                    Text("Cerrar")
+                }
+            }
+        )
+    }
+
+    if (showComingSoonDialog) {
+        AlertDialog(
+            onDismissRequest = { showComingSoonDialog = false },
+            title = {
+                Text("Idioma", fontWeight = FontWeight.Bold)
+            },
+            text = {
+                Text("Próximamente estarán disponibles más idiomas.", color = Color.Gray)
+            },
+            confirmButton = {
+                TextButton(onClick = { showComingSoonDialog = false }) {
                     Text("Cerrar")
                 }
             }

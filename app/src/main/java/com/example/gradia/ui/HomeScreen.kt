@@ -16,6 +16,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,8 +49,8 @@ fun HomeScreen(
     userName: String = "Usuario",
     userEmail: String = ""
 ) {
-    var selectedTab by remember { mutableIntStateOf(0) }
-    var previousTab by remember { mutableIntStateOf(0) }
+    var selectedTab by rememberSaveable { mutableIntStateOf(0) }
+    var previousTab by rememberSaveable { mutableIntStateOf(0) }
     var selectedDrawerItem by remember { mutableStateOf("Home") }
     var isQuickAddOpen by remember { mutableStateOf(false) }
     var showMenu by remember { mutableStateOf(false) }
@@ -131,7 +132,7 @@ fun HomeScreen(
                             )
                         },
                         navigationIcon = {
-                            if (selectedTab in 3..7 || selectedTab == 9) {
+                            if (selectedTab in 3..8 || selectedTab == 9) {
                                 IconButton(onClick = { selectedTab = previousTab }) {
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -152,7 +153,7 @@ fun HomeScreen(
                             }
                         },
                         actions = {
-                            if (selectedTab in 3..7 || selectedTab == 9) {
+                            if (selectedTab in 3..6 || selectedTab == 9) {
                                 Box {
                                     IconButton(onClick = { showMenu = true }) {
                                         Icon(
