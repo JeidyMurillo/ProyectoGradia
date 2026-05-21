@@ -123,6 +123,7 @@ fun HomeScreen(
                                     8 -> "Perfil"
                                     9 -> selectedSubjectName.ifBlank { "Materia" }
                                     10 -> "Estadísticas"
+                                    11 -> "Cuenta"
                                     else -> "Gradia"
                                 },
                                 modifier = Modifier.fillMaxWidth(),
@@ -134,7 +135,7 @@ fun HomeScreen(
                             )
                         },
                         navigationIcon = {
-                            if (selectedTab in 3..8 || selectedTab == 9) {
+                            if (selectedTab in 3..8 || selectedTab == 9 || selectedTab == 11) {
                                 IconButton(onClick = { selectedTab = previousTab }) {
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,

@@ -49,24 +49,15 @@ class FirebaseAuthService {
         }
     }
 
-    suspend fun signInWithGoogle(idToken: String): Result<com.google.firebase.auth.FirebaseUser> {
+    suspend fun signInWithGoogle(idToken: String): Result<Pair<com.google.firebase.auth.FirebaseUser, Boolean>> {
         return try {
             val credential: AuthCredential = GoogleAuthProvider.getCredential(idToken, null)
             val result = auth.signInWithCredential(credential).await()
-            result.user?.let {
-                Result.success(it)
-            } ?: Result.failure(Exception("Error al iniciar sesión con Google"))
+            val firebaseUser = result.user ?: return Result.failure(Exception("Error al iniciar sesión con Google"))
+            val isNewUser = result.additionalUserInfo?.isNewUser ?: false
+            Result.success(Pair(firebaseUser, isNewUser))
         } catch (e: Exception) {
             Result.failure(e)
-        }
-    }
-
-    suspend fun isEmailRegistered(email: String): Boolean {
-        return try {
-            val methods = auth.fetchSignInMethodsForEmail(email).await()
-            methods.signInMethods?.isNotEmpty() == true
-        } catch (e: Exception) {
-            false
         }
     }
 
