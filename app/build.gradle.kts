@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
-    alias(libs.plugins.google.services) // Commented out because google-services.json is missing
+   // alias(libs.plugins.google.services) // Commented out because google-services.json is missing
 }
 
 android {
