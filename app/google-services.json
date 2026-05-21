@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "604938208023",
+    "project_id": "gradia-7aa27",
+    "storage_bucket": "gradia-7aa27.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:604938208023:android:61a4062fb1b069b0d92d52",
+        "android_client_info": {
+          "package_name": "com.example.gradia"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "604938208023-t7ffrat4thu7m2c9dnsfdsqarb4cpnpg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAUFkuXBuW-te7g16u87Febenq4HD-2BUk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "604938208023-t7ffrat4thu7m2c9dnsfdsqarb4cpnpg.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
