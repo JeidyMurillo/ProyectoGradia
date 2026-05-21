@@ -13,6 +13,7 @@ data class Asignatura(
     val profesor: String = "",
     val salon: String = "",
     val creditos: Int = 0,
+    val semestre: Int = 1,
     val notaAprobacion: Float = 3.0f,
     val fechaCreacion: Long = System.currentTimeMillis()
 )

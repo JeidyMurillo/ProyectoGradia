@@ -7,9 +7,9 @@ import com.example.gradia.data.local.AppDatabase
 import com.example.gradia.data.repository.AsignaturaRepository
 import com.example.gradia.data.repository.AuthRepository
 import com.example.gradia.data.repository.EventoRepository
-import com.example.gradia.data.repository.FakeSubjectRepository
 import com.example.gradia.data.repository.NotaRepository
 import com.example.gradia.data.repository.NoteRepositoryImpl
+import com.example.gradia.data.repository.RoomSubjectRepository
 import com.example.gradia.data.repository.UserRepository
 import com.example.gradia.domain.repository.NoteRepository
 import com.example.gradia.domain.repository.SubjectRepository
@@ -25,6 +25,8 @@ import com.example.gradia.domain.usecase.notes.SaveNoteUseCase
 import com.example.gradia.domain.usecase.notes.UpdateCategoryUseCase
 import com.example.gradia.presentation.viewmodel.FinalGradeViewModel
 import com.example.gradia.presentation.viewmodel.NotesViewModel
+import com.example.gradia.presentation.viewmodel.SubjectDetailViewModel
+import com.example.gradia.presentation.viewmodel.SubjectsViewModel
 import com.example.gradia.presentation.viewmodel.TasksViewModel
 
 class GradiaApplication : Application() {
@@ -36,7 +38,13 @@ class GradiaApplication : Application() {
     val notaRepository by lazy { NotaRepository(database.notaDao()) }
     val eventoRepository by lazy { EventoRepository(database.eventoDao()) }
 
-    val subjectRepository: SubjectRepository by lazy { FakeSubjectRepository() }
+    val subjectRepository: SubjectRepository by lazy {
+        RoomSubjectRepository(
+            asignaturaDao = database.asignaturaDao(),
+            notaDao = database.notaDao(),
+            userRepository = userRepository
+        )
+    }
 
     val noteRepository: NoteRepository by lazy {
         NoteRepositoryImpl(
@@ -99,6 +107,17 @@ class GradiaApplication : Application() {
             eventoRepository = eventoRepository,
             asignaturaRepository = asignaturaRepository,
             userRepository = userRepository
+        )
+    }
+
+    fun provideSubjectsViewModel(): SubjectsViewModel {
+        return SubjectsViewModel(subjectRepository = subjectRepository)
+    }
+
+    fun provideSubjectDetailViewModel(subjectId: Long): SubjectDetailViewModel {
+        return SubjectDetailViewModel(
+            subjectId = subjectId,
+            subjectRepository = subjectRepository
         )
     }
 }

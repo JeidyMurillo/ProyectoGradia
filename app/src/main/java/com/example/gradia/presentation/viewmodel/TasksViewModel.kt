@@ -49,33 +49,17 @@ class TasksViewModel(
     val uiState: StateFlow<TasksUiState> = _uiState.asStateFlow()
 
     private val asignaturaMap = mutableMapOf<Long, String>()
-    private val defaultSubjects = listOf(
-        Asignatura(id = -1, userId = "", nombre = "Calculo IV"),
-        Asignatura(id = -2, userId = "", nombre = "Fisica II"),
-        Asignatura(id = -3, userId = "", nombre = "Programacion")
-    )
 
     init {
-        _uiState.update { it.copy(asignaturas = defaultSubjects) }
-        defaultSubjects.forEach { asignaturaMap[it.id] = it.nombre }
-
-        viewModelScope.launch {
-            try {
-                val user = userRepository.getCurrentUser().first()
-                if (user != null) {
-                    val count = asignaturaRepository.getCantidadAsignaturas(user.id)
-                    if (count == 0) {
-                        asignaturaRepository.insertAsignatura(Asignatura(userId = user.id, nombre = "Calculo IV"))
-                        asignaturaRepository.insertAsignatura(Asignatura(userId = user.id, nombre = "Fisica II"))
-                        asignaturaRepository.insertAsignatura(Asignatura(userId = user.id, nombre = "Programacion"))
-                    }
-                    val realSubjects = asignaturaRepository.getAsignaturasByUser(user.id).first()
-                    asignaturaMap.clear()
-                    realSubjects.forEach { asignaturaMap[it.id] = it.nombre }
-                    _uiState.update { it.copy(asignaturas = realSubjects) }
-                }
-            } catch (_: Exception) { }
-        }
+        userRepository.getCurrentUser()
+            .filterNotNull()
+            .flatMapLatest { user -> asignaturaRepository.getAsignaturasByUser(user.id) }
+            .onEach { realSubjects ->
+                asignaturaMap.clear()
+                realSubjects.forEach { asignaturaMap[it.id] = it.nombre }
+                _uiState.update { it.copy(asignaturas = realSubjects) }
+            }
+            .launchIn(viewModelScope)
 
         val userFlow = userRepository.getCurrentUser()
             .filterNotNull()
@@ -192,20 +176,12 @@ class TasksViewModel(
                     userId = demoId
                 }
 
-                var realAsignaturaId = state.selectedAsignaturaId
-                if (realAsignaturaId != null && realAsignaturaId < 0) {
-                    val nombre = asignaturaMap[realAsignaturaId] ?: return@launch
-                    realAsignaturaId = asignaturaRepository.insertAsignatura(
-                        Asignatura(userId = userId, nombre = nombre)
-                    )
-                }
-
                 if (state.editingTaskId != null) {
                     eventoRepository.updateEvento(
                         Evento(
                             id = state.editingTaskId,
                             userId = userId,
-                            asignaturaId = realAsignaturaId,
+                            asignaturaId = state.selectedAsignaturaId,
                             titulo = state.currentTitle,
                             fecha = state.currentFecha,
                             tipo = "TAREA"
@@ -215,7 +191,7 @@ class TasksViewModel(
                     eventoRepository.insertEvento(
                         Evento(
                             userId = userId,
-                            asignaturaId = realAsignaturaId,
+                            asignaturaId = state.selectedAsignaturaId,
                             titulo = state.currentTitle,
                             fecha = state.currentFecha,
                             tipo = "TAREA"
