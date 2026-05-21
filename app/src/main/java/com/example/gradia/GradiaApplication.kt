@@ -90,8 +90,9 @@ class GradiaApplication : Application() {
         )
     }
 
-    fun provideNotesViewModel(): NotesViewModel {
+    fun provideNotesViewModel(userId: String): NotesViewModel {
         return NotesViewModel(
+            userId = userId,
             getNotesUseCase = getNotesUseCase,
             saveNoteUseCase = saveNoteUseCase,
             deleteNoteUseCase = deleteNoteUseCase,
@@ -102,11 +103,11 @@ class GradiaApplication : Application() {
         )
     }
 
-    fun provideTasksViewModel(): TasksViewModel {
+    fun provideTasksViewModel(userId: String): TasksViewModel {
         return TasksViewModel(
+            userId = userId,
             eventoRepository = eventoRepository,
-            asignaturaRepository = asignaturaRepository,
-            userRepository = userRepository
+            asignaturaRepository = asignaturaRepository
         )
     }
 

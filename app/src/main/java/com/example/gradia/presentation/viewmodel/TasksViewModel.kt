@@ -4,14 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gradia.data.local.entity.Asignatura
 import com.example.gradia.data.local.entity.Evento
-import com.example.gradia.data.local.entity.User
 import com.example.gradia.data.repository.AsignaturaRepository
 import com.example.gradia.data.repository.EventoRepository
-import com.example.gradia.data.repository.UserRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.Calendar
-import java.util.UUID
 
 enum class Urgencia { URGENTE, MEDIO, BAJO }
 
@@ -40,9 +37,9 @@ data class TasksUiState(
 )
 
 class TasksViewModel(
+    private val userId: String,
     private val eventoRepository: EventoRepository,
-    private val asignaturaRepository: AsignaturaRepository,
-    private val userRepository: UserRepository
+    private val asignaturaRepository: AsignaturaRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(TasksUiState())
@@ -61,14 +58,7 @@ class TasksViewModel(
             }
             .launchIn(viewModelScope)
 
-        val userFlow = userRepository.getCurrentUser()
-            .filterNotNull()
-            .shareIn(viewModelScope, SharingStarted.WhileSubscribed(5000), replay = 1)
-
-        userFlow
-            .flatMapLatest { user ->
-                eventoRepository.getEventosByTipo("TAREA", user.id)
-            }
+        eventoRepository.getEventosByTipo("TAREA", userId)
             .onEach { eventos ->
                 val hoy = mutableListOf<TareaUi>()
                 val proximas = mutableListOf<TareaUi>()

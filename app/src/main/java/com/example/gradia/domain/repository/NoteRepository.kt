@@ -5,13 +5,13 @@ import com.example.gradia.domain.model.Note
 import kotlinx.coroutines.flow.Flow
 
 interface NoteRepository {
-    fun getNotes(): Flow<List<Note>>
+    fun getNotes(userId: String): Flow<List<Note>>
     fun getNoteById(id: Long): Flow<Note?>
     suspend fun saveNote(note: Note): Long
     suspend fun deleteNote(id: Long)
-    fun getCategories(): Flow<List<Category>>
+    fun getCategories(userId: String): Flow<List<Category>>
     suspend fun createCategory(category: Category): Long
     suspend fun updateCategory(category: Category)
     suspend fun deleteCategory(id: Long)
-    fun getNotesByCategories(categoryIds: List<Long>): Flow<List<Note>>
+    fun getNotesByCategories(categoryIds: List<Long>, userId: String): Flow<List<Note>>
 }

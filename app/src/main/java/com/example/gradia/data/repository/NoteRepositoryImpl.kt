@@ -19,8 +19,8 @@ class NoteRepositoryImpl(
     private val notaCategoriaDao: NotaCategoriaDao
 ) : NoteRepository {
 
-    override fun getNotes(): Flow<List<Note>> {
-        return notaDao.getAllNotasConCategorias().map { list ->
+    override fun getNotes(userId: String): Flow<List<Note>> {
+        return notaDao.getAllNotasConCategorias(userId).map { list ->
             list.map { it.toDomain() }
         }
     }
@@ -52,8 +52,8 @@ class NoteRepositoryImpl(
         notaDao.deleteNotaById(id)
     }
 
-    override fun getCategories(): Flow<List<Category>> {
-        return categoriaDao.getAllCategorias().map { entities ->
+    override fun getCategories(userId: String): Flow<List<Category>> {
+        return categoriaDao.getAllCategorias(userId).map { entities ->
             entities.map { it.toDomain() }
         }
     }
@@ -70,8 +70,8 @@ class NoteRepositoryImpl(
         categoriaDao.deleteCategoriaById(id)
     }
 
-    override fun getNotesByCategories(categoryIds: List<Long>): Flow<List<Note>> {
-        return notaDao.getNotasByCategorias(categoryIds).map { entities ->
+    override fun getNotesByCategories(categoryIds: List<Long>, userId: String): Flow<List<Note>> {
+        return notaDao.getNotasByCategorias(categoryIds, userId).map { entities ->
             entities.map { it.toDomain(emptyList()) }
         }
     }
@@ -79,6 +79,7 @@ class NoteRepositoryImpl(
 
 private fun NotaConCategorias.toDomain(): Note = Note(
     id = nota.id,
+    userId = nota.userId,
     title = nota.title,
     content = nota.content,
     color = nota.color,
@@ -89,6 +90,7 @@ private fun NotaConCategorias.toDomain(): Note = Note(
 
 private fun NotaContenidoEntity.toDomain(categorias: List<Category>): Note = Note(
     id = id,
+    userId = userId,
     title = title,
     content = content,
     color = color,
@@ -99,6 +101,7 @@ private fun NotaContenidoEntity.toDomain(categorias: List<Category>): Note = Not
 
 private fun Note.toEntity(): NotaContenidoEntity = NotaContenidoEntity(
     id = id,
+    userId = userId,
     title = title,
     content = content,
     color = color,
@@ -108,12 +111,14 @@ private fun Note.toEntity(): NotaContenidoEntity = NotaContenidoEntity(
 
 private fun CategoriaEntity.toDomain(): Category = Category(
     id = id,
+    userId = userId,
     name = name,
     color = color
 )
 
 private fun Category.toEntity(): CategoriaEntity = CategoriaEntity(
     id = id,
+    userId = userId,
     name = name,
     color = color
 )
