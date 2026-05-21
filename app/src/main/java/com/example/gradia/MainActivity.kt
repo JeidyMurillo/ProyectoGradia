@@ -161,6 +161,7 @@ class MainActivity : ComponentActivity() {
                         HomeScreen(
                             userName = user?.nombre ?: "Usuario",
                             userEmail = user?.email ?: "",
+                            onNavigateToTerms = { navController.navigate("terms_and_conditions") },
                             onLogout = {
                                 app.isRememberMeEnabled = false
                                 app.authRepository.signOut()

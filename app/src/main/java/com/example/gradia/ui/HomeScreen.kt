@@ -44,6 +44,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun HomeScreen(
     onLogout: () -> Unit = {},
+    onNavigateToTerms: () -> Unit = {},
     userName: String = "Usuario",
     userEmail: String = ""
 ) {
@@ -279,7 +280,13 @@ fun HomeScreen(
                         4 -> CalendarScreen()
                         5 -> NotesScreen(viewModel = notesViewModel)
                         6 -> TasksScreen(viewModel = tasksViewModel)
-                        7 -> SettingsScreen()
+                        7 -> SettingsScreen(
+                                onNavigateToProfile = {
+                                    previousTab = selectedTab
+                                    selectedTab = 8
+                                },
+                                onNavigateToTerms = onNavigateToTerms
+                            )
                         8 -> ProfileScreen()
                         9 -> selectedSubjectId?.let { SubjectDetailScreen(subjectId = it) }
                         10 -> StatsScreen()
