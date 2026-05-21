@@ -41,23 +41,19 @@ class AuthRepository(
         }
     }
 
-    suspend fun signInWithGoogle(idToken: String): Result<User> {
+    suspend fun signInWithGoogle(idToken: String): Result<Pair<User, Boolean>> {
         return try {
             val result = authService.signInWithGoogle(idToken)
             result.fold(
-                onSuccess = { firebaseUser ->
+                onSuccess = { (firebaseUser, isNewUser) ->
                     val user = saveUserToLocalDb(firebaseUser)
-                    Result.success(user)
+                    Result.success(Pair(user, isNewUser))
                 },
                 onFailure = { Result.failure(it) }
             )
         } catch (e: Exception) {
             Result.failure(e)
         }
-    }
-
-    suspend fun isEmailRegistered(email: String): Boolean {
-        return authService.isEmailRegistered(email)
     }
 
     suspend fun deleteAccount(clearLocalData: suspend () -> Unit): Result<Unit> {

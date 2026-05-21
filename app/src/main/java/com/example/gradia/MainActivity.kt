@@ -99,29 +99,29 @@ class MainActivity : ComponentActivity() {
                             if (accountResult.isSuccessful) {
                                 val googleAccount = accountResult.result ?: return@rememberLauncherForActivityResult
                                 val idToken = googleAccount.idToken ?: return@rememberLauncherForActivityResult
-                                val email = googleAccount.email ?: return@rememberLauncherForActivityResult
                                 isLoginLoading = true
                                 scope.launch {
-                                    if (!app.authRepository.isEmailRegistered(email)) {
-                                        isLoginLoading = false
-                                        navController.navigate("register?fromGoogle=true") {
-                                            popUpTo("welcome") { inclusive = false }
-                                        }
-                                    } else {
-                                        app.authRepository.signInWithGoogle(idToken).fold(
-                                            onSuccess = {
+                                    app.authRepository.signInWithGoogle(idToken).fold(
+                                        onSuccess = { (_, isNewUser) ->
+                                            if (isNewUser) {
+                                                app.authRepository.signOut()
+                                                isLoginLoading = false
+                                                navController.navigate("register") {
+                                                    popUpTo("welcome") { inclusive = false }
+                                                }
+                                            } else {
                                                 app.isRememberMeEnabled = true
                                                 isLoginLoading = false
                                                 navController.navigate("home") {
                                                     popUpTo("welcome") { inclusive = true }
                                                 }
-                                            },
-                                            onFailure = { e ->
-                                                isLoginLoading = false
-                                                loginError = getFirebaseErrorMessage(e)
                                             }
-                                        )
-                                    }
+                                        },
+                                        onFailure = { e ->
+                                            isLoginLoading = false
+                                            loginError = getFirebaseErrorMessage(e)
+                                        }
+                                    )
                                 }
                             }
                         }
@@ -184,7 +184,7 @@ class MainActivity : ComponentActivity() {
                                 isRegisterLoading = true
                                 scope.launch {
                                     app.authRepository.signInWithGoogle(idToken).fold(
-                                        onSuccess = {
+                                        onSuccess = { _ ->
                                             app.isRememberMeEnabled = true
                                             isRegisterLoading = false
                                             navController.navigate("home") {
