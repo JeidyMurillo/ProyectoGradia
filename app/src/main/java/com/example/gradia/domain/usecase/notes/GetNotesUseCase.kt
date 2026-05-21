@@ -5,11 +5,11 @@ import com.example.gradia.domain.repository.NoteRepository
 import kotlinx.coroutines.flow.Flow
 
 class GetNotesUseCase(private val repository: NoteRepository) {
-    operator fun invoke(categoryIds: List<Long>? = null): Flow<List<Note>> {
+    operator fun invoke(userId: String, categoryIds: List<Long>? = null): Flow<List<Note>> {
         return if (categoryIds.isNullOrEmpty()) {
-            repository.getNotes()
+            repository.getNotes(userId)
         } else {
-            repository.getNotesByCategories(categoryIds)
+            repository.getNotesByCategories(categoryIds, userId)
         }
     }
 }

@@ -4,14 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gradia.data.local.entity.Asignatura
 import com.example.gradia.data.local.entity.Evento
-import com.example.gradia.data.local.entity.User
 import com.example.gradia.data.repository.AsignaturaRepository
 import com.example.gradia.data.repository.EventoRepository
-import com.example.gradia.data.repository.UserRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.Calendar
-import java.util.UUID
 
 enum class Urgencia { URGENTE, MEDIO, BAJO }
 
@@ -40,51 +37,33 @@ data class TasksUiState(
 )
 
 class TasksViewModel(
+    private val userId: String,
     private val eventoRepository: EventoRepository,
-    private val asignaturaRepository: AsignaturaRepository,
-    private val userRepository: UserRepository
+    private val asignaturaRepository: AsignaturaRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(TasksUiState())
     val uiState: StateFlow<TasksUiState> = _uiState.asStateFlow()
 
     private val asignaturaMap = mutableMapOf<Long, String>()
-    private val defaultSubjects = listOf(
-        Asignatura(id = -1, userId = "", nombre = "Calculo IV"),
-        Asignatura(id = -2, userId = "", nombre = "Fisica II"),
-        Asignatura(id = -3, userId = "", nombre = "Programacion")
-    )
 
     init {
-        _uiState.update { it.copy(asignaturas = defaultSubjects) }
-        defaultSubjects.forEach { asignaturaMap[it.id] = it.nombre }
-
         viewModelScope.launch {
             try {
-                val user = userRepository.getCurrentUser().first()
-                if (user != null) {
-                    val count = asignaturaRepository.getCantidadAsignaturas(user.id)
-                    if (count == 0) {
-                        asignaturaRepository.insertAsignatura(Asignatura(userId = user.id, nombre = "Calculo IV"))
-                        asignaturaRepository.insertAsignatura(Asignatura(userId = user.id, nombre = "Fisica II"))
-                        asignaturaRepository.insertAsignatura(Asignatura(userId = user.id, nombre = "Programacion"))
-                    }
-                    val realSubjects = asignaturaRepository.getAsignaturasByUser(user.id).first()
-                    asignaturaMap.clear()
-                    realSubjects.forEach { asignaturaMap[it.id] = it.nombre }
-                    _uiState.update { it.copy(asignaturas = realSubjects) }
+                val count = asignaturaRepository.getCantidadAsignaturas(userId)
+                if (count == 0) {
+                    asignaturaRepository.insertAsignatura(Asignatura(userId = userId, nombre = "Calculo IV"))
+                    asignaturaRepository.insertAsignatura(Asignatura(userId = userId, nombre = "Fisica II"))
+                    asignaturaRepository.insertAsignatura(Asignatura(userId = userId, nombre = "Programacion"))
                 }
+                val realSubjects = asignaturaRepository.getAsignaturasByUser(userId).first()
+                asignaturaMap.clear()
+                realSubjects.forEach { asignaturaMap[it.id] = it.nombre }
+                _uiState.update { it.copy(asignaturas = realSubjects) }
             } catch (_: Exception) { }
         }
 
-        val userFlow = userRepository.getCurrentUser()
-            .filterNotNull()
-            .shareIn(viewModelScope, SharingStarted.WhileSubscribed(5000), replay = 1)
-
-        userFlow
-            .flatMapLatest { user ->
-                eventoRepository.getEventosByTipo("TAREA", user.id)
-            }
+        eventoRepository.getEventosByTipo("TAREA", userId)
             .onEach { eventos ->
                 val hoy = mutableListOf<TareaUi>()
                 val proximas = mutableListOf<TareaUi>()
@@ -185,13 +164,6 @@ class TasksViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true) }
             try {
-                var userId = userRepository.getCurrentUser().first()?.id
-                if (userId == null) {
-                    val demoId = "demo_${UUID.randomUUID().toString().take(8)}"
-                    userRepository.insertUser(User(id = demoId, nombre = "Demo", email = "demo@test.com"))
-                    userId = demoId
-                }
-
                 var realAsignaturaId = state.selectedAsignaturaId
                 if (realAsignaturaId != null && realAsignaturaId < 0) {
                     val nombre = asignaturaMap[realAsignaturaId] ?: return@launch
