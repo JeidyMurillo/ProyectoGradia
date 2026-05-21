@@ -17,8 +17,9 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.Dp
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,70 +36,75 @@ import androidx.compose.ui.unit.sp
 import com.example.gradia.GradiaApplication
 import com.example.gradia.R
 import com.example.gradia.domain.model.Subject
+import com.example.gradia.presentation.viewmodel.SubjectFilter
 import com.example.gradia.ui.theme.InterFontFamily
 import com.example.gradia.ui.theme.PurpleGradia
-import kotlinx.coroutines.launch
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 
-private enum class SubjectFilter { Todas, Actual, Antiguas }
-
-private enum class SubjectIconType { Math, Palette, Flask, Code, Default }
-
-private fun subjectIconType(name: String): SubjectIconType = when {
-    listOf("calculo", "cálculo", "matemat", "algebra", "álgebra", "estadist", "geometr").any { name.contains(it, ignoreCase = true) } -> SubjectIconType.Math
-    listOf("diseño", "diseno", "ui", "ux", "arte", "grafic", "pintura").any { name.contains(it, ignoreCase = true) } -> SubjectIconType.Palette
-    listOf("fisica", "física", "quimica", "química", "biologia", "biología", "ciencia", "laboratorio").any { name.contains(it, ignoreCase = true) } -> SubjectIconType.Flask
-    listOf("programac", "software", "codigo", "código", "desarrollo", "informat").any { name.contains(it, ignoreCase = true) } -> SubjectIconType.Code
-    else -> SubjectIconType.Default
-}
 
 @Composable
 fun SubjectsScreen(onSubjectClick: (Subject) -> Unit = {}) {
     val app = LocalContext.current.applicationContext as GradiaApplication
-    val repo = app.subjectRepository
-    val subjects by repo.getSubjects().collectAsState(initial = emptyList())
-    val scope = rememberCoroutineScope()
+    val viewModel = remember { app.provideSubjectsViewModel() }
+    val state by viewModel.uiState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    var selectedFilter by remember { mutableStateOf(SubjectFilter.Todas) }
     var showAddSheet by remember { mutableStateOf(false) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 20.dp)
-    ) {
-        Spacer(modifier = Modifier.height(4.dp))
-        SubjectsFilterRow(selected = selectedFilter, onSelected = { selectedFilter = it })
-        Spacer(modifier = Modifier.height(18.dp))
+    LaunchedEffect(state.error) {
+        state.error?.let { message ->
+            snackbarHostState.showSnackbar(message)
+            viewModel.clearError()
+        }
+    }
 
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
-            horizontalArrangement = Arrangement.spacedBy(14.dp),
-            modifier = Modifier.fillMaxSize()
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 20.dp)
         ) {
-            items(subjects, key = { it.id }) { subject ->
-                SubjectCard(
-                    subject = subject,
-                    onClick = { onSubjectClick(subject) }
-                )
-            }
-            item {
-                AddSubjectCard(onClick = { showAddSheet = true })
-            }
-            item(span = { GridItemSpan(2) }) {
-                Spacer(modifier = Modifier.height(90.dp))
+            Spacer(modifier = Modifier.height(4.dp))
+            SubjectsFilterRow(
+                selected = state.filter,
+                onSelected = viewModel::onFilterChange
+            )
+            Spacer(modifier = Modifier.height(18.dp))
+
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                verticalArrangement = Arrangement.spacedBy(14.dp),
+                horizontalArrangement = Arrangement.spacedBy(14.dp),
+                modifier = Modifier.fillMaxSize()
+            ) {
+                items(state.subjects, key = { it.id }) { subject ->
+                    SubjectCard(
+                        subject = subject,
+                        onClick = { onSubjectClick(subject) }
+                    )
+                }
+                item {
+                    AddSubjectCard(onClick = { showAddSheet = true })
+                }
+                item(span = { GridItemSpan(2) }) {
+                    Spacer(modifier = Modifier.height(90.dp))
+                }
             }
         }
+
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
     }
 
     if (showAddSheet) {
         AddSubjectSheet(
+            isSaving = state.isSaving,
             onDismiss = { showAddSheet = false },
             onSave = { newSubject ->
-                scope.launch {
-                    repo.insertSubject(newSubject)
-                    showAddSheet = false
-                }
+                viewModel.addSubject(newSubject) { showAddSheet = false }
             }
         )
     }
@@ -113,9 +119,9 @@ private fun SubjectsFilterRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        FilterPill("Todas las asignaturas", SubjectFilter.Todas, selected, onSelected)
-        FilterPill("Semestre Actual", SubjectFilter.Actual, selected, onSelected)
-        FilterPill("Antiguas", SubjectFilter.Antiguas, selected, onSelected)
+        FilterPill("Todas las asignaturas", SubjectFilter.TODAS, selected, onSelected)
+        FilterPill("Semestre Actual", SubjectFilter.ACTUAL, selected, onSelected)
+        FilterPill("Antiguas", SubjectFilter.ANTIGUAS, selected, onSelected)
     }
 }
 
@@ -151,6 +157,7 @@ private fun FilterPill(
 
 @Composable
 private fun SubjectCard(subject: Subject, onClick: () -> Unit) {
+    val iconType = resolveSubjectIcon(subject.icon, subject.name)
     Surface(
         modifier = Modifier
             .aspectRatio(1f)
@@ -166,7 +173,7 @@ private fun SubjectCard(subject: Subject, onClick: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            SubjectIconRender(subject.name)
+            SubjectIconRender(type = iconType, tint = PurpleGradia, size = 56.dp)
             Spacer(modifier = Modifier.height(14.dp))
             Text(
                 text = subject.name,
@@ -175,54 +182,6 @@ private fun SubjectCard(subject: Subject, onClick: () -> Unit) {
                 color = Color(0xFF4A4A4A),
                 fontFamily = InterFontFamily,
                 textAlign = TextAlign.Center
-            )
-        }
-    }
-}
-
-@Composable
-private fun SubjectIconRender(name: String) {
-    when (subjectIconType(name)) {
-        SubjectIconType.Math -> {
-            Text(
-                text = "fx",
-                fontSize = 54.sp,
-                fontWeight = FontWeight.Bold,
-                fontStyle = FontStyle.Italic,
-                color = PurpleGradia,
-                fontFamily = InterFontFamily
-            )
-        }
-        SubjectIconType.Palette -> {
-            Icon(
-                painter = painterResource(id = R.drawable.subject_palette),
-                contentDescription = null,
-                tint = PurpleGradia,
-                modifier = Modifier.size(56.dp)
-            )
-        }
-        SubjectIconType.Flask -> {
-            Icon(
-                painter = painterResource(id = R.drawable.subject_flask),
-                contentDescription = null,
-                tint = PurpleGradia,
-                modifier = Modifier.size(56.dp)
-            )
-        }
-        SubjectIconType.Code -> {
-            Icon(
-                painter = painterResource(id = R.drawable.subject_code),
-                contentDescription = null,
-                tint = PurpleGradia,
-                modifier = Modifier.size(56.dp)
-            )
-        }
-        SubjectIconType.Default -> {
-            Icon(
-                painter = painterResource(id = R.drawable.graduation_cap),
-                contentDescription = null,
-                tint = PurpleGradia,
-                modifier = Modifier.size(56.dp)
             )
         }
     }
@@ -267,6 +226,7 @@ private fun AddSubjectCard(onClick: () -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AddSubjectSheet(
+    isSaving: Boolean,
     onDismiss: () -> Unit,
     onSave: (Subject) -> Unit
 ) {
@@ -277,9 +237,15 @@ private fun AddSubjectSheet(
     var semester by remember { mutableStateOf("1") }
     var professor by remember { mutableStateOf("") }
     var classroom by remember { mutableStateOf("") }
+    var selectedIconOverride by remember { mutableStateOf<SubjectIconType?>(null) }
+    var iconMenuOpen by remember { mutableStateOf(false) }
 
+    val effectiveIcon = selectedIconOverride ?: subjectIconType(name)
     val creditsInt = credits.toIntOrNull()
-    val isValid = name.isNotBlank() && creditsInt != null && creditsInt in 1..6
+    val semesterInt = semester.toIntOrNull()
+    val isValid = name.isNotBlank() &&
+        creditsInt != null && creditsInt in 1..6 &&
+        semesterInt != null && semesterInt >= 1
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -325,7 +291,49 @@ private fun AddSubjectSheet(
                 Column {
                     FieldLabel("Icon")
                     Spacer(modifier = Modifier.height(8.dp))
-                    IconPreview(name = name)
+                    Box {
+                        IconPreview(
+                            type = effectiveIcon,
+                            onClick = { iconMenuOpen = true }
+                        )
+                        DropdownMenu(
+                            expanded = iconMenuOpen,
+                            onDismissRequest = { iconMenuOpen = false }
+                        ) {
+                            SubjectIconType.entries.forEach { type ->
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            text = iconLabel(type),
+                                            fontFamily = InterFontFamily,
+                                            fontSize = 14.sp,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = Color(0xFF1F1F1F)
+                                        )
+                                    },
+                                    leadingIcon = {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(32.dp)
+                                                .clip(CircleShape)
+                                                .background(PurpleGradia),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            SubjectIconRender(
+                                                type = type,
+                                                tint = Color.White,
+                                                size = 18.dp
+                                            )
+                                        }
+                                    },
+                                    onClick = {
+                                        selectedIconOverride = type
+                                        iconMenuOpen = false
+                                    }
+                                )
+                            }
+                        }
+                    }
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     FieldLabel("Nombre de la Asignatura")
@@ -416,19 +424,12 @@ private fun AddSubjectSheet(
             Button(
                 onClick = {
                     val finalCredits = creditsInt ?: return@Button
-                    val finalSemester = semester.toIntOrNull() ?: 1
-                    val icon = when (subjectIconType(name)) {
-                        SubjectIconType.Math -> "fx"
-                        SubjectIconType.Palette -> "palette"
-                        SubjectIconType.Flask -> "flask"
-                        SubjectIconType.Code -> "code"
-                        SubjectIconType.Default -> "📚"
-                    }
+                    val finalSemester = semesterInt ?: return@Button
                     onSave(
                         Subject(
                             id = 0L,
                             name = name.trim(),
-                            icon = icon,
+                            icon = iconStringFor(effectiveIcon),
                             creditHours = finalCredits,
                             semester = finalSemester,
                             professor = professor.trim(),
@@ -436,7 +437,7 @@ private fun AddSubjectSheet(
                         )
                     )
                 },
-                enabled = isValid,
+                enabled = isValid && !isSaving,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(54.dp),
@@ -446,13 +447,21 @@ private fun AddSubjectSheet(
                 ),
                 shape = RoundedCornerShape(50)
             ) {
-                Text(
-                    text = "Guardar Asignatura",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    fontFamily = InterFontFamily
-                )
+                if (isSaving) {
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        strokeWidth = 2.dp,
+                        modifier = Modifier.size(22.dp)
+                    )
+                } else {
+                    Text(
+                        text = "Guardar Asignatura",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                        fontFamily = InterFontFamily
+                    )
+                }
             }
         }
     }
@@ -547,46 +556,15 @@ private fun HashIcon() {
 }
 
 @Composable
-private fun IconPreview(name: String) {
+private fun IconPreview(type: SubjectIconType, onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .size(48.dp)
-            .background(PurpleGradia, CircleShape),
+            .clip(CircleShape)
+            .background(PurpleGradia)
+            .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        when (subjectIconType(name)) {
-            SubjectIconType.Math -> Text(
-                text = "fx",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                fontStyle = FontStyle.Italic,
-                color = Color.White,
-                fontFamily = InterFontFamily
-            )
-            SubjectIconType.Palette -> Icon(
-                painter = painterResource(id = R.drawable.subject_palette),
-                contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.size(22.dp)
-            )
-            SubjectIconType.Flask -> Icon(
-                painter = painterResource(id = R.drawable.subject_flask),
-                contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.size(22.dp)
-            )
-            SubjectIconType.Code -> Icon(
-                painter = painterResource(id = R.drawable.subject_code),
-                contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.size(22.dp)
-            )
-            SubjectIconType.Default -> Icon(
-                imageVector = Icons.Default.Star,
-                contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.size(22.dp)
-            )
-        }
+        SubjectIconRender(type = type, tint = Color.White, size = 22.dp)
     }
 }

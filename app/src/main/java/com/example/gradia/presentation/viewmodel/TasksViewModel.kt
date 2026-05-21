@@ -48,20 +48,15 @@ class TasksViewModel(
     private val asignaturaMap = mutableMapOf<Long, String>()
 
     init {
-        viewModelScope.launch {
-            try {
-                val count = asignaturaRepository.getCantidadAsignaturas(userId)
-                if (count == 0) {
-                    asignaturaRepository.insertAsignatura(Asignatura(userId = userId, nombre = "Calculo IV"))
-                    asignaturaRepository.insertAsignatura(Asignatura(userId = userId, nombre = "Fisica II"))
-                    asignaturaRepository.insertAsignatura(Asignatura(userId = userId, nombre = "Programacion"))
-                }
-                val realSubjects = asignaturaRepository.getAsignaturasByUser(userId).first()
+        userRepository.getCurrentUser()
+            .filterNotNull()
+            .flatMapLatest { user -> asignaturaRepository.getAsignaturasByUser(user.id) }
+            .onEach { realSubjects ->
                 asignaturaMap.clear()
                 realSubjects.forEach { asignaturaMap[it.id] = it.nombre }
                 _uiState.update { it.copy(asignaturas = realSubjects) }
-            } catch (_: Exception) { }
-        }
+            }
+            .launchIn(viewModelScope)
 
         eventoRepository.getEventosByTipo("TAREA", userId)
             .onEach { eventos ->
@@ -164,12 +159,11 @@ class TasksViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true) }
             try {
-                var realAsignaturaId = state.selectedAsignaturaId
-                if (realAsignaturaId != null && realAsignaturaId < 0) {
-                    val nombre = asignaturaMap[realAsignaturaId] ?: return@launch
-                    realAsignaturaId = asignaturaRepository.insertAsignatura(
-                        Asignatura(userId = userId, nombre = nombre)
-                    )
+                var userId = userRepository.getCurrentUser().first()?.id
+                if (userId == null) {
+                    val demoId = "demo_${UUID.randomUUID().toString().take(8)}"
+                    userRepository.insertUser(User(id = demoId, nombre = "Demo", email = "demo@test.com"))
+                    userId = demoId
                 }
 
                 if (state.editingTaskId != null) {
@@ -177,7 +171,7 @@ class TasksViewModel(
                         Evento(
                             id = state.editingTaskId,
                             userId = userId,
-                            asignaturaId = realAsignaturaId,
+                            asignaturaId = state.selectedAsignaturaId,
                             titulo = state.currentTitle,
                             fecha = state.currentFecha,
                             tipo = "TAREA"
@@ -187,7 +181,7 @@ class TasksViewModel(
                     eventoRepository.insertEvento(
                         Evento(
                             userId = userId,
-                            asignaturaId = realAsignaturaId,
+                            asignaturaId = state.selectedAsignaturaId,
                             titulo = state.currentTitle,
                             fecha = state.currentFecha,
                             tipo = "TAREA"
