@@ -60,9 +60,10 @@ fun HomeScreen(
     val scope = rememberCoroutineScope()
 
     val app = LocalContext.current.applicationContext as GradiaApplication
-    val notesViewModel = remember { app.provideNotesViewModel() }
+    val currentUserId = app.authRepository.getCurrentUserId() ?: ""
+    val notesViewModel = remember(currentUserId) { app.provideNotesViewModel(currentUserId) }
     val notesState by notesViewModel.uiState.collectAsState()
-    val tasksViewModel = remember { app.provideTasksViewModel() }
+    val tasksViewModel = remember(currentUserId) { app.provideTasksViewModel(currentUserId) }
     val tasksState by tasksViewModel.uiState.collectAsState()
 
     ModalNavigationDrawer(

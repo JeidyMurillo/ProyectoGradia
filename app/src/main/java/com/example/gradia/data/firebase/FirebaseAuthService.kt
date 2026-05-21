@@ -1,6 +1,8 @@
 package com.example.gradia.data.firebase
 
 import com.google.firebase.Firebase
+import com.google.firebase.auth.AuthCredential
+import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.auth
 import com.google.firebase.auth.userProfileChangeRequest
 import kotlinx.coroutines.channels.awaitClose
@@ -43,6 +45,27 @@ class FirebaseAuthService {
             } ?: Result.failure(Exception("Error al crear usuario"))
         } catch (e: Exception) {
             Result.failure(e)
+        }
+    }
+
+    suspend fun signInWithGoogle(idToken: String): Result<com.google.firebase.auth.FirebaseUser> {
+        return try {
+            val credential: AuthCredential = GoogleAuthProvider.getCredential(idToken, null)
+            val result = auth.signInWithCredential(credential).await()
+            result.user?.let {
+                Result.success(it)
+            } ?: Result.failure(Exception("Error al iniciar sesión con Google"))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun isEmailRegistered(email: String): Boolean {
+        return try {
+            val methods = auth.fetchSignInMethodsForEmail(email).await()
+            methods.signInMethods?.isNotEmpty() == true
+        } catch (e: Exception) {
+            false
         }
     }
 
