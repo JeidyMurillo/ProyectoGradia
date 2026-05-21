@@ -35,94 +35,77 @@ import androidx.compose.ui.unit.sp
 import com.example.gradia.GradiaApplication
 import com.example.gradia.R
 import com.example.gradia.domain.model.GradeItem
+import com.example.gradia.presentation.viewmodel.GradeFilter
 import com.example.gradia.ui.theme.InterFontFamily
 import com.example.gradia.ui.theme.PurpleGradia
-import kotlinx.coroutines.launch
-
-private enum class GradeFilter { Todas, Parciales, Talleres }
 
 @Composable
 fun SubjectDetailScreen(subjectId: Long) {
     val app = LocalContext.current.applicationContext as GradiaApplication
-    val repo = app.subjectRepository
+    val viewModel = remember(subjectId) { app.provideSubjectDetailViewModel(subjectId) }
+    val state by viewModel.uiState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    val itemsFlow = remember(subjectId) { repo.getGradeItemsBySubject(subjectId) }
-    val items by itemsFlow.collectAsState(initial = emptyList())
-    val scope = rememberCoroutineScope()
-
-    var selectedFilter by remember { mutableStateOf(GradeFilter.Todas) }
     var showAddSheet by remember { mutableStateOf(false) }
 
-    val currentAverage = remember(items) {
-        val graded = items.filter { it.grade != null }
-        val totalWeight = graded.sumOf { it.percentage }
-        if (totalWeight == 0.0) 0.0
-        else graded.sumOf { (it.grade ?: 0.0) * it.percentage } / totalWeight
-    }
-
-    val filteredItems = remember(items, selectedFilter) {
-        when (selectedFilter) {
-            GradeFilter.Todas -> items
-            GradeFilter.Parciales -> items.filter {
-                it.name.contains("Parcial", ignoreCase = true) ||
-                it.name.contains("Examen", ignoreCase = true)
-            }
-            GradeFilter.Talleres -> items.filter {
-                it.name.contains("Taller", ignoreCase = true) ||
-                it.name.contains("Tarea", ignoreCase = true) ||
-                it.name.contains("Quiz", ignoreCase = true) ||
-                it.name.contains("Laboratorio", ignoreCase = true) ||
-                it.name.contains("Proyecto", ignoreCase = true)
-            }
+    LaunchedEffect(state.error) {
+        state.error?.let { message ->
+            snackbarHostState.showSnackbar(message)
+            viewModel.clearError()
         }
     }
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 20.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp)
-    ) {
-        item { Spacer(modifier = Modifier.height(4.dp)) }
-        item { CurrentAverageCard(average = currentAverage) }
-        item {
-            FilterChipsRow(
-                selected = selectedFilter,
-                onSelected = { selectedFilter = it }
-            )
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            item { Spacer(modifier = Modifier.height(4.dp)) }
+            item { CurrentAverageCard(average = state.currentAverage) }
+            item {
+                FilterChipsRow(
+                    selected = state.filter,
+                    onSelected = viewModel::onFilterChange
+                )
+            }
+            item {
+                Text(
+                    text = "Calificaciones detalladas",
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF4A4A4A),
+                    fontFamily = InterFontFamily,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+            }
+            items(state.grades, key = { it.id }) { gradeItem ->
+                GradeRow(item = gradeItem)
+            }
+            item {
+                HorizontalDivider(
+                    color = Color(0xFFE6DDEF),
+                    thickness = 1.dp,
+                    modifier = Modifier.padding(vertical = 4.dp)
+                )
+            }
+            item { AddGradeButton(onClick = { showAddSheet = true }) }
+            item { Spacer(modifier = Modifier.height(90.dp)) }
         }
-        item {
-            Text(
-                text = "Calificaciones detalladas",
-                fontSize = 17.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF4A4A4A),
-                fontFamily = InterFontFamily,
-                modifier = Modifier.padding(top = 4.dp)
-            )
-        }
-        items(filteredItems, key = { it.id }) { gradeItem ->
-            GradeRow(item = gradeItem)
-        }
-        item {
-            HorizontalDivider(
-                color = Color(0xFFE6DDEF),
-                thickness = 1.dp,
-                modifier = Modifier.padding(vertical = 4.dp)
-            )
-        }
-        item { AddGradeButton(onClick = { showAddSheet = true }) }
-        item { Spacer(modifier = Modifier.height(90.dp)) }
+
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
     }
 
     if (showAddSheet) {
         AddGradeSheet(
+            isSaving = state.isSaving,
             onDismiss = { showAddSheet = false },
             onSave = { newItem ->
-                scope.launch {
-                    repo.insertGradeItem(newItem.copy(subjectId = subjectId))
-                    showAddSheet = false
-                }
+                viewModel.addGrade(newItem) { showAddSheet = false }
             }
         )
     }
@@ -203,9 +186,9 @@ private fun FilterChipsRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        FilterPill(label = "Todas las notas", value = GradeFilter.Todas, selected = selected, onSelected = onSelected)
-        FilterPill(label = "Parciales", value = GradeFilter.Parciales, selected = selected, onSelected = onSelected)
-        FilterPill(label = "Talleres", value = GradeFilter.Talleres, selected = selected, onSelected = onSelected)
+        FilterPill(label = "Todas las notas", value = GradeFilter.TODAS, selected = selected, onSelected = onSelected)
+        FilterPill(label = "Parciales", value = GradeFilter.PARCIALES, selected = selected, onSelected = onSelected)
+        FilterPill(label = "Talleres", value = GradeFilter.TALLERES, selected = selected, onSelected = onSelected)
     }
 }
 
@@ -401,6 +384,7 @@ private fun AddGradeButton(onClick: () -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AddGradeSheet(
+    isSaving: Boolean,
     onDismiss: () -> Unit,
     onSave: (GradeItem) -> Unit
 ) {
@@ -533,7 +517,7 @@ private fun AddGradeSheet(
                         )
                     )
                 },
-                enabled = isValid,
+                enabled = isValid && !isSaving,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(54.dp),
@@ -543,13 +527,21 @@ private fun AddGradeSheet(
                 ),
                 shape = RoundedCornerShape(50)
             ) {
-                Text(
-                    text = "Guardar nota",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    fontFamily = InterFontFamily
-                )
+                if (isSaving) {
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        strokeWidth = 2.dp,
+                        modifier = Modifier.size(22.dp)
+                    )
+                } else {
+                    Text(
+                        text = "Guardar nota",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                        fontFamily = InterFontFamily
+                    )
+                }
             }
         }
     }
