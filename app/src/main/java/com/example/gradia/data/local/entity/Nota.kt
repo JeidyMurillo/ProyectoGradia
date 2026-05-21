@@ -22,7 +22,7 @@ data class Nota(
     val id: Long = 0,
     val asignaturaId: Long,
     val nombre: String,
-    val valor: Float,
+    val valor: Float?,
     val porcentaje: Float,
     val fechaCreacion: Long = System.currentTimeMillis()
 )
