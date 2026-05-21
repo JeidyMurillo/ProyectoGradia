@@ -3,15 +3,20 @@ package com.example.gradia
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.*
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.example.gradia.data.firebase.GoogleSignInUtil
 import com.example.gradia.data.firebase.getFirebaseErrorMessage
 import com.example.gradia.ui.HomeScreen
 import com.example.gradia.ui.LoginScreen
@@ -31,6 +36,9 @@ class MainActivity : ComponentActivity() {
         window.navigationBarColor = android.graphics.Color.WHITE
 
         enableEdgeToEdge()
+
+        val webClientId = getString(R.string.default_web_client_id)
+        GoogleSignInUtil.init(this, webClientId)
 
         setContent {
             val app = remember { application as GradiaApplication }
@@ -84,6 +92,40 @@ class MainActivity : ComponentActivity() {
                             loginError = null
                         }
 
+                        val googleLauncher = rememberLauncherForActivityResult(
+                            ActivityResultContracts.StartActivityForResult()
+                        ) { result ->
+                            val accountResult = GoogleSignInUtil.getSignedInAccountFromIntent(result.data)
+                            if (accountResult.isSuccessful) {
+                                val googleAccount = accountResult.result ?: return@rememberLauncherForActivityResult
+                                val idToken = googleAccount.idToken ?: return@rememberLauncherForActivityResult
+                                val email = googleAccount.email ?: return@rememberLauncherForActivityResult
+                                isLoginLoading = true
+                                scope.launch {
+                                    if (!app.authRepository.isEmailRegistered(email)) {
+                                        isLoginLoading = false
+                                        navController.navigate("register?fromGoogle=true") {
+                                            popUpTo("welcome") { inclusive = false }
+                                        }
+                                    } else {
+                                        app.authRepository.signInWithGoogle(idToken).fold(
+                                            onSuccess = {
+                                                app.isRememberMeEnabled = true
+                                                isLoginLoading = false
+                                                navController.navigate("home") {
+                                                    popUpTo("welcome") { inclusive = true }
+                                                }
+                                            },
+                                            onFailure = { e ->
+                                                isLoginLoading = false
+                                                loginError = getFirebaseErrorMessage(e)
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
                         LoginScreen(
                             onBackClick = { navController.popBackStack() },
                             onRegisterClick = { navController.navigate("register") },
@@ -107,15 +149,55 @@ class MainActivity : ComponentActivity() {
                                         }
                                     )
                                 }
+                            },
+                            onGoogleSignIn = {
+                                scope.launch {
+                                    GoogleSignInUtil.signOut()
+                                    googleLauncher.launch(GoogleSignInUtil.getSignInIntent())
+                                }
                             }
                         )
                     }
-                    composable("register") {
+                    composable(
+                        route = "register?fromGoogle={fromGoogle}",
+                        arguments = listOf(navArgument("fromGoogle") {
+                            type = NavType.BoolType
+                            defaultValue = false
+                        })
+                    ) { backStackEntry ->
+                        val fromGoogle = backStackEntry.arguments?.getBoolean("fromGoogle") ?: false
+
                         var isRegisterLoading by remember { mutableStateOf(false) }
                         var registerError by remember { mutableStateOf<String?>(null) }
 
                         LaunchedEffect(Unit) {
                             registerError = null
+                        }
+
+                        val googleLauncher = rememberLauncherForActivityResult(
+                            ActivityResultContracts.StartActivityForResult()
+                        ) { result ->
+                            val accountResult = GoogleSignInUtil.getSignedInAccountFromIntent(result.data)
+                            if (accountResult.isSuccessful) {
+                                val googleAccount = accountResult.result ?: return@rememberLauncherForActivityResult
+                                val idToken = googleAccount.idToken ?: return@rememberLauncherForActivityResult
+                                isRegisterLoading = true
+                                scope.launch {
+                                    app.authRepository.signInWithGoogle(idToken).fold(
+                                        onSuccess = {
+                                            app.isRememberMeEnabled = true
+                                            isRegisterLoading = false
+                                            navController.navigate("home") {
+                                                popUpTo("welcome") { inclusive = true }
+                                            }
+                                        },
+                                        onFailure = { e ->
+                                            isRegisterLoading = false
+                                            registerError = getFirebaseErrorMessage(e)
+                                        }
+                                    )
+                                }
+                            }
                         }
 
                         SingUpScreen(
@@ -124,6 +206,7 @@ class MainActivity : ComponentActivity() {
                             onTermsClick = { navController.navigate("terms_and_conditions") },
                             isLoading = isRegisterLoading,
                             errorMessage = registerError,
+                            googleMessage = if (fromGoogle) "No tienes una cuenta con Gradia. Regístrate con Google para continuar." else null,
                             onRegister = { email, password, nombre ->
                                 registerError = null
                                 isRegisterLoading = true
@@ -141,6 +224,12 @@ class MainActivity : ComponentActivity() {
                                             registerError = getFirebaseErrorMessage(e)
                                         }
                                     )
+                                }
+                            },
+                            onGoogleSignUp = {
+                                scope.launch {
+                                    GoogleSignInUtil.signOut()
+                                    googleLauncher.launch(GoogleSignInUtil.getSignInIntent())
                                 }
                             }
                         )

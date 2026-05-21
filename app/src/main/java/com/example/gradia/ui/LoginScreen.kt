@@ -40,6 +40,7 @@ fun LoginScreen(
     onBackClick: () -> Unit,
     onRegisterClick: () -> Unit,
     onLogin: (String, String, Boolean) -> Unit = { _, _, _ -> },
+    onGoogleSignIn: () -> Unit = {},
     isLoading: Boolean = false,
     errorMessage: String? = null
 ) {
@@ -216,7 +217,10 @@ fun LoginScreen(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 SocialIconLogin(painterResource(R.drawable.ic_github))
-                SocialIconLogin(painterResource(R.drawable.ic_google))
+                SocialIconLogin(
+                    painter = painterResource(R.drawable.ic_google),
+                    onClick = onGoogleSignIn
+                )
                 SocialIconLogin(painterResource(R.drawable.ic_facebook))
             }
 
@@ -320,12 +324,15 @@ fun LoginPrimaryButton(text: String, onClick: () -> Unit, enabled: Boolean = tru
 }
 
 @Composable
-fun SocialIconLogin(painter: androidx.compose.ui.graphics.painter.Painter) {
+fun SocialIconLogin(
+    painter: androidx.compose.ui.graphics.painter.Painter,
+    onClick: () -> Unit = {}
+) {
     Box(
         modifier = Modifier
             .size(50.dp)
             .background(SocialIconBg, CircleShape)
-            .clickable { },
+            .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
         Icon(

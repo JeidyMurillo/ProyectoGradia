@@ -48,8 +48,10 @@ fun SingUpScreen(
     onLoginClick: () -> Unit,
     onTermsClick: () -> Unit = {},
     onRegister: (String, String, String) -> Unit = { _, _, _ -> },
+    onGoogleSignUp: () -> Unit = {},
     isLoading: Boolean = false,
-    errorMessage: String? = null
+    errorMessage: String? = null,
+    googleMessage: String? = null
 ) {
     var nombre by rememberSaveable { mutableStateOf("") }
     var email by rememberSaveable { mutableStateOf("") }
@@ -142,6 +144,20 @@ fun SingUpScreen(
                 color = PurpleGradia,
                 modifier = Modifier.padding(bottom = 24.dp)
             )
+
+            if (googleMessage != null) {
+                Text(
+                    text = googleMessage,
+                    color = PurpleGradia,
+                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(PurpleGradia.copy(alpha = 0.1f), RoundedCornerShape(12.dp))
+                        .padding(12.dp)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+            }
 
             SingUpTextField(
                 value = nombre,
@@ -333,7 +349,10 @@ fun SingUpScreen(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 SocialIconSingUp(painterResource(R.drawable.ic_github))
-                SocialIconSingUp(painterResource(R.drawable.ic_google))
+                SocialIconSingUp(
+                    painter = painterResource(R.drawable.ic_google),
+                    onClick = onGoogleSignUp
+                )
                 SocialIconSingUp(painterResource(R.drawable.ic_facebook))
             }
 
@@ -440,12 +459,15 @@ fun SingUpPrimaryButton(text: String, onClick: () -> Unit, enabled: Boolean = tr
 }
 
 @Composable
-fun SocialIconSingUp(painter: androidx.compose.ui.graphics.painter.Painter) {
+fun SocialIconSingUp(
+    painter: androidx.compose.ui.graphics.painter.Painter,
+    onClick: () -> Unit = {}
+) {
     Box(
         modifier = Modifier
             .size(50.dp)
             .background(SocialIconBg, CircleShape)
-            .clickable { },
+            .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
         Icon(
