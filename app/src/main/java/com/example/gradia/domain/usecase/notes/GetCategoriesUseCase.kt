@@ -5,7 +5,7 @@ import com.example.gradia.domain.repository.NoteRepository
 import kotlinx.coroutines.flow.Flow
 
 class GetCategoriesUseCase(private val repository: NoteRepository) {
-    operator fun invoke(): Flow<List<Category>> {
-        return repository.getCategories()
+    operator fun invoke(userId: String): Flow<List<Category>> {
+        return repository.getCategories(userId)
     }
 }
