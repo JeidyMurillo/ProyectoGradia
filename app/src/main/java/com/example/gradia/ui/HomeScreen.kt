@@ -23,7 +23,6 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -34,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.gradia.GradiaApplication
 import com.example.gradia.R
+import com.example.gradia.domain.model.Subject
 import com.example.gradia.presentation.viewmodel.NotesViewModel
 import com.example.gradia.presentation.viewmodel.TasksViewModel
 import com.example.gradia.ui.theme.*
@@ -260,9 +260,9 @@ fun HomeScreen(
                 Box(modifier = Modifier.padding(innerPadding)) {
                     when (selectedTab) {
                         0 -> HomeContent(
-                            onCourseClick = { course ->
-                                selectedSubjectId = course.subjectId
-                                selectedSubjectName = course.name
+                            onSubjectClick = { subject ->
+                                selectedSubjectId = subject.id
+                                selectedSubjectName = subject.name
                                 previousTab = selectedTab
                                 selectedTab = 9
                             }
@@ -583,7 +583,13 @@ fun DrawerMenuItem(
 }
 
 @Composable
-fun HomeContent(onCourseClick: (Course) -> Unit = {}) {
+fun HomeContent(onSubjectClick: (Subject) -> Unit = {}) {
+    val app = LocalContext.current.applicationContext as GradiaApplication
+    val subjects by app.subjectRepository.getSubjects().collectAsState(initial = emptyList())
+    var isExpanded by remember { mutableStateOf(false) }
+
+    val visibleSubjects = if (isExpanded || subjects.size <= 3) subjects else subjects.take(3)
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -622,15 +628,15 @@ fun HomeContent(onCourseClick: (Course) -> Unit = {}) {
                             color = Color(0xFF4A4A4A)
                         )
                     )
-                    
+
                     Spacer(modifier = Modifier.height(24.dp))
-                    
+
                     Box(contentAlignment = Alignment.Center) {
                         CircularProgressChart(progress = 0.85f, score = "4.5", status = "Excellent")
                     }
-                    
+
                     Spacer(modifier = Modifier.height(24.dp))
-                    
+
                     Text(
                         "¡Excelente rendimiento este ciclo!",
                         style = MaterialTheme.typography.bodyMedium,
@@ -654,19 +660,66 @@ fun HomeContent(onCourseClick: (Course) -> Unit = {}) {
                         fontFamily = InterFontFamily
                     )
                 )
-                Text(
-                    "Ver todas",
-                    color = PurpleGradia,
-                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
-                )
+                if (subjects.size > 3) {
+                    Text(
+                        text = if (isExpanded) "Ver menos" else "Ver todas",
+                        color = PurpleGradia,
+                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                        modifier = Modifier.clickable { isExpanded = !isExpanded }
+                    )
+                }
             }
         }
 
-        items(courseList) { course ->
-            CourseItem(course = course, onClick = { onCourseClick(course) })
+        if (subjects.isEmpty()) {
+            item { EmptySubjectsCard() }
+        } else {
+            items(visibleSubjects, key = { it.id }) { subject ->
+                SubjectHomeItem(subject = subject, onClick = { onSubjectClick(subject) })
+            }
         }
-        
+
         item { Spacer(modifier = Modifier.height(80.dp)) } // Espacio para la bottom bar
+    }
+}
+
+@Composable
+fun EmptySubjectsCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFF3EDF7)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.graduation_cap),
+                contentDescription = null,
+                tint = PurpleGradia,
+                modifier = Modifier.size(40.dp)
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            Text(
+                text = "Aún no tienes asignaturas",
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF4A4A4A),
+                fontSize = 15.sp,
+                fontFamily = InterFontFamily
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "Ve a \"Materias\" en la barra inferior para crear tu primera asignatura.",
+                fontSize = 12.sp,
+                color = Color.Gray,
+                textAlign = TextAlign.Center,
+                fontFamily = InterFontFamily
+            )
+        }
     }
 }
 
@@ -706,28 +759,16 @@ fun CircularProgressChart(progress: Float, score: String, status: String) {
     }
 }
 
-data class Course(
-    val name: String,
-    val progress: Float,
-    val percentage: Int,
-    val info: String,
-    val icon: ImageVector,
-    val infoIcon: ImageVector,
-    val subjectId: Long
-)
-
-val courseList = listOf(
-    Course("Calculo IV", 0.8f, 80, "Próximo Examen: Lunes", Icons.Default.Info, Icons.Default.Info, subjectId = 1),
-    Course("Programación", 0.6f, 60, "Entrega: Miércoles", Icons.Default.Edit, Icons.Default.Info, subjectId = 3),
-    Course("Física II", 0.9f, 90, "12 Tareas Completas", Icons.Default.Star, Icons.Default.CheckCircle, subjectId = 2)
-)
-
 @Composable
-fun CourseItem(course: Course, onClick: () -> Unit = {}) {
+fun SubjectHomeItem(subject: Subject, onClick: () -> Unit = {}) {
+    val subtitle = subject.professor.ifBlank {
+        subject.classroom.ifBlank { "Semestre ${subject.semester}" }
+    }
+    val iconType = resolveSubjectIcon(subject.icon, subject.name)
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(90.dp)
+            .height(82.dp)
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(50.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -735,73 +776,41 @@ fun CourseItem(course: Course, onClick: () -> Unit = {}) {
     ) {
         Row(
             modifier = Modifier
-                .padding(horizontal = 20.dp)
+                .padding(horizontal = 18.dp)
                 .fillMaxSize(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
-                    .size(58.dp)
+                    .size(54.dp)
                     .background(SocialIconBg, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = course.icon,
-                    contentDescription = null,
-                    tint = PurpleGradia,
-                    modifier = Modifier.size(34.dp)
-                )
+                SubjectIconRender(type = iconType, tint = PurpleGradia, size = 28.dp)
             }
-            
-            Spacer(modifier = Modifier.width(12.dp))
-            
+
+            Spacer(modifier = Modifier.width(14.dp))
+
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = course.name,
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, fontSize = 16.sp),
+                    text = subject.name,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp,
+                        fontFamily = InterFontFamily
+                    ),
                     color = Color(0xFF4A4A4A)
                 )
-                
-                Spacer(modifier = Modifier.height(2.dp))
-                
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    LinearProgressIndicator(
-                        progress = { course.progress },
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(6.dp)
-                            .clip(RoundedCornerShape(3.dp)),
-                        color = PurpleGradia,
-                        trackColor = Color(0xFFE9E4F0)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        "${course.percentage}%",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF4A4A4A)
-                    )
-                }
-                
-                Spacer(modifier = Modifier.height(2.dp))
-                
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = course.infoIcon,
-                        contentDescription = null,
-                        tint = Color.Gray,
-                        modifier = Modifier.size(12.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = course.info,
-                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
-                        color = Color.Gray
-                    )
-                }
+                Spacer(modifier = Modifier.height(3.dp))
+                Text(
+                    text = subtitle,
+                    fontSize = 12.sp,
+                    color = Color.Gray,
+                    fontFamily = InterFontFamily
+                )
             }
         }
     }

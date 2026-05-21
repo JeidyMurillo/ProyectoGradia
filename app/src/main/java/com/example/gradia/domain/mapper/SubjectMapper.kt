@@ -10,7 +10,22 @@ fun Asignatura.toDomain(): Subject = Subject(
     name = nombre,
     icon = icono,
     passingGrade = notaAprobacion.toDouble(),
-    creditHours = creditos
+    creditHours = creditos,
+    semester = semestre,
+    professor = profesor,
+    classroom = salon
+)
+
+fun Subject.toEntity(userId: String): Asignatura = Asignatura(
+    id = id,
+    userId = userId,
+    nombre = name,
+    icono = icon,
+    profesor = professor,
+    salon = classroom,
+    creditos = creditHours,
+    semestre = semester,
+    notaAprobacion = passingGrade.toFloat()
 )
 
 fun Nota.toDomain(): GradeItem = GradeItem(
@@ -18,13 +33,13 @@ fun Nota.toDomain(): GradeItem = GradeItem(
     subjectId = asignaturaId,
     name = nombre,
     percentage = porcentaje.toDouble(),
-    grade = valor.toDouble()
+    grade = valor?.toDouble()
 )
 
 fun GradeItem.toEntity(): Nota = Nota(
     id = id,
     asignaturaId = subjectId,
     nombre = name,
-    valor = grade?.toFloat() ?: 0f,
+    valor = grade?.toFloat(),
     porcentaje = percentage.toFloat()
 )
