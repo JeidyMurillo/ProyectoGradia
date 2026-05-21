@@ -257,6 +257,12 @@ class MainActivity : ComponentActivity() {
                                 navController.navigate("welcome") {
                                     popUpTo("home") { inclusive = true }
                                 }
+                            },
+                            onDeleteAccount = {
+                                app.isRememberMeEnabled = false
+                                navController.navigate("welcome") {
+                                    popUpTo("home") { inclusive = true }
+                                }
                             }
                         )
                     }

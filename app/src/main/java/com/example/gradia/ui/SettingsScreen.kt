@@ -27,7 +27,7 @@ import com.example.gradia.ui.theme.InterFontFamily
 
 @Composable
 fun SettingsScreen(
-    onNavigateToProfile: () -> Unit = {},
+    onNavigateToAccount: () -> Unit = {},
     onNavigateToTerms: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -56,7 +56,7 @@ fun SettingsScreen(
             SettingsItem(
                 iconPainter = painterResource(id = R.drawable.user_outline),
                 title = "Cuenta",
-                onClick = onNavigateToProfile
+                onClick = onNavigateToAccount
             )
         }
         item {

@@ -6,6 +6,7 @@ import com.example.gradia.data.local.entity.Asignatura
 import com.example.gradia.data.local.entity.Evento
 import com.example.gradia.data.repository.AsignaturaRepository
 import com.example.gradia.data.repository.EventoRepository
+import com.example.gradia.data.repository.UserRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.Calendar
@@ -37,7 +38,7 @@ data class TasksUiState(
 )
 
 class TasksViewModel(
-    private val userId: String,
+    private val userRepository: UserRepository,
     private val eventoRepository: EventoRepository,
     private val asignaturaRepository: AsignaturaRepository
 ) : ViewModel() {
@@ -46,19 +47,28 @@ class TasksViewModel(
     val uiState: StateFlow<TasksUiState> = _uiState.asStateFlow()
 
     private val asignaturaMap = mutableMapOf<Long, String>()
+    private var currentUserId: String? = null
 
     init {
         userRepository.getCurrentUser()
             .filterNotNull()
-            .flatMapLatest { user -> asignaturaRepository.getAsignaturasByUser(user.id) }
-            .onEach { realSubjects ->
-                asignaturaMap.clear()
-                realSubjects.forEach { asignaturaMap[it.id] = it.nombre }
-                _uiState.update { it.copy(asignaturas = realSubjects) }
+            .onEach { user ->
+                currentUserId = user.id
+                asignaturaRepository.getAsignaturasByUser(user.id)
+                    .onEach { realSubjects ->
+                        asignaturaMap.clear()
+                        realSubjects.forEach { asignaturaMap[it.id] = it.nombre }
+                        _uiState.update { it.copy(asignaturas = realSubjects) }
+                    }
+                    .launchIn(viewModelScope)
             }
             .launchIn(viewModelScope)
 
-        eventoRepository.getEventosByTipo("TAREA", userId)
+        userRepository.getCurrentUser()
+            .filterNotNull()
+            .flatMapLatest { user ->
+                eventoRepository.getEventosByTipo("TAREA", user.id)
+            }
             .onEach { eventos ->
                 val hoy = mutableListOf<TareaUi>()
                 val proximas = mutableListOf<TareaUi>()
@@ -159,18 +169,13 @@ class TasksViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true) }
             try {
-                var userId = userRepository.getCurrentUser().first()?.id
-                if (userId == null) {
-                    val demoId = "demo_${UUID.randomUUID().toString().take(8)}"
-                    userRepository.insertUser(User(id = demoId, nombre = "Demo", email = "demo@test.com"))
-                    userId = demoId
-                }
+                val uid = currentUserId ?: return@launch
 
                 if (state.editingTaskId != null) {
                     eventoRepository.updateEvento(
                         Evento(
                             id = state.editingTaskId,
-                            userId = userId,
+                            userId = uid,
                             asignaturaId = state.selectedAsignaturaId,
                             titulo = state.currentTitle,
                             fecha = state.currentFecha,
@@ -180,7 +185,7 @@ class TasksViewModel(
                 } else {
                     eventoRepository.insertEvento(
                         Evento(
-                            userId = userId,
+                            userId = uid,
                             asignaturaId = state.selectedAsignaturaId,
                             titulo = state.currentTitle,
                             fecha = state.currentFecha,
