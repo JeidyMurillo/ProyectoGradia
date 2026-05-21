@@ -158,10 +158,13 @@ fun SettingsScreen(
                         color = Color.Gray
                     )
                     Spacer(modifier = Modifier.height(12.dp))
-                    Text("Desarrollado por:", fontWeight = FontWeight.Medium)
-                    Text("- Jeidy Murillo", color = Color.Gray)
-                    Text("- Sebastián Campos", color = Color.Gray)
-                    Text("- Brandon Castro", color = Color.Gray)
+                    Text("Integrantes:", fontWeight = FontWeight.Medium)
+                    Text("- Karol T. Burbano N.", color = Color.Gray)
+                    Text("- Sebastian Castro R.", color = Color.Gray)
+                    Text("- Verónica L. Mujica G.", color = Color.Gray)
+                    Text("- Sofía C. Quenoran", color = Color.Gray)
+                    Text("- Andrés F. Salcedo B.", color = Color.Gray)
+                    Text("- Jeidy N. Murillo M.", color = Color.Gray)
                 }
             },
             confirmButton = {
