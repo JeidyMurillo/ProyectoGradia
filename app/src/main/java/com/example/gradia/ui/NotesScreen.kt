@@ -57,7 +57,8 @@ fun NotesScreen(viewModel: NotesViewModel? = null) {
     val app = LocalContext.current.applicationContext as GradiaApplication
     val vm = viewModel ?: viewModel(factory = object : androidx.lifecycle.ViewModelProvider.Factory {
         override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
-            return app.provideNotesViewModel() as T
+            val userId = app.authRepository.getCurrentUserId() ?: ""
+            return app.provideNotesViewModel(userId) as T
         }
     })
     val state by vm.uiState.collectAsState()

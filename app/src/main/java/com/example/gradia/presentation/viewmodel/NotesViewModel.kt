@@ -35,6 +35,7 @@ data class NotesUiState(
 )
 
 class NotesViewModel(
+    private val userId: String,
     private val getNotesUseCase: GetNotesUseCase,
     private val saveNoteUseCase: SaveNoteUseCase,
     private val deleteNoteUseCase: DeleteNoteUseCase,
@@ -50,14 +51,14 @@ class NotesViewModel(
     val uiState: StateFlow<NotesUiState> = _uiState.asStateFlow()
 
     init {
-        getCategoriesUseCase()
+        getCategoriesUseCase(userId)
             .onEach { categories ->
                 _uiState.update { it.copy(allCategories = categories) }
             }
             .launchIn(viewModelScope)
 
         combine(
-            getNotesUseCase(),
+            getNotesUseCase(userId),
             _selectedCategoryIds
         ) { allNotes, selectedIds ->
             val filtered = if (selectedIds.isEmpty()) allNotes
@@ -117,6 +118,7 @@ class NotesViewModel(
                 saveNoteUseCase(
                     Note(
                         id = state.editingNoteId,
+                        userId = userId,
                         title = state.currentTitle,
                         content = state.currentContent,
                         color = state.currentColor,
@@ -160,7 +162,7 @@ class NotesViewModel(
     fun createCategory(name: String, color: Long) {
         viewModelScope.launch {
             try {
-                createCategoryUseCase(Category(name = name, color = color))
+                createCategoryUseCase(Category(userId = userId, name = name, color = color))
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = e.message) }
             }

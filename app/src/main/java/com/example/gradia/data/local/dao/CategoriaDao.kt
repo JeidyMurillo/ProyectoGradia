@@ -10,8 +10,8 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface CategoriaDao {
-    @Query("SELECT * FROM categorias ORDER BY name ASC")
-    fun getAllCategorias(): Flow<List<CategoriaEntity>>
+    @Query("SELECT * FROM categorias WHERE userId = :userId ORDER BY name ASC")
+    fun getAllCategorias(userId: String): Flow<List<CategoriaEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCategoria(categoria: CategoriaEntity): Long
