@@ -31,8 +31,9 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import coil.request.ImageRequest
 import com.example.gradia.GradiaApplication
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
 import com.example.gradia.R
 import com.example.gradia.data.local.entity.User
 import com.example.gradia.ui.theme.*
@@ -45,6 +46,7 @@ fun ProfileScreen(
 ) {
     val app = LocalContext.current.applicationContext as GradiaApplication
     val userRepository = app.userRepository
+    val authRepository = app.authRepository
     val scope = rememberCoroutineScope()
 
     var isEditing by remember { mutableStateOf(false) }
@@ -52,8 +54,8 @@ fun ProfileScreen(
     var email by remember { mutableStateOf("") }
     var career by remember { mutableStateOf("") }
     var semester by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("password123") }
-    var passwordVisible by remember { mutableStateOf(false) }
+    var password by remember { mutableStateOf("") }
+    var showChangePasswordDialog by remember { mutableStateOf(false) }
     var originalUser by remember { mutableStateOf<User?>(null) }
     var photoUri by remember { mutableStateOf<String?>(null) }
 
@@ -93,18 +95,16 @@ fun ProfileScreen(
                 .size(240.dp)
                 .clickable { imagePickerLauncher.launch("image/*") }
         ) {
-            if (photoUri != null) {
+            if (!photoUri.isNullOrBlank()) {
                 AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(photoUri)
-                        .crossfade(true)
-                        .build(),
+                    model = photoUri,
                     contentDescription = "Profile Picture",
                     modifier = Modifier
                         .fillMaxSize()
                         .clip(CircleShape)
                         .background(Color.White),
-                    contentScale = ContentScale.Crop
+                    contentScale = ContentScale.Crop,
+                    error = painterResource(id = R.drawable.splash_logo)
                 )
             } else {
                 Image(
@@ -246,9 +246,7 @@ Box(
             label = "Contraseña",
             value = password,
             isEditing = isEditing,
-            onValueChange = { password = it },
-            passwordVisible = passwordVisible,
-            onToggleVisibility = { passwordVisible = !passwordVisible }
+            onEditClick = { showChangePasswordDialog = true }
         )
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -342,6 +340,18 @@ Box(
 
         Spacer(modifier = Modifier.height(100.dp))
     }
+
+    if (showChangePasswordDialog) {
+        ChangePasswordDialog(
+            userEmail = email,
+            onDismiss = { showChangePasswordDialog = false },
+            onPasswordChanged = { newPassword ->
+                password = newPassword
+                showChangePasswordDialog = false
+            },
+            authRepository = authRepository
+        )
+    }
 }
 
 @Composable
@@ -420,9 +430,7 @@ fun PasswordField(
     label: String,
     value: String,
     isEditing: Boolean,
-    onValueChange: (String) -> Unit,
-    passwordVisible: Boolean,
-    onToggleVisibility: () -> Unit
+    onEditClick: () -> Unit
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
@@ -461,35 +469,208 @@ fun PasswordField(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                BasicTextField(
-                    value = value,
-                    onValueChange = { if (isEditing) onValueChange(it) },
-                    modifier = Modifier
-                        .weight(1f)
-                        .heightIn(min = 20.dp),
-                    enabled = isEditing,
-                    readOnly = !isEditing,
-                    singleLine = true,
-                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                    textStyle = MaterialTheme.typography.bodyLarge.copy(
+                Text(
+                    text = value.ifEmpty { "••••••••" },
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.bodyLarge.copy(
                         fontFamily = InterFontFamily,
                         color = Color(0xFF4A4A4A),
                         fontSize = 16.sp
+                    )
+                )
+
+                if (isEditing) {
+                    IconButton(
+                        onClick = onEditClick,
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Cambiar contraseña",
+                            tint = PurpleGradia,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ChangePasswordDialog(
+    userEmail: String,
+    onDismiss: () -> Unit,
+    onPasswordChanged: (String) -> Unit,
+    authRepository: com.example.gradia.data.repository.AuthRepository
+) {
+    var currentPassword by remember { mutableStateOf("") }
+    var newPassword by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+    var showCurrentPassword by remember { mutableStateOf(false) }
+    var showNewPassword by remember { mutableStateOf(false) }
+    var showConfirmPassword by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var isLoading by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+
+    AlertDialog(
+        onDismissRequest = { if (!isLoading) onDismiss() },
+        shape = RoundedCornerShape(24.dp),
+        title = {
+            Text(
+                "Cambiar contraseña",
+                fontWeight = FontWeight.Bold,
+                fontFamily = InterFontFamily,
+                color = Color(0xFF4A4A4A)
+            )
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                errorMessage?.let {
+                    Text(
+                        it,
+                        color = Color.Red,
+                        fontSize = 13.sp,
+                        fontFamily = InterFontFamily
+                    )
+                }
+
+                DialogPasswordField(
+                    label = "Contraseña actual",
+                    value = currentPassword,
+                    onValueChange = { currentPassword = it },
+                    visible = showCurrentPassword,
+                    onToggleVisibility = { showCurrentPassword = !showCurrentPassword }
+                )
+
+                DialogPasswordField(
+                    label = "Nueva contraseña",
+                    value = newPassword,
+                    onValueChange = { newPassword = it },
+                    visible = showNewPassword,
+                    onToggleVisibility = { showNewPassword = !showNewPassword }
+                )
+
+                DialogPasswordField(
+                    label = "Confirmar nueva contraseña",
+                    value = confirmPassword,
+                    onValueChange = { confirmPassword = it },
+                    visible = showConfirmPassword,
+                    onToggleVisibility = { showConfirmPassword = !showConfirmPassword }
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    errorMessage = null
+                    when {
+                        currentPassword.isBlank() -> errorMessage = "Ingresa tu contraseña actual"
+                        newPassword.length < 6 -> errorMessage = "La nueva contraseña debe tener al menos 6 caracteres"
+                        newPassword != confirmPassword -> errorMessage = "Las nuevas contraseñas no coinciden"
+                        else -> {
+                            isLoading = true
+                            scope.launch {
+                                val reauthResult = authRepository.reauthenticate(userEmail, currentPassword)
+                                reauthResult.fold(
+                                    onSuccess = {
+                                        val updateResult = authRepository.updatePassword(newPassword)
+                                        updateResult.fold(
+                                            onSuccess = {
+                                                onPasswordChanged(newPassword)
+                                            },
+                                            onFailure = { e ->
+                                                errorMessage = e.message ?: "Error al cambiar la contraseña"
+                                            }
+                                        )
+                                    },
+                                    onFailure = { e ->
+                                        errorMessage = e.message ?: "Contraseña actual incorrecta"
+                                    }
+                                )
+                                isLoading = false
+                            }
+                        }
+                    }
+                },
+                enabled = !isLoading,
+                shape = RoundedCornerShape(24.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = PurpleGradia)
+            ) {
+                Text(
+                    if (isLoading) "Cambiando..." else "Cambiar contraseña",
+                    fontFamily = InterFontFamily,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = onDismiss,
+                enabled = !isLoading
+            ) {
+                Text("Cancelar", color = Color(0xFF9E9E9E))
+            }
+        }
+    )
+}
+
+@Composable
+fun DialogPasswordField(
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    visible: Boolean,
+    onToggleVisibility: () -> Unit
+) {
+    Column {
+        Text(
+            text = label,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Medium,
+            color = Color(0xFF4A4A4A),
+            fontFamily = InterFontFamily
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(
+                    width = 1.dp,
+                    color = PurpleGradia,
+                    shape = RoundedCornerShape(16.dp)
+                )
+                .background(Color.White, RoundedCornerShape(16.dp))
+                .padding(horizontal = 12.dp, vertical = 4.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                BasicTextField(
+                    value = value,
+                    onValueChange = onValueChange,
+                    modifier = Modifier.weight(1f),
+                    singleLine = true,
+                    visualTransformation = if (visible) VisualTransformation.None else PasswordVisualTransformation(),
+                    textStyle = MaterialTheme.typography.bodyMedium.copy(
+                        fontFamily = InterFontFamily,
+                        color = Color(0xFF4A4A4A),
+                        fontSize = 14.sp
                     ),
                     cursorBrush = SolidColor(PurpleGradia)
                 )
-
                 IconButton(
                     onClick = onToggleVisibility,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(22.dp)
                 ) {
                     Icon(
                         painter = painterResource(
-                            id = if (passwordVisible) R.drawable.visibility else R.drawable.visibility_off
+                            id = if (visible) R.drawable.visibility else R.drawable.visibility_off
                         ),
-                        contentDescription = "Toggle password visibility",
+                        contentDescription = "Toggle visibility",
                         tint = PurpleGradia,
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(16.dp)
                     )
                 }
             }
