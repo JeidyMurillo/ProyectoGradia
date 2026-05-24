@@ -123,7 +123,6 @@ fun HomeScreen(
                                     8 -> "Perfil"
                                     9 -> selectedSubjectName.ifBlank { "Materia" }
                                     10 -> "Estadísticas"
-                                    11 -> "Cuenta"
                                     else -> "Gradia"
                                 },
                                 modifier = Modifier.fillMaxWidth(),
@@ -135,7 +134,7 @@ fun HomeScreen(
                             )
                         },
                         navigationIcon = {
-                            if (selectedTab in 3..8 || selectedTab == 9 || selectedTab == 11) {
+                            if (selectedTab in 3..7 || selectedTab == 9) {
                                 IconButton(onClick = { selectedTab = previousTab }) {
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -156,7 +155,7 @@ fun HomeScreen(
                             }
                         },
                         actions = {
-                            if (selectedTab in 3..6 || selectedTab == 9) {
+                            if (selectedTab in 3..7 || selectedTab == 9) {
                                 Box {
                                     IconButton(onClick = { showMenu = true }) {
                                         Icon(
@@ -291,7 +290,7 @@ fun HomeScreen(
                                 },
                                 onNavigateToTerms = onNavigateToTerms
                             )
-                        8 -> ProfileScreen()
+                        8 -> ProfileScreen(userId = currentUserId)
                         11 -> AccountScreen(
                                 onNavigateToProfile = {
                                     previousTab = selectedTab

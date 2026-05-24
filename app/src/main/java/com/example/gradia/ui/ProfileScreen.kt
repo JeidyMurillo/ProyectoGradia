@@ -1,5 +1,8 @@
 package com.example.gradia.ui
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -19,6 +22,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -26,20 +30,53 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import com.example.gradia.GradiaApplication
 import com.example.gradia.R
+import com.example.gradia.data.local.entity.User
 import com.example.gradia.ui.theme.*
+import kotlinx.coroutines.launch
 
 @Composable
 fun ProfileScreen(
+    userId: String = "",
     modifier: Modifier = Modifier
 ) {
+    val app = LocalContext.current.applicationContext as GradiaApplication
+    val userRepository = app.userRepository
+    val scope = rememberCoroutineScope()
+
     var isEditing by remember { mutableStateOf(false) }
-    var name by remember { mutableStateOf("Sophia Rose") }
-    var email by remember { mutableStateOf("sophia.rose@university.edu") }
-    var career by remember { mutableStateOf("Diseño UX/UI") }
-    var semester by remember { mutableStateOf("7") }
+    var name by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var career by remember { mutableStateOf("") }
+    var semester by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("password123") }
     var passwordVisible by remember { mutableStateOf(false) }
+    var originalUser by remember { mutableStateOf<User?>(null) }
+    var photoUri by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(userId) {
+        if (userId.isNotEmpty()) {
+            userRepository.getUserById(userId).collect { user ->
+                if (user != null) {
+                    name = user.nombre
+                    email = user.email
+                    career = user.carrera
+                    semester = user.semestre
+                    photoUri = user.fotoUrl
+                    originalUser = user
+                }
+            }
+        }
+    }
+
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let { photoUri = it.toString() }
+    }
 
     Column(
         modifier = modifier
@@ -54,24 +91,39 @@ fun ProfileScreen(
         Box(
             modifier = Modifier
                 .size(240.dp)
-                .clickable { }
+                .clickable { imagePickerLauncher.launch("image/*") }
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.splash_logo),
-                contentDescription = "Profile Picture",
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip(CircleShape)
-                    .background(Color.White),
-                contentScale = ContentScale.Crop
-            )
+            if (photoUri != null) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(photoUri)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = "Profile Picture",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(CircleShape)
+                        .background(Color.White),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Image(
+                    painter = painterResource(id = R.drawable.splash_logo),
+                    contentDescription = "Profile Picture",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(CircleShape)
+                        .background(Color.White),
+                    contentScale = ContentScale.Crop
+                )
+            }
 
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .size(52.dp)
                     .background(PurpleGradia, CircleShape)
-                    .clickable { },
+                    .clickable { imagePickerLauncher.launch("image/*") },
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -206,7 +258,24 @@ Box(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Button(
-                onClick = { isEditing = !isEditing },
+                onClick = {
+                    if (isEditing) {
+                        originalUser?.let { user ->
+                            scope.launch {
+                                userRepository.updateUser(
+                                    user.copy(
+                                        nombre = name,
+                                        email = email,
+                                        carrera = career,
+                                        semestre = semester,
+                                        fotoUrl = photoUri
+                                    )
+                                )
+                            }
+                        }
+                    }
+                    isEditing = !isEditing
+                },
                 modifier = Modifier
                     .width(160.dp)
                     .height(44.dp),
@@ -233,7 +302,16 @@ Box(
 
             if (isEditing) {
                 Button(
-                    onClick = { isEditing = false },
+                    onClick = {
+                        originalUser?.let { user ->
+                            name = user.nombre
+                            email = user.email
+                            career = user.carrera
+                            semester = user.semestre
+                            photoUri = user.fotoUrl
+                        }
+                        isEditing = false
+                    },
                     modifier = Modifier
                         .width(160.dp)
                         .height(44.dp),
