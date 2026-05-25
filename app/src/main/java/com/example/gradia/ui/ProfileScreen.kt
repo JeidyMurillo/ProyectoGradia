@@ -374,7 +374,8 @@ Box(
 private fun copyImageToInternalStorage(uri: Uri, userId: String, context: Context): String {
     val dir = File(context.filesDir, "profile_pictures")
     if (!dir.exists()) dir.mkdirs()
-    val file = File(dir, "${userId}.jpg")
+    dir.listFiles()?.filter { it.name.startsWith(userId) }?.forEach { it.delete() }
+    val file = File(dir, "${userId}_${System.currentTimeMillis()}.jpg")
     context.contentResolver.openInputStream(uri)?.use { input ->
         FileOutputStream(file).use { output ->
             input.copyTo(output)
