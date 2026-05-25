@@ -1,5 +1,6 @@
 package com.example.gradia.ui
 
+import android.content.Context
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -32,6 +33,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.gradia.GradiaApplication
+import java.io.File
+import java.io.FileOutputStream
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import com.example.gradia.R
@@ -48,13 +53,13 @@ fun ProfileScreen(
     val userRepository = app.userRepository
     val authRepository = app.authRepository
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     var isEditing by remember { mutableStateOf(false) }
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var career by remember { mutableStateOf("") }
     var semester by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
     var showChangePasswordDialog by remember { mutableStateOf(false) }
     var originalUser by remember { mutableStateOf<User?>(null) }
     var photoUri by remember { mutableStateOf<String?>(null) }
@@ -77,7 +82,14 @@ fun ProfileScreen(
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        uri?.let { photoUri = it.toString() }
+        uri?.let {
+            scope.launch {
+                val localPath = withContext(Dispatchers.IO) {
+                    copyImageToInternalStorage(it, userId, context)
+                }
+                photoUri = localPath
+            }
+        }
     }
 
     Column(
@@ -93,7 +105,7 @@ fun ProfileScreen(
         Box(
             modifier = Modifier
                 .size(240.dp)
-                .clickable { imagePickerLauncher.launch("image/*") }
+                .clickable(enabled = isEditing) { imagePickerLauncher.launch("image/*") }
         ) {
             if (!photoUri.isNullOrBlank()) {
                 AsyncImage(
@@ -123,7 +135,7 @@ fun ProfileScreen(
                     .align(Alignment.BottomEnd)
                     .size(52.dp)
                     .background(PurpleGradia, CircleShape)
-                    .clickable { imagePickerLauncher.launch("image/*") },
+                    .clickable(enabled = isEditing) { imagePickerLauncher.launch("image/*") },
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -149,7 +161,7 @@ fun ProfileScreen(
         ProfileField(
             label = "Correo",
             value = email,
-            isEditing = isEditing,
+            isEditing = false,
             onValueChange = { email = it }
         )
 
@@ -244,7 +256,7 @@ Box(
 
         PasswordField(
             label = "Contraseña",
-            value = password,
+            value = "",
             isEditing = isEditing,
             onEditClick = { showChangePasswordDialog = true }
         )
@@ -258,21 +270,27 @@ Box(
             Button(
                 onClick = {
                     if (isEditing) {
-                        originalUser?.let { user ->
-                            scope.launch {
-                                userRepository.updateUser(
-                                    user.copy(
-                                        nombre = name,
-                                        email = email,
-                                        carrera = career,
-                                        semestre = semester,
-                                        fotoUrl = photoUri
+                        scope.launch {
+                            try {
+                                originalUser?.let { user ->
+                                    userRepository.updateUser(
+                                        user.copy(
+                                            nombre = name,
+                                            email = email,
+                                            carrera = career,
+                                            semestre = semester,
+                                            fotoUrl = photoUri
+                                        )
                                     )
-                                )
+                                }
+                                isEditing = false
+                            } catch (e: Exception) {
+                                // Error al guardar, permanece en modo edición
                             }
                         }
+                    } else {
+                        isEditing = true
                     }
-                    isEditing = !isEditing
                 },
                 modifier = Modifier
                     .width(160.dp)
@@ -345,13 +363,24 @@ Box(
         ChangePasswordDialog(
             userEmail = email,
             onDismiss = { showChangePasswordDialog = false },
-            onPasswordChanged = { newPassword ->
-                password = newPassword
+            onPasswordChanged = {
                 showChangePasswordDialog = false
             },
             authRepository = authRepository
         )
     }
+}
+
+private fun copyImageToInternalStorage(uri: Uri, userId: String, context: Context): String {
+    val dir = File(context.filesDir, "profile_pictures")
+    if (!dir.exists()) dir.mkdirs()
+    val file = File(dir, "${userId}.jpg")
+    context.contentResolver.openInputStream(uri)?.use { input ->
+        FileOutputStream(file).use { output ->
+            input.copyTo(output)
+        }
+    } ?: throw java.io.IOException("Cannot open input stream for $uri")
+    return file.absolutePath
 }
 
 @Composable
