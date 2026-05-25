@@ -61,6 +61,7 @@ fun ProfileScreen(
     var career by remember { mutableStateOf("") }
     var semester by remember { mutableStateOf("") }
     var showChangePasswordDialog by remember { mutableStateOf(false) }
+    var pendingNewPassword by remember { mutableStateOf<String?>(null) }
     var originalUser by remember { mutableStateOf<User?>(null) }
     var photoUri by remember { mutableStateOf<String?>(null) }
 
@@ -283,6 +284,10 @@ Box(
                                         )
                                     )
                                 }
+                                pendingNewPassword?.let { newPassword ->
+                                    authRepository.updatePassword(newPassword)
+                                    pendingNewPassword = null
+                                }
                                 isEditing = false
                             } catch (e: Exception) {
                                 // Error al guardar, permanece en modo edición
@@ -319,6 +324,7 @@ Box(
             if (isEditing) {
                 Button(
                     onClick = {
+                        pendingNewPassword = null
                         originalUser?.let { user ->
                             name = user.nombre
                             email = user.email
@@ -363,7 +369,8 @@ Box(
         ChangePasswordDialog(
             userEmail = email,
             onDismiss = { showChangePasswordDialog = false },
-            onPasswordChanged = {
+            onPasswordChanged = { newPassword ->
+                pendingNewPassword = newPassword
                 showChangePasswordDialog = false
             },
             authRepository = authRepository
@@ -605,15 +612,7 @@ fun ChangePasswordDialog(
                                 val reauthResult = authRepository.reauthenticate(userEmail, currentPassword)
                                 reauthResult.fold(
                                     onSuccess = {
-                                        val updateResult = authRepository.updatePassword(newPassword)
-                                        updateResult.fold(
-                                            onSuccess = {
-                                                onPasswordChanged(newPassword)
-                                            },
-                                            onFailure = { e ->
-                                                errorMessage = e.message ?: "Error al cambiar la contraseña"
-                                            }
-                                        )
+                                        onPasswordChanged(newPassword)
                                     },
                                     onFailure = { e ->
                                         errorMessage = e.message ?: "Contraseña actual incorrecta"
