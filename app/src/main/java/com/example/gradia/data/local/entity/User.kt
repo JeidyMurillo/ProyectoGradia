@@ -10,5 +10,7 @@ data class User(
     val nombre: String,
     val email: String,
     val fotoUrl: String? = null,
+    val carrera: String = "",
+    val semestre: String = "",
     val metaPromedio: Float = 3.5f
 )

@@ -32,6 +32,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.gradia.GradiaApplication
 import com.example.gradia.R
 import com.example.gradia.domain.model.Subject
@@ -123,7 +124,6 @@ fun HomeScreen(
                                     8 -> "Perfil"
                                     9 -> selectedSubjectName.ifBlank { "Materia" }
                                     10 -> "Estadísticas"
-                                    11 -> "Cuenta"
                                     else -> "Gradia"
                                 },
                                 modifier = Modifier.fillMaxWidth(),
@@ -135,7 +135,7 @@ fun HomeScreen(
                             )
                         },
                         navigationIcon = {
-                            if (selectedTab in 3..8 || selectedTab == 9 || selectedTab == 11) {
+                            if (selectedTab in 3..7 || selectedTab == 9) {
                                 IconButton(onClick = { selectedTab = previousTab }) {
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -156,7 +156,7 @@ fun HomeScreen(
                             }
                         },
                         actions = {
-                            if (selectedTab in 3..6 || selectedTab == 9) {
+                            if (selectedTab in 3..7 || selectedTab == 9) {
                                 Box {
                                     IconButton(onClick = { showMenu = true }) {
                                         Icon(
@@ -291,7 +291,7 @@ fun HomeScreen(
                                 },
                                 onNavigateToTerms = onNavigateToTerms
                             )
-                        8 -> ProfileScreen()
+                        8 -> ProfileScreen(userId = currentUserId)
                         11 -> AccountScreen(
                                 onNavigateToProfile = {
                                     previousTab = selectedTab
@@ -456,6 +456,15 @@ fun GradiaDrawerContent(
     userName: String = "Usuario",
     userEmail: String = ""
 ) {
+    val app = LocalContext.current.applicationContext as GradiaApplication
+    val currentUserId = app.authRepository.getCurrentUserId()
+    val user by if (currentUserId != null) {
+        app.userRepository.getUserById(currentUserId).collectAsState(initial = null)
+    } else {
+        remember { mutableStateOf(null) }
+    }
+    val fotoUrl = user?.fotoUrl
+
     ModalDrawerSheet(
         drawerContainerColor = Color.White,
         drawerShape = RoundedCornerShape(topEnd = 32.dp, bottomEnd = 32.dp),
@@ -486,15 +495,28 @@ fun GradiaDrawerContent(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.splash_logo),
-                    contentDescription = "Profile Picture",
-                    modifier = Modifier
-                        .size(120.dp)
-                        .clip(CircleShape)
-                        .background(SocialIconBg),
-                    contentScale = ContentScale.Crop
-                )
+                if (!fotoUrl.isNullOrBlank()) {
+                    AsyncImage(
+                        model = fotoUrl,
+                        contentDescription = "Profile Picture",
+                        modifier = Modifier
+                            .size(120.dp)
+                            .clip(CircleShape)
+                            .background(SocialIconBg),
+                        contentScale = ContentScale.Crop,
+                        error = painterResource(id = R.drawable.splash_logo)
+                    )
+                } else {
+                    Image(
+                        painter = painterResource(id = R.drawable.splash_logo),
+                        contentDescription = "Profile Picture",
+                        modifier = Modifier
+                            .size(120.dp)
+                            .clip(CircleShape)
+                            .background(SocialIconBg),
+                        contentScale = ContentScale.Crop
+                    )
+                }
                 
                 Spacer(modifier = Modifier.height(16.dp))
                 

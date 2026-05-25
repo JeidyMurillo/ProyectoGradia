@@ -114,4 +114,23 @@ class FirebaseAuthService {
             Result.failure(e)
         }
     }
+
+    suspend fun updatePassword(newPassword: String): Result<Unit> {
+        return try {
+            auth.currentUser?.updatePassword(newPassword)?.await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun reauthenticate(email: String, password: String): Result<Unit> {
+        return try {
+            val credential = EmailAuthProvider.getCredential(email, password)
+            auth.currentUser?.reauthenticate(credential)?.await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

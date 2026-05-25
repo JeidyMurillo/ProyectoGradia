@@ -95,6 +95,14 @@ class AuthRepository(
         return authService.unlinkProvider(providerId)
     }
 
+    suspend fun updatePassword(newPassword: String): Result<Unit> {
+        return authService.updatePassword(newPassword)
+    }
+
+    suspend fun reauthenticate(email: String, password: String): Result<Unit> {
+        return authService.reauthenticate(email, password)
+    }
+
     suspend fun getLocalUser(userId: String): User? {
         return userRepository.getUserById(userId).first()
     }
