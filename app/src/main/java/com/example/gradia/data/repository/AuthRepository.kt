@@ -103,6 +103,10 @@ class AuthRepository(
         return authService.reauthenticate(email, password)
     }
 
+    suspend fun sendPasswordResetEmail(email: String): Result<Unit> {
+        return authService.sendPasswordResetEmail(email)
+    }
+
     suspend fun getLocalUser(userId: String): User? {
         return userRepository.getUserById(userId).first()
     }

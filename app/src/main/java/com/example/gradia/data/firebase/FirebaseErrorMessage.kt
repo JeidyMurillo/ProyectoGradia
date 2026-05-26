@@ -21,6 +21,8 @@ fun getFirebaseErrorMessage(exception: Throwable): String {
             "Error de conexión, revisa tu internet"
         msg.contains("Usuario no encontrado") ->
             "No existe una cuenta con este correo"
+        msg.contains("sendPasswordResetEmail") && msg.contains("user") ->
+            "No existe una cuenta con este correo"
         else -> "Ocurrió un error, intenta de nuevo"
     }
 }

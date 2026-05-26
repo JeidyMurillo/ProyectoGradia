@@ -39,6 +39,7 @@ import com.example.gradia.ui.theme.*
 fun LoginScreen(
     onBackClick: () -> Unit,
     onRegisterClick: () -> Unit,
+    onForgotPassword: () -> Unit = {},
     onLogin: (String, String, Boolean) -> Unit = { _, _, _ -> },
     onGoogleSignIn: () -> Unit = {},
     isLoading: Boolean = false,
@@ -151,7 +152,7 @@ fun LoginScreen(
                     fontWeight = FontWeight.Medium
                 ),
                 color = PurpleGradia,
-                modifier = Modifier.clickable { /* TODO */ }
+                modifier = Modifier.clickable { onForgotPassword() }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
