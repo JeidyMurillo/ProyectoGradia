@@ -18,6 +18,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.gradia.data.firebase.GoogleSignInUtil
 import com.example.gradia.data.firebase.getFirebaseErrorMessage
+import com.example.gradia.ui.ForgotPasswordScreen
 import com.example.gradia.ui.HomeScreen
 import com.example.gradia.ui.LoginScreen
 import com.example.gradia.ui.SingUpScreen
@@ -123,12 +124,16 @@ class MainActivity : ComponentActivity() {
                                         }
                                     )
                                 }
+                            } else {
+                                val exception = accountResult.exception
+                                loginError = "Error con Google: ${exception?.localizedMessage ?: "Error desconocido"}"
                             }
                         }
 
                         LoginScreen(
                             onBackClick = { navController.popBackStack() },
                             onRegisterClick = { navController.navigate("register") },
+                            onForgotPassword = { navController.navigate("forgot_password") },
                             isLoading = isLoginLoading,
                             errorMessage = loginError,
                             onLogin = { email, password, rememberMe ->
@@ -151,9 +156,36 @@ class MainActivity : ComponentActivity() {
                                 }
                             },
                             onGoogleSignIn = {
+                                loginError = null
+                                googleLauncher.launch(GoogleSignInUtil.getSignInIntent())
+                            }
+                        )
+                    }
+                    composable("forgot_password") {
+                        var isSending by remember { mutableStateOf(false) }
+                        var resetError by remember { mutableStateOf<String?>(null) }
+                        var resetSuccess by remember { mutableStateOf<String?>(null) }
+
+                        ForgotPasswordScreen(
+                            onBackClick = { navController.popBackStack() },
+                            isLoading = isSending,
+                            errorMessage = resetError,
+                            successMessage = resetSuccess,
+                            onSendResetEmail = { email ->
+                                resetError = null
+                                resetSuccess = null
+                                isSending = true
                                 scope.launch {
-                                    GoogleSignInUtil.signOut()
-                                    googleLauncher.launch(GoogleSignInUtil.getSignInIntent())
+                                    app.authRepository.sendPasswordResetEmail(email).fold(
+                                        onSuccess = {
+                                            isSending = false
+                                            resetSuccess = "Se ha enviado un enlace de recuperación a tu correo."
+                                        },
+                                        onFailure = { e ->
+                                            isSending = false
+                                            resetError = getFirebaseErrorMessage(e)
+                                        }
+                                    )
                                 }
                             }
                         )
@@ -197,6 +229,9 @@ class MainActivity : ComponentActivity() {
                                         }
                                     )
                                 }
+                            } else {
+                                val exception = accountResult.exception
+                                registerError = "Error con Google: ${exception?.localizedMessage ?: "Error desconocido"}"
                             }
                         }
 
