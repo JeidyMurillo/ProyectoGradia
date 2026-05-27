@@ -1,6 +1,9 @@
 <resources>
     <string name="app_name">Gradia</string>
 <string name="default_web_client_id" translatable="false">604938208023-t7ffrat4thu7m2c9dnsfdsqarb4cpnpg.apps.googleusercontent.com</string>
+    <string name="facebook_app_id" translatable="false">1456432222625208</string>
+    <string name="fb_login_protocol_scheme" translatable="false">fb1456432222625208</string>
+    <string name="facebook_client_token" translatable="false">a277ec34d227d04b9fb5f3a6b48adb29</string>
 
     <!-- Términos y Condiciones -->
     <string name="terms_main_title">Términos y Condiciones de Uso - Gradia</string>

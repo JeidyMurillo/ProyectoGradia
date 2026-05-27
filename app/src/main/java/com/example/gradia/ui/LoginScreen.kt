@@ -42,6 +42,7 @@ fun LoginScreen(
     onForgotPassword: () -> Unit = {},
     onLogin: (String, String, Boolean) -> Unit = { _, _, _ -> },
     onGoogleSignIn: () -> Unit = {},
+    onFacebookSignIn: () -> Unit = {},
     isLoading: Boolean = false,
     errorMessage: String? = null
 ) {
@@ -217,12 +218,14 @@ fun LoginScreen(
             Row(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                SocialIconLogin(painterResource(R.drawable.ic_github))
                 SocialIconLogin(
                     painter = painterResource(R.drawable.ic_google),
                     onClick = onGoogleSignIn
                 )
-                SocialIconLogin(painterResource(R.drawable.ic_facebook))
+                SocialIconLogin(
+                    painter = painterResource(R.drawable.ic_facebook),
+                    onClick = onFacebookSignIn
+                )
             }
 
             Spacer(modifier = Modifier.height(32.dp))

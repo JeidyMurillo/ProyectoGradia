@@ -49,6 +49,7 @@ fun SingUpScreen(
     onTermsClick: () -> Unit = {},
     onRegister: (String, String, String) -> Unit = { _, _, _ -> },
     onGoogleSignUp: () -> Unit = {},
+    onFacebookSignUp: () -> Unit = {},
     isLoading: Boolean = false,
     errorMessage: String? = null,
     googleMessage: String? = null
@@ -348,12 +349,14 @@ fun SingUpScreen(
             Row(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                SocialIconSingUp(painterResource(R.drawable.ic_github))
                 SocialIconSingUp(
                     painter = painterResource(R.drawable.ic_google),
                     onClick = onGoogleSignUp
                 )
-                SocialIconSingUp(painterResource(R.drawable.ic_facebook))
+                SocialIconSingUp(
+                    painter = painterResource(R.drawable.ic_facebook),
+                    onClick = onFacebookSignUp
+                )
             }
 
             Spacer(modifier = Modifier.height(32.dp))

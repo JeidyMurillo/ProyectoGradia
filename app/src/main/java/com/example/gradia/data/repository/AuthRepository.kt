@@ -41,6 +41,21 @@ class AuthRepository(
         }
     }
 
+    suspend fun signInWithFacebook(token: String): Result<Pair<User, Boolean>> {
+        return try {
+            val result = authService.signInWithFacebook(token)
+            result.fold(
+                onSuccess = { (firebaseUser, isNewUser) ->
+                    val user = saveUserToLocalDb(firebaseUser)
+                    Result.success(Pair(user, isNewUser))
+                },
+                onFailure = { Result.failure(it) }
+            )
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     suspend fun signInWithGoogle(idToken: String): Result<Pair<User, Boolean>> {
         return try {
             val result = authService.signInWithGoogle(idToken)
@@ -85,6 +100,10 @@ class AuthRepository(
 
     suspend fun linkWithEmail(email: String, password: String): Result<Unit> {
         return authService.linkWithEmail(email, password)
+    }
+
+    suspend fun linkWithFacebook(token: String): Result<Unit> {
+        return authService.linkWithFacebook(token)
     }
 
     suspend fun linkWithGoogle(idToken: String): Result<Unit> {
