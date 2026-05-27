@@ -1,6 +1,8 @@
 package com.example.gradia
 
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -16,8 +18,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.gradia.data.firebase.FacebookSignInUtil
 import com.example.gradia.data.firebase.GoogleSignInUtil
 import com.example.gradia.data.firebase.getFirebaseErrorMessage
+import com.facebook.FacebookCallback
+import com.facebook.FacebookException
+import com.facebook.login.LoginManager
+import com.facebook.login.LoginResult
 import com.example.gradia.ui.ForgotPasswordScreen
 import com.example.gradia.ui.HomeScreen
 import com.example.gradia.ui.LoginScreen
@@ -27,7 +34,10 @@ import com.example.gradia.ui.WelcomeScreen
 import com.example.gradia.ui.theme.GradiaTheme
 import kotlinx.coroutines.launch
 
+private const val TAG = "GradiaFacebook"
+
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
@@ -46,11 +56,20 @@ class MainActivity : ComponentActivity() {
             val navController = rememberNavController()
             val scope = rememberCoroutineScope()
 
-            val startDestination = remember {
-                if (app.isRememberMeEnabled && app.authRepository.isUserLoggedIn()) "home" else "welcome"
+            var startDestination by remember { mutableStateOf("welcome") }
+            var checkingSession by remember { mutableStateOf(true) }
+            LaunchedEffect(Unit) {
+                if (app.isRememberMeEnabled && app.authRepository.isUserLoggedIn()) {
+                    val userId = app.authRepository.getCurrentUserId()
+                    val localUser = if (userId != null) app.authRepository.getLocalUser(userId) else null
+                    startDestination = if (localUser != null) "home" else "welcome"
+                }
+                checkingSession = false
             }
 
             GradiaTheme {
+                if (checkingSession) return@GradiaTheme
+
                 NavHost(
                     navController = navController,
                     startDestination = startDestination,
@@ -130,6 +149,36 @@ class MainActivity : ComponentActivity() {
                             }
                         }
 
+                        val onFacebookLoginResult: (String) -> Unit = { accessToken ->
+                            Log.d(TAG, "Login: Facebook token received, signing in with Firebase")
+                            isLoginLoading = true
+                            scope.launch {
+                                app.authRepository.signInWithFacebook(accessToken).fold(
+                                    onSuccess = { (_, isNewUser) ->
+                                        Log.d(TAG, "Login: Firebase signIn success, isNewUser=$isNewUser")
+                                        if (isNewUser) {
+                                            app.authRepository.signOut()
+                                            isLoginLoading = false
+                                            navController.navigate("register") {
+                                                popUpTo("welcome") { inclusive = false }
+                                            }
+                                        } else {
+                                            app.isRememberMeEnabled = true
+                                            isLoginLoading = false
+                                            navController.navigate("home") {
+                                                popUpTo("welcome") { inclusive = true }
+                                            }
+                                        }
+                                    },
+                                    onFailure = { e ->
+                                        Log.e(TAG, "Login: Firebase signIn failed", e)
+                                        isLoginLoading = false
+                                        loginError = getFirebaseErrorMessage(e)
+                                    }
+                                )
+                            }
+                        }
+
                         LoginScreen(
                             onBackClick = { navController.popBackStack() },
                             onRegisterClick = { navController.navigate("register") },
@@ -158,6 +207,27 @@ class MainActivity : ComponentActivity() {
                             onGoogleSignIn = {
                                 loginError = null
                                 googleLauncher.launch(GoogleSignInUtil.getSignInIntent())
+                            },
+                            onFacebookSignIn = {
+                                Log.d(TAG, "Login: Facebook button clicked")
+                                LoginManager.getInstance().registerCallback(FacebookSignInUtil.callbackManager, object : FacebookCallback<LoginResult> {
+                                    override fun onSuccess(result: LoginResult) {
+                                        Log.d(TAG, "Login: Facebook onSuccess, token=${result.accessToken.token.take(20)}...")
+                                        onFacebookLoginResult(result.accessToken.token)
+                                    }
+                                    override fun onCancel() {
+                                        Log.d(TAG, "Login: Facebook onCancel")
+                                    }
+                                    override fun onError(error: FacebookException) {
+                                        Log.e(TAG, "Login: Facebook onError", error)
+                                        loginError = error.message ?: "Error al iniciar sesión con Facebook"
+                                    }
+                                })
+                                Log.d(TAG, "Login: Calling loginWithAccountPicker")
+                                FacebookSignInUtil.loginWithAccountPicker(
+                                    this@MainActivity,
+                                    listOf("email", "public_profile")
+                                )
                             }
                         )
                     }
@@ -235,6 +305,28 @@ class MainActivity : ComponentActivity() {
                             }
                         }
 
+                        val onFacebookRegisterResult: (String) -> Unit = { accessToken ->
+                            Log.d(TAG, "Register: Facebook token received, signing in with Firebase")
+                            isRegisterLoading = true
+                            scope.launch {
+                                app.authRepository.signInWithFacebook(accessToken).fold(
+                                    onSuccess = { _ ->
+                                        Log.d(TAG, "Register: Firebase signIn success")
+                                        app.isRememberMeEnabled = true
+                                        isRegisterLoading = false
+                                        navController.navigate("home") {
+                                            popUpTo("welcome") { inclusive = true }
+                                        }
+                                    },
+                                    onFailure = { e ->
+                                        Log.e(TAG, "Register: Firebase signIn failed", e)
+                                        isRegisterLoading = false
+                                        registerError = getFirebaseErrorMessage(e)
+                                    }
+                                )
+                            }
+                        }
+
                         SingUpScreen(
                             onBackClick = { navController.popBackStack() },
                             onLoginClick = { navController.navigate("login") },
@@ -266,6 +358,27 @@ class MainActivity : ComponentActivity() {
                                     GoogleSignInUtil.signOut()
                                     googleLauncher.launch(GoogleSignInUtil.getSignInIntent())
                                 }
+                            },
+                            onFacebookSignUp = {
+                                Log.d(TAG, "Register: Facebook button clicked")
+                                LoginManager.getInstance().registerCallback(FacebookSignInUtil.callbackManager, object : FacebookCallback<LoginResult> {
+                                    override fun onSuccess(result: LoginResult) {
+                                        Log.d(TAG, "Register: Facebook onSuccess, token=${result.accessToken.token.take(20)}...")
+                                        onFacebookRegisterResult(result.accessToken.token)
+                                    }
+                                    override fun onCancel() {
+                                        Log.d(TAG, "Register: Facebook onCancel")
+                                    }
+                                    override fun onError(error: FacebookException) {
+                                        Log.e(TAG, "Register: Facebook onError", error)
+                                        registerError = error.message ?: "Error al registrarse con Facebook"
+                                    }
+                                })
+                                Log.d(TAG, "Register: Calling loginWithAccountPicker")
+                                FacebookSignInUtil.loginWithAccountPicker(
+                                    this@MainActivity,
+                                    listOf("email", "public_profile")
+                                )
                             }
                         )
                     }
@@ -304,5 +417,12 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        Log.d(TAG, "onActivityResult called: requestCode=$requestCode resultCode=$resultCode data=$data")
+        val handled = FacebookSignInUtil.callbackManager.onActivityResult(requestCode, resultCode, data)
+        Log.d(TAG, "onActivityResult: callbackManager handled=$handled")
+        super.onActivityResult(requestCode, resultCode, data)
     }
 }

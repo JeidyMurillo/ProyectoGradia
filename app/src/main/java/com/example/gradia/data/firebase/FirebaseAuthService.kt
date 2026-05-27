@@ -1,8 +1,11 @@
 package com.example.gradia.data.firebase
 
+import android.util.Log
 import com.google.firebase.Firebase
 import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.EmailAuthProvider
+import com.google.firebase.auth.FacebookAuthProvider
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.auth
 import com.google.firebase.auth.userProfileChangeRequest
@@ -10,6 +13,8 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
+
+private const val TAG = "GradiaFirebaseAuth"
 
 class FirebaseAuthService {
 
@@ -45,6 +50,26 @@ class FirebaseAuthService {
                 Result.success(user)
             } ?: Result.failure(Exception("Error al crear usuario"))
         } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun signInWithFacebook(token: String): Result<Pair<com.google.firebase.auth.FirebaseUser, Boolean>> {
+        Log.d(TAG, "signInWithFacebook called")
+        return try {
+            val credential: AuthCredential = FacebookAuthProvider.getCredential(token)
+            Log.d(TAG, "signInWithFacebook: credential created, calling signInWithCredential")
+            val result = auth.signInWithCredential(credential).await()
+            val firebaseUser = result.user
+            if (firebaseUser == null) {
+                Log.e(TAG, "signInWithFacebook: user is null")
+                return Result.failure(Exception("Error al iniciar sesión con Facebook"))
+            }
+            val isNewUser = result.additionalUserInfo?.isNewUser ?: false
+            Log.d(TAG, "signInWithFacebook: success, uid=${firebaseUser.uid}, isNewUser=$isNewUser")
+            Result.success(Pair(firebaseUser, isNewUser))
+        } catch (e: Exception) {
+            Log.e(TAG, "signInWithFacebook: exception", e)
             Result.failure(e)
         }
     }
@@ -92,6 +117,33 @@ class FirebaseAuthService {
             auth.currentUser?.linkWithCredential(credential)?.await()
             Result.success(Unit)
         } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun linkWithFacebook(token: String): Result<Unit> {
+        return try {
+            val credential = FacebookAuthProvider.getCredential(token)
+            auth.currentUser?.linkWithCredential(credential)?.await()
+            Log.d(TAG, "linkWithFacebook: success")
+            Result.success(Unit)
+        } catch (e: FirebaseAuthUserCollisionException) {
+            Log.d(TAG, "linkWithFacebook: collision, email=${e.email}, trying updatedCredential")
+            val updatedCredential = e.updatedCredential
+            if (updatedCredential != null) {
+                try {
+                    auth.currentUser?.linkWithCredential(updatedCredential)?.await()
+                    Log.d(TAG, "linkWithFacebook: success with updatedCredential")
+                    Result.success(Unit)
+                } catch (e2: Exception) {
+                    Log.e(TAG, "linkWithFacebook: updatedCredential also failed", e2)
+                    Result.failure(e2)
+                }
+            } else {
+                Result.failure(e)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "linkWithFacebook: exception", e)
             Result.failure(e)
         }
     }

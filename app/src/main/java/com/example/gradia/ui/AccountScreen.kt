@@ -27,7 +27,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.gradia.GradiaApplication
 import com.example.gradia.R
+import com.example.gradia.data.firebase.FacebookSignInUtil
 import com.example.gradia.data.firebase.GoogleSignInUtil
+import com.example.gradia.data.firebase.getFirebaseErrorMessage
+import com.facebook.FacebookCallback
+import com.facebook.FacebookException
+import com.facebook.login.LoginManager
+import com.facebook.login.LoginResult
 import com.example.gradia.data.local.entity.Asignatura
 import com.example.gradia.data.local.entity.Evento
 import com.example.gradia.ui.theme.InterFontFamily
@@ -131,6 +137,7 @@ fun AccountScreen(
     val providers = app.authRepository.getLinkedProviders()
     val hasPassword = providers.contains("password")
     val hasGoogle = providers.contains("google.com")
+    val hasFacebook = providers.contains("facebook.com")
 
     LazyColumn(
         modifier = Modifier
@@ -362,6 +369,12 @@ fun AccountScreen(
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("Google", color = if (hasGoogle) Color(0xFF4CAF50) else Color.Gray)
                     }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(if (hasFacebook) "✔" else "○", color = if (hasFacebook) Color(0xFF4CAF50) else Color.Gray)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Facebook", color = if (hasFacebook) Color(0xFF4CAF50) else Color.Gray)
+                    }
                     Spacer(modifier = Modifier.height(16.dp))
                     if (!hasPassword) {
                         Button(
@@ -386,6 +399,47 @@ fun AccountScreen(
                             colors = ButtonDefaults.buttonColors(containerColor = PurpleGradia),
                             enabled = !isLinking
                         ) { Text("Vincular Google") }
+                    }
+                    if (!hasFacebook) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(
+                            onClick = {
+                                LoginManager.getInstance().registerCallback(FacebookSignInUtil.callbackManager, object : FacebookCallback<LoginResult> {
+                                    override fun onSuccess(result: LoginResult) {
+                                        scope.launch {
+                                            isLinking = true
+                                            linkError = null
+                                            try {
+                                                app.authRepository.linkWithFacebook(result.accessToken.token).fold(
+                                                    onSuccess = {
+                                                        linkSuccess = "Cuenta de Facebook vinculada correctamente"
+                                                    },
+                                                    onFailure = { e ->
+                                                        linkError = getFirebaseErrorMessage(e)
+                                                    }
+                                                )
+                                            } catch (e: Exception) {
+                                                linkError = e.message ?: "Error inesperado"
+                                            } finally {
+                                                isLinking = false
+                                            }
+                                        }
+                                    }
+                                    override fun onCancel() {}
+                                    override fun onError(error: FacebookException) {
+                                        linkError = error.message ?: "Error al vincular Facebook"
+                                    }
+                                })
+                                FacebookSignInUtil.loginWithAccountPicker(
+                                    context as androidx.activity.ComponentActivity,
+                                    listOf("email", "public_profile")
+                                )
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = PurpleGradia),
+                            enabled = !isLinking
+                        ) { Text("Vincular Facebook") }
                     }
                     if (providers.size > 1) {
                         Spacer(modifier = Modifier.height(8.dp))
