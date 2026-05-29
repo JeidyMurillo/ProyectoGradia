@@ -12,7 +12,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -222,16 +221,6 @@ private fun FilterPill(
     }
 }
 
-private fun iconForActivity(name: String): Int = when {
-    name.contains("Final", ignoreCase = true) -> R.drawable.calendar
-    name.contains("Taller", ignoreCase = true) ||
-    name.contains("Tarea", ignoreCase = true) ||
-    name.contains("Quiz", ignoreCase = true) ||
-    name.contains("Laboratorio", ignoreCase = true) ||
-    name.contains("Proyecto", ignoreCase = true) -> R.drawable.list
-    else -> R.drawable.document
-}
-
 @Composable
 private fun GradeRow(item: GradeItem) {
     if (item.grade == null) {
@@ -275,11 +264,10 @@ private fun GradeRowContent(item: GradeItem, isPending: Boolean) {
                 ),
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                painter = painterResource(id = iconForActivity(item.name)),
-                contentDescription = null,
+            GradeIconRender(
+                type = resolveGradeIcon(item.icon, item.name),
                 tint = if (isPending) Color(0xFFB0A4BC) else PurpleGradia,
-                modifier = Modifier.size(22.dp)
+                size = 22.dp
             )
         }
         Spacer(modifier = Modifier.width(12.dp))
@@ -393,7 +381,10 @@ private fun AddGradeSheet(
     var name by remember { mutableStateOf("") }
     var grade by remember { mutableStateOf("") }
     var percentage by remember { mutableStateOf("") }
+    var selectedIconOverride by remember { mutableStateOf<GradeIconType?>(null) }
+    var iconMenuOpen by remember { mutableStateOf(false) }
 
+    val effectiveIcon = selectedIconOverride ?: gradeIconType(name)
     val percentageDouble = percentage.toDoubleOrNull()
     val gradeDouble = grade.toDoubleOrNull()
     val isValid = name.isNotBlank() &&
@@ -444,7 +435,49 @@ private fun AddGradeSheet(
                 Column {
                     SheetFieldLabel("Icon")
                     Spacer(modifier = Modifier.height(8.dp))
-                    GradeIconPreview(name = name)
+                    Box {
+                        GradeIconPreview(
+                            type = effectiveIcon,
+                            onClick = { iconMenuOpen = true }
+                        )
+                        DropdownMenu(
+                            expanded = iconMenuOpen,
+                            onDismissRequest = { iconMenuOpen = false }
+                        ) {
+                            GradeIconType.entries.forEach { type ->
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            text = gradeIconLabel(type),
+                                            fontFamily = InterFontFamily,
+                                            fontSize = 14.sp,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = Color(0xFF1F1F1F)
+                                        )
+                                    },
+                                    leadingIcon = {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(32.dp)
+                                                .clip(CircleShape)
+                                                .background(PurpleGradia),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            GradeIconRender(
+                                                type = type,
+                                                tint = Color.White,
+                                                size = 18.dp
+                                            )
+                                        }
+                                    },
+                                    onClick = {
+                                        selectedIconOverride = type
+                                        iconMenuOpen = false
+                                    }
+                                )
+                            }
+                        }
+                    }
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     SheetFieldLabel("Nombre de la actividad")
@@ -513,7 +546,8 @@ private fun AddGradeSheet(
                             subjectId = 0L,
                             name = name.trim(),
                             percentage = pct,
-                            grade = gradeDouble
+                            grade = gradeDouble,
+                            icon = gradeIconStringFor(effectiveIcon)
                         )
                     )
                 },
@@ -637,39 +671,16 @@ private fun SheetPillTextField(
 }
 
 @Composable
-private fun GradeIconPreview(name: String) {
-    val iconRes = when {
-        name.contains("Final", ignoreCase = true) -> R.drawable.calendar
-        name.contains("Taller", ignoreCase = true) ||
-        name.contains("Tarea", ignoreCase = true) ||
-        name.contains("Quiz", ignoreCase = true) ||
-        name.contains("Laboratorio", ignoreCase = true) ||
-        name.contains("Proyecto", ignoreCase = true) -> R.drawable.list
-        name.contains("Parcial", ignoreCase = true) ||
-        name.contains("Examen", ignoreCase = true) -> R.drawable.document
-        else -> null
-    }
+private fun GradeIconPreview(type: GradeIconType, onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .size(48.dp)
-            .background(PurpleGradia, CircleShape),
+            .clip(CircleShape)
+            .background(PurpleGradia)
+            .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        if (iconRes != null) {
-            Icon(
-                painter = painterResource(id = iconRes),
-                contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.size(22.dp)
-            )
-        } else {
-            Icon(
-                imageVector = Icons.Default.Star,
-                contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.size(22.dp)
-            )
-        }
+        GradeIconRender(type = type, tint = Color.White, size = 22.dp)
     }
 }
 

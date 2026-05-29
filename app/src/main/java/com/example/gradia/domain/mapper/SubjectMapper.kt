@@ -33,7 +33,8 @@ fun Nota.toDomain(): GradeItem = GradeItem(
     subjectId = asignaturaId,
     name = nombre,
     percentage = porcentaje.toDouble(),
-    grade = valor?.toDouble()
+    grade = valor?.toDouble(),
+    icon = icono
 )
 
 fun GradeItem.toEntity(): Nota = Nota(
@@ -41,5 +42,6 @@ fun GradeItem.toEntity(): Nota = Nota(
     asignaturaId = subjectId,
     nombre = name,
     valor = grade?.toFloat(),
-    porcentaje = percentage.toFloat()
+    porcentaje = percentage.toFloat(),
+    icono = icon
 )
