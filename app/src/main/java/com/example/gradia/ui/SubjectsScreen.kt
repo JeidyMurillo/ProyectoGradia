@@ -1,8 +1,10 @@
 package com.example.gradia.ui
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -52,6 +54,7 @@ fun SubjectsScreen(onSubjectClick: (Subject) -> Unit = {}) {
     val snackbarHostState = remember { SnackbarHostState() }
 
     var showAddSheet by remember { mutableStateOf(false) }
+    var subjectToDelete by remember { mutableStateOf<Subject?>(null) }
 
     LaunchedEffect(state.error) {
         state.error?.let { message ->
@@ -71,7 +74,16 @@ fun SubjectsScreen(onSubjectClick: (Subject) -> Unit = {}) {
                 selected = state.filter,
                 onSelected = viewModel::onFilterChange
             )
-            Spacer(modifier = Modifier.height(18.dp))
+            if (state.subjects.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(
+                    text = "Mantén pulsada una asignatura para eliminarla",
+                    fontSize = 11.sp,
+                    color = Color(0xFFA098AA),
+                    fontFamily = InterFontFamily
+                )
+            }
+            Spacer(modifier = Modifier.height(14.dp))
 
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
@@ -82,7 +94,8 @@ fun SubjectsScreen(onSubjectClick: (Subject) -> Unit = {}) {
                 items(state.subjects, key = { it.id }) { subject ->
                     SubjectCard(
                         subject = subject,
-                        onClick = { onSubjectClick(subject) }
+                        onClick = { onSubjectClick(subject) },
+                        onLongClick = { subjectToDelete = subject }
                     )
                 }
                 item {
@@ -106,6 +119,40 @@ fun SubjectsScreen(onSubjectClick: (Subject) -> Unit = {}) {
             onDismiss = { showAddSheet = false },
             onSave = { newSubject ->
                 viewModel.addSubject(newSubject) { showAddSheet = false }
+            }
+        )
+    }
+
+    subjectToDelete?.let { subject ->
+        AlertDialog(
+            onDismissRequest = { subjectToDelete = null },
+            title = {
+                Text(
+                    text = "Eliminar asignatura",
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFC62828),
+                    fontFamily = InterFontFamily
+                )
+            },
+            text = {
+                Text(
+                    text = "¿Seguro que quieres eliminar \"${subject.name}\"? También se eliminarán todas sus calificaciones. Esta acción no se puede deshacer.",
+                    fontFamily = InterFontFamily
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.deleteSubject(subject.id)
+                        subjectToDelete = null
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFC62828))
+                ) { Text("Eliminar", color = Color.White) }
+            },
+            dismissButton = {
+                TextButton(onClick = { subjectToDelete = null }) {
+                    Text("Cancelar", color = PurpleGradia)
+                }
             }
         )
     }
@@ -156,13 +203,21 @@ private fun FilterPill(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun SubjectCard(subject: Subject, onClick: () -> Unit) {
+private fun SubjectCard(
+    subject: Subject,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit
+) {
     val iconType = resolveSubjectIcon(subject.icon, subject.name)
     Surface(
         modifier = Modifier
             .aspectRatio(1f)
-            .clickable(onClick = onClick),
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            ),
         shape = RoundedCornerShape(22.dp),
         color = Color.White,
         border = BorderStroke(1.5.dp, Color(0xFFD9C7E8))
