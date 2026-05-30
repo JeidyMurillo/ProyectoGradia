@@ -66,6 +66,60 @@ class SubjectDetailViewModel(
         }
     }
 
+    fun updateGrade(grade: GradeItem, onSuccess: () -> Unit = {}) {
+        viewModelScope.launch {
+            isSaving.value = true
+            error.value = null
+            try {
+                subjectRepository.updateGradeItem(grade.copy(subjectId = subjectId))
+                onSuccess()
+            } catch (e: Exception) {
+                error.value = e.message ?: "Error al actualizar la nota"
+            } finally {
+                isSaving.value = false
+            }
+        }
+    }
+
+    fun deleteGrade(grade: GradeItem, onSuccess: () -> Unit = {}) {
+        viewModelScope.launch {
+            error.value = null
+            try {
+                subjectRepository.deleteGradeItem(grade)
+                onSuccess()
+            } catch (e: Exception) {
+                error.value = e.message ?: "Error al eliminar la nota"
+            }
+        }
+    }
+
+    fun updateSubject(subject: Subject, onSuccess: () -> Unit = {}) {
+        viewModelScope.launch {
+            isSaving.value = true
+            error.value = null
+            try {
+                subjectRepository.updateSubject(subject.copy(id = subjectId))
+                onSuccess()
+            } catch (e: Exception) {
+                error.value = e.message ?: "Error al actualizar la asignatura"
+            } finally {
+                isSaving.value = false
+            }
+        }
+    }
+
+    fun deleteSubject(onSuccess: () -> Unit = {}) {
+        viewModelScope.launch {
+            error.value = null
+            try {
+                subjectRepository.deleteSubject(subjectId)
+                onSuccess()
+            } catch (e: Exception) {
+                error.value = e.message ?: "Error al eliminar la asignatura"
+            }
+        }
+    }
+
     fun clearError() {
         error.value = null
     }

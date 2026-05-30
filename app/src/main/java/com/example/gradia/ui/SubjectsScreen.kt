@@ -101,7 +101,7 @@ fun SubjectsScreen(onSubjectClick: (Subject) -> Unit = {}) {
     }
 
     if (showAddSheet) {
-        AddSubjectSheet(
+        SubjectFormSheet(
             isSaving = state.isSaving,
             onDismiss = { showAddSheet = false },
             onSave = { newSubject ->
@@ -226,19 +226,24 @@ private fun AddSubjectCard(onClick: () -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AddSubjectSheet(
+fun SubjectFormSheet(
     isSaving: Boolean,
     onDismiss: () -> Unit,
-    onSave: (Subject) -> Unit
+    onSave: (Subject) -> Unit,
+    initial: Subject? = null,
+    onDelete: (() -> Unit)? = null
 ) {
+    val isEditing = initial != null
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    var name by remember { mutableStateOf("") }
-    var credits by remember { mutableStateOf("") }
-    var semester by remember { mutableStateOf("1") }
-    var professor by remember { mutableStateOf("") }
-    var classroom by remember { mutableStateOf("") }
-    var selectedIconOverride by remember { mutableStateOf<SubjectIconType?>(null) }
+    var name by remember { mutableStateOf(initial?.name ?: "") }
+    var credits by remember { mutableStateOf(initial?.creditHours?.takeIf { it > 0 }?.toString() ?: "") }
+    var semester by remember { mutableStateOf((initial?.semester ?: 1).toString()) }
+    var professor by remember { mutableStateOf(initial?.professor ?: "") }
+    var classroom by remember { mutableStateOf(initial?.classroom ?: "") }
+    var selectedIconOverride by remember {
+        mutableStateOf<SubjectIconType?>(initial?.let { resolveSubjectIcon(it.icon, it.name) })
+    }
     var iconMenuOpen by remember { mutableStateOf(false) }
 
     val effectiveIcon = selectedIconOverride ?: subjectIconType(name)
@@ -267,18 +272,30 @@ private fun AddSubjectSheet(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Agregar Asignatura",
+                    text = if (isEditing) "Editar Asignatura" else "Agregar Asignatura",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = Color(0xFF1F1F1F),
                     fontFamily = InterFontFamily
                 )
-                IconButton(onClick = onDismiss) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "Cerrar",
-                        tint = Color(0xFF4A4A4A)
-                    )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (onDelete != null) {
+                        IconButton(onClick = onDelete) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.delete),
+                                contentDescription = "Eliminar asignatura",
+                                tint = Color(0xFFC62828),
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
+                    }
+                    IconButton(onClick = onDismiss) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Cerrar",
+                            tint = Color(0xFF4A4A4A)
+                        )
+                    }
                 }
             }
 
@@ -422,9 +439,10 @@ private fun AddSubjectSheet(
                     val finalSemester = semesterInt ?: return@Button
                     onSave(
                         Subject(
-                            id = 0L,
+                            id = initial?.id ?: 0L,
                             name = name.trim(),
                             icon = iconStringFor(effectiveIcon),
+                            passingGrade = initial?.passingGrade ?: 3.0,
                             creditHours = finalCredits,
                             semester = finalSemester,
                             professor = professor.trim(),
@@ -450,7 +468,7 @@ private fun AddSubjectSheet(
                     )
                 } else {
                     Text(
-                        text = "Guardar Asignatura",
+                        text = if (isEditing) "Guardar cambios" else "Guardar Asignatura",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
