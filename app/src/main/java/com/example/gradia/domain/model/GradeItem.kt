@@ -5,5 +5,6 @@ data class GradeItem(
     val subjectId: Long,
     val name: String,
     val percentage: Double,
-    val grade: Double? = null
+    val grade: Double? = null,
+    val icon: String = ""
 )

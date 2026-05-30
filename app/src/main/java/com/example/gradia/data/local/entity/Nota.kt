@@ -24,5 +24,6 @@ data class Nota(
     val nombre: String,
     val valor: Float?,
     val porcentaje: Float,
+    val icono: String = "",
     val fechaCreacion: Long = System.currentTimeMillis()
 )

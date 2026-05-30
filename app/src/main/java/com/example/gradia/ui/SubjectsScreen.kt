@@ -14,6 +14,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
@@ -370,15 +371,9 @@ private fun AddSubjectSheet(
                 Column(modifier = Modifier.weight(1f)) {
                     FieldLabel("Semestre")
                     Spacer(modifier = Modifier.height(8.dp))
-                    PillTextField(
+                    SemesterDropdownField(
                         value = semester,
-                        onValueChange = { input ->
-                            if (input.isEmpty() || input.toIntOrNull() != null) {
-                                semester = input
-                            }
-                        },
-                        placeholder = "1",
-                        keyboardType = KeyboardType.Number
+                        onSelect = { semester = it }
                     )
                 }
             }
@@ -476,6 +471,72 @@ private fun FieldLabel(text: String) {
         color = Color(0xFF1F1F1F),
         fontFamily = InterFontFamily
     )
+}
+
+@Composable
+private fun SemesterDropdownField(
+    value: String,
+    onSelect: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val selected = value.ifBlank { "1" }
+
+    Box(modifier = modifier) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(50))
+                .clickable { expanded = true },
+            shape = RoundedCornerShape(50),
+            color = Color(0xFFF3EDF7)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 18.dp, end = 10.dp, top = 8.dp, bottom = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "Semestre $selected",
+                    fontSize = 14.sp,
+                    color = Color(0xFF1F1F1F),
+                    fontFamily = InterFontFamily
+                )
+                Icon(
+                    imageVector = Icons.Default.ArrowDropDown,
+                    contentDescription = "Seleccionar semestre",
+                    tint = PurpleGradia,
+                    modifier = Modifier.size(22.dp)
+                )
+            }
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.heightIn(max = 280.dp)
+        ) {
+            (1..10).forEach { sem ->
+                val semStr = sem.toString()
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = "Semestre $sem",
+                            fontFamily = InterFontFamily,
+                            fontSize = 14.sp,
+                            fontWeight = if (selected == semStr) FontWeight.Bold else FontWeight.Normal,
+                            color = if (selected == semStr) PurpleGradia else Color(0xFF1F1F1F)
+                        )
+                    },
+                    onClick = {
+                        onSelect(semStr)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
 }
 
 @Composable
