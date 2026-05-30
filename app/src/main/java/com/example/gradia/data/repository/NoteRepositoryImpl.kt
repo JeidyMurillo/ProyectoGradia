@@ -25,8 +25,8 @@ class NoteRepositoryImpl(
         }
     }
 
-    override fun getNoteById(id: Long): Flow<Note?> {
-        return notaDao.getNotaConCategoriasById(id).map { it?.toDomain() }
+    override fun getNoteById(id: Long, userId: String): Flow<Note?> {
+        return notaDao.getNotaConCategoriasById(id, userId).map { it?.toDomain() }
     }
 
     override suspend fun saveNote(note: Note): Long {
@@ -48,8 +48,8 @@ class NoteRepositoryImpl(
         return notaId
     }
 
-    override suspend fun deleteNote(id: Long) {
-        notaDao.deleteNotaById(id)
+    override suspend fun deleteNote(id: Long, userId: String) {
+        notaDao.deleteNotaById(id, userId)
     }
 
     override fun getCategories(userId: String): Flow<List<Category>> {
@@ -63,11 +63,11 @@ class NoteRepositoryImpl(
     }
 
     override suspend fun updateCategory(category: Category) {
-        categoriaDao.updateCategoria(category.id, category.name, category.color)
+        categoriaDao.updateCategoria(category.id, category.name, category.color, category.userId)
     }
 
-    override suspend fun deleteCategory(id: Long) {
-        categoriaDao.deleteCategoriaById(id)
+    override suspend fun deleteCategory(id: Long, userId: String) {
+        categoriaDao.deleteCategoriaById(id, userId)
     }
 
     override fun getNotesByCategories(categoryIds: List<Long>, userId: String): Flow<List<Note>> {
