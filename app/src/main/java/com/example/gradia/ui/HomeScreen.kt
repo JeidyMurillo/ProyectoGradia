@@ -124,6 +124,7 @@ fun HomeScreen(
                                     8 -> "Perfil"
                                     9 -> selectedSubjectName.ifBlank { "Materia" }
                                     10 -> "Estadísticas"
+                                    12 -> "Rendimiento"
                                     else -> "Gradia"
                                 },
                                 modifier = Modifier.fillMaxWidth(),
@@ -135,7 +136,7 @@ fun HomeScreen(
                             )
                         },
                         navigationIcon = {
-                            if (selectedTab in 3..7 || selectedTab == 9) {
+                            if (selectedTab in 3..7 || selectedTab == 9 || selectedTab == 12) {
                                 IconButton(onClick = { selectedTab = previousTab }) {
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -156,7 +157,7 @@ fun HomeScreen(
                             }
                         },
                         actions = {
-                            if (selectedTab in 3..7 || selectedTab == 9) {
+                            if (selectedTab in 3..7 || selectedTab == 9 || selectedTab == 12) {
                                 Box {
                                     IconButton(onClick = { showMenu = true }) {
                                         Icon(
@@ -308,7 +309,15 @@ fun HomeScreen(
                                 onSubjectDeleted = { selectedTab = previousTab }
                             )
                         }
-                        10 -> StatsScreen()
+                        10 -> StatsScreen(
+                            onNavigateToPerformance = {
+                                previousTab = selectedTab
+                                selectedTab = 12
+                            }
+                        )
+                        12 -> SubjectPerformanceScreen(
+                            onBackClick = { selectedTab = previousTab }
+                        )
                         else -> {
                             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                 Text("Próximamente", style = MaterialTheme.typography.titleLarge)
