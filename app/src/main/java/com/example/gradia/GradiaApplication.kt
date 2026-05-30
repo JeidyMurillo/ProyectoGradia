@@ -24,6 +24,7 @@ import com.example.gradia.domain.usecase.notes.GetNotesUseCase
 import com.example.gradia.domain.usecase.notes.SaveNoteUseCase
 import com.example.gradia.domain.usecase.notes.UpdateCategoryUseCase
 import com.example.gradia.presentation.viewmodel.FinalGradeViewModel
+import com.example.gradia.presentation.viewmodel.HomeViewModel
 import com.example.gradia.presentation.viewmodel.NotesViewModel
 import com.example.gradia.presentation.viewmodel.SubjectDetailViewModel
 import com.example.gradia.presentation.viewmodel.SubjectsViewModel
@@ -81,6 +82,13 @@ class GradiaApplication : Application() {
     var isRememberMeEnabled: Boolean
         get() = prefs.getBoolean("remember_me", false)
         set(value) = prefs.edit().putBoolean("remember_me", value).apply()
+
+    fun provideHomeViewModel(): HomeViewModel {
+        return HomeViewModel(
+            subjectRepository = subjectRepository,
+            calculateCurrentAverage = calculateCurrentAverageUseCase
+        )
+    }
 
     fun provideFinalGradeViewModel(): FinalGradeViewModel {
         return FinalGradeViewModel(

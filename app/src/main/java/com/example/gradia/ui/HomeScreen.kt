@@ -633,7 +633,9 @@ fun DrawerMenuItem(
 @Composable
 fun HomeContent(onSubjectClick: (Subject) -> Unit = {}) {
     val app = LocalContext.current.applicationContext as GradiaApplication
-    val subjects by app.subjectRepository.getSubjects().collectAsState(initial = emptyList())
+    val homeViewModel = remember { app.provideHomeViewModel() }
+    val homeState by homeViewModel.uiState.collectAsState()
+    val subjects = homeState.subjects
     var isExpanded by remember { mutableStateOf(false) }
 
     val visibleSubjects = if (isExpanded || subjects.size <= 3) subjects else subjects.take(3)
@@ -679,16 +681,25 @@ fun HomeContent(onSubjectClick: (Subject) -> Unit = {}) {
 
                     Spacer(modifier = Modifier.height(24.dp))
 
+                    val average = homeState.generalAverage
+                    val hasGrades = homeState.hasGrades
+                    val performance = performanceFor(average, hasGrades)
+
                     Box(contentAlignment = Alignment.Center) {
-                        CircularProgressChart(progress = 0.85f, score = "4.5", status = "Excellent")
+                        CircularProgressChart(
+                            progress = if (hasGrades) (average / 5.0).toFloat().coerceIn(0f, 1f) else 0f,
+                            score = if (hasGrades) "%.1f".format(average) else "—",
+                            status = performance.status
+                        )
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))
 
                     Text(
-                        "¡Excelente rendimiento este ciclo!",
+                        text = performance.message,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Gray
+                        color = Color.Gray,
+                        textAlign = TextAlign.Center
                     )
                 }
             }
@@ -769,6 +780,35 @@ fun EmptySubjectsCard() {
             )
         }
     }
+}
+
+private data class PerformanceInfo(val status: String, val message: String)
+
+/**
+ * Devuelve la etiqueta y el mensaje del Promedio General según cómo le va al
+ * estudiante. Las franjas coinciden con las usadas en el detalle de cada nota.
+ */
+private fun performanceFor(average: Double, hasGrades: Boolean): PerformanceInfo = when {
+    !hasGrades -> PerformanceInfo(
+        status = "Sin notas",
+        message = "Aún no has registrado calificaciones."
+    )
+    average < 3.0 -> PerformanceInfo(
+        status = "Bajo",
+        message = "Vas por debajo de lo necesario. ¡Aún puedes mejorar!"
+    )
+    average < 4.0 -> PerformanceInfo(
+        status = "Regular",
+        message = "Vas aprobando, sigue esforzándote."
+    )
+    average < 4.5 -> PerformanceInfo(
+        status = "Bien",
+        message = "¡Buen rendimiento este ciclo!"
+    )
+    else -> PerformanceInfo(
+        status = "Excelente",
+        message = "¡Excelente rendimiento este ciclo!"
+    )
 }
 
 @Composable
