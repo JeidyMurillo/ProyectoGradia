@@ -212,7 +212,8 @@ class TasksViewModel(
     fun toggleTaskCompletion(id: Long, currentCompleted: Boolean) {
         viewModelScope.launch {
             try {
-                eventoRepository.updateEstadoCompletado(id, !currentCompleted)
+                val uid = currentUserId ?: return@launch
+                eventoRepository.updateEstadoCompletado(id, !currentCompleted, uid)
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = e.message) }
             }
@@ -235,8 +236,9 @@ class TasksViewModel(
         val ids = _uiState.value.selectedTaskIds.toList()
         if (ids.isEmpty()) return
         viewModelScope.launch {
+            val uid = currentUserId ?: return@launch
             ids.forEach { id ->
-                try { eventoRepository.deleteEventoById(id) } catch (_: Exception) { }
+                try { eventoRepository.deleteEventoById(id, uid) } catch (_: Exception) { }
             }
             _uiState.update { it.copy(selectedTaskIds = emptySet()) }
         }
@@ -244,7 +246,8 @@ class TasksViewModel(
 
     fun deleteTask(id: Long) {
         viewModelScope.launch {
-            try { eventoRepository.deleteEventoById(id) } catch (_: Exception) { }
+            val uid = currentUserId ?: return@launch
+            try { eventoRepository.deleteEventoById(id, uid) } catch (_: Exception) { }
         }
     }
 

@@ -33,7 +33,9 @@ class GradiaApplication : Application() {
 
     val database by lazy { AppDatabase.getDatabase(this) }
 
-    val userRepository by lazy { UserRepository(database.userDao()) }
+    val firebaseAuthService by lazy { FirebaseAuthService() }
+
+    val userRepository by lazy { UserRepository(database.userDao(), firebaseAuthService) }
     val asignaturaRepository by lazy { AsignaturaRepository(database.asignaturaDao()) }
     val notaRepository by lazy { NotaRepository(database.notaDao()) }
     val eventoRepository by lazy { EventoRepository(database.eventoDao()) }
@@ -54,7 +56,6 @@ class GradiaApplication : Application() {
         )
     }
 
-    val firebaseAuthService by lazy { FirebaseAuthService() }
     val authRepository by lazy { AuthRepository(firebaseAuthService, userRepository) }
 
     val calculateCurrentAverageUseCase by lazy { CalculateCurrentAverageUseCase() }

@@ -9,11 +9,11 @@ class AsignaturaRepository(private val asignaturaDao: AsignaturaDao) {
     fun getAsignaturasByUser(userId: String): Flow<List<Asignatura>> =
         asignaturaDao.getAsignaturasByUser(userId)
 
-    fun getAsignaturaById(id: Long): Flow<Asignatura?> =
-        asignaturaDao.getAsignaturaById(id)
+    fun getAsignaturaById(id: Long, userId: String): Flow<Asignatura?> =
+        asignaturaDao.getAsignaturaById(id, userId)
 
-    suspend fun getAsignaturaByIdSync(id: Long): Asignatura? =
-        asignaturaDao.getAsignaturaByIdSync(id)
+    suspend fun getAsignaturaByIdSync(id: Long, userId: String): Asignatura? =
+        asignaturaDao.getAsignaturaByIdSync(id, userId)
 
     suspend fun insertAsignatura(asignatura: Asignatura): Long =
         asignaturaDao.insertAsignatura(asignatura)
@@ -24,8 +24,8 @@ class AsignaturaRepository(private val asignaturaDao: AsignaturaDao) {
     suspend fun deleteAsignatura(asignatura: Asignatura) =
         asignaturaDao.deleteAsignatura(asignatura)
 
-    suspend fun deleteAsignaturaById(id: Long) =
-        asignaturaDao.deleteAsignaturaById(id)
+    suspend fun deleteAsignaturaById(id: Long, userId: String) =
+        asignaturaDao.deleteAsignaturaById(id, userId)
 
     suspend fun getCantidadAsignaturas(userId: String): Int =
         asignaturaDao.getCantidadAsignaturas(userId)

@@ -15,14 +15,14 @@ class EventoRepository(private val eventoDao: EventoDao) {
     fun getEventosPendientes(userId: String, fecha: Long): Flow<List<Evento>> =
         eventoDao.getEventosPendientes(userId, fecha)
 
-    fun getEventoById(id: Long): Flow<Evento?> =
-        eventoDao.getEventoById(id)
+    fun getEventoById(id: Long, userId: String): Flow<Evento?> =
+        eventoDao.getEventoById(id, userId)
 
-    suspend fun getEventoByIdSync(id: Long): Evento? =
-        eventoDao.getEventoByIdSync(id)
+    suspend fun getEventoByIdSync(id: Long, userId: String): Evento? =
+        eventoDao.getEventoByIdSync(id, userId)
 
-    fun getEventosByAsignatura(asignaturaId: Long): Flow<List<Evento>> =
-        eventoDao.getEventosByAsignatura(asignaturaId)
+    fun getEventosByAsignatura(asignaturaId: Long, userId: String): Flow<List<Evento>> =
+        eventoDao.getEventosByAsignatura(asignaturaId, userId)
 
     fun getEventosByTipo(tipo: String, userId: String): Flow<List<Evento>> =
         eventoDao.getEventosByTipo(tipo, userId)
@@ -36,11 +36,11 @@ class EventoRepository(private val eventoDao: EventoDao) {
     suspend fun deleteEvento(evento: Evento) =
         eventoDao.deleteEvento(evento)
 
-    suspend fun deleteEventoById(id: Long) =
-        eventoDao.deleteEventoById(id)
+    suspend fun deleteEventoById(id: Long, userId: String) =
+        eventoDao.deleteEventoById(id, userId)
 
-    suspend fun updateEstadoCompletado(id: Long, completado: Boolean) =
-        eventoDao.updateEstadoCompletado(id, completado)
+    suspend fun updateEstadoCompletado(id: Long, completado: Boolean, userId: String) =
+        eventoDao.updateEstadoCompletado(id, completado, userId)
 
     suspend fun deleteAllEventosByUser(userId: String) =
         eventoDao.deleteAllEventosByUser(userId)

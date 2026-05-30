@@ -32,8 +32,18 @@ class RoomSubjectRepository(
         }
 
     override fun getSubjectById(id: Long): Flow<Subject?> =
-        asignaturaDao.getAsignaturaById(id).map { it?.toDomain() }
+        userRepository.getCurrentUser().flatMapLatest { user ->
+            if (user == null) {
+                flowOf(null)
+            } else {
+                asignaturaDao.getAsignaturaById(id, user.id).map { it?.toDomain() }
+            }
+        }
 
+    // Las calificaciones (tabla `notas`) no tienen columna userId: cuelgan de una
+    // asignatura, que sí está aislada por usuario. Solo se accede a ellas mediante
+    // un subjectId proveniente de la lista de asignaturas del propio usuario, por lo
+    // que su aislamiento queda garantizado de forma indirecta.
     override fun getGradeItemsBySubject(subjectId: Long): Flow<List<GradeItem>> =
         notaDao.getNotasByAsignatura(subjectId).map { list -> list.map { it.toDomain() } }
 
