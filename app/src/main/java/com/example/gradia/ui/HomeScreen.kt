@@ -303,7 +303,12 @@ fun HomeScreen(
                                     selectedTab = previousTab
                                 }
                             )
-                        9 -> selectedSubjectId?.let { SubjectDetailScreen(subjectId = it) }
+                        9 -> selectedSubjectId?.let {
+                            SubjectDetailScreen(
+                                subjectId = it,
+                                onSubjectDeleted = { selectedTab = previousTab }
+                            )
+                        }
                         10 -> StatsScreen(
                             onNavigateToPerformance = {
                                 previousTab = selectedTab

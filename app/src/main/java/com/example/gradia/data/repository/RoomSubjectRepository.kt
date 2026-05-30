@@ -53,11 +53,33 @@ class RoomSubjectRepository(
         return asignaturaDao.insertAsignatura(subject.toEntity(user.id))
     }
 
+    override suspend fun updateSubject(subject: Subject) {
+        val user = userRepository.getCurrentUser().first()
+            ?: error("No hay usuario activo para editar la asignatura")
+        // toEntity conserva el id; al fijar el userId del usuario actual la fila
+        // editada sigue perteneciendo a su dueño.
+        asignaturaDao.updateAsignatura(subject.toEntity(user.id))
+    }
+
+    override suspend fun deleteSubject(subjectId: Long) {
+        val user = userRepository.getCurrentUser().first()
+            ?: error("No hay usuario activo para eliminar la asignatura")
+        // La FK de `notas` usa ON DELETE CASCADE, así que las calificaciones
+        // asociadas se eliminan automáticamente.
+        asignaturaDao.deleteAsignaturaById(subjectId, user.id)
+    }
+
     override suspend fun insertGradeItem(gradeItem: GradeItem): Long =
         notaDao.insertNota(gradeItem.toEntity())
 
     override suspend fun updateGradeItem(gradeItem: GradeItem) {
-        notaDao.updateNota(gradeItem.toEntity())
+        // Conserva la fecha de creación original para que la nota editada no se
+        // reordene al principio de la lista (se ordena por fechaCreacion).
+        val existing = notaDao.getNotaByIdSync(gradeItem.id)
+        val entity = gradeItem.toEntity()
+        notaDao.updateNota(
+            if (existing != null) entity.copy(fechaCreacion = existing.fechaCreacion) else entity
+        )
     }
 
     override suspend fun deleteGradeItem(gradeItem: GradeItem) {
