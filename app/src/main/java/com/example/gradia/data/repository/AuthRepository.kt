@@ -1,18 +1,21 @@
 package com.example.gradia.data.repository
 
+import android.util.Log
 import com.example.gradia.data.email.EmailService
 import com.example.gradia.data.firebase.FirebaseAuthService
 import com.example.gradia.data.local.entity.User
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class AuthRepository(
     private val authService: FirebaseAuthService,
     private val userRepository: UserRepository,
-    private val emailService: EmailService? = null
+    private val emailService: EmailService? = null,
+    private val scope: CoroutineScope? = null
 ) {
     val currentUser = authService.currentUser
 
@@ -37,9 +40,14 @@ class AuthRepository(
             result.fold(
                 onSuccess = { firebaseUser ->
                     val user = saveUserToLocalDb(firebaseUser)
-                    emailService?.let {
-                        CoroutineScope(Dispatchers.IO).launch {
-                            it.sendWelcomeEmail(user.nombre, user.email)
+                    emailService?.let { service ->
+                        val emailScope = scope ?: CoroutineScope(SupervisorJob() + Dispatchers.IO)
+                        emailScope.launch {
+                            val result = service.sendWelcomeEmail(user.nombre, user.email)
+                            result.fold(
+                                onSuccess = { Log.d("AuthRepository", "Email de bienvenida enviado a ${user.email}") },
+                                onFailure = { e -> Log.e("AuthRepository", "Error al enviar email de bienvenida a ${user.email}", e) }
+                            )
                         }
                     }
                     Result.success(user)
