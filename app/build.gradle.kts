@@ -28,9 +28,9 @@ android {
             val regex = Regex("^SENDGRID_API_KEY=(.*)$", RegexOption.MULTILINE)
             val match = regex.find(text)
             match?.groupValues?.get(1)?.trim()
-                ?: "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"
+                ?: "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"
         } else {
-            "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"
+            "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"
         }
         buildConfigField("String", "SENDGRID_API_KEY", "\"$sendGridApiKey\"")
     }
