@@ -21,6 +21,18 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        val localProps = rootProject.file("local.properties")
+        val sendGridApiKey = if (localProps.exists()) {
+            val text = localProps.readText()
+            val regex = Regex("^SENDGRID_API_KEY=(.*)$", RegexOption.MULTILINE)
+            val match = regex.find(text)
+            match?.groupValues?.get(1)?.trim()
+                ?: "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"
+        } else {
+            "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"
+        }
+        buildConfigField("String", "SENDGRID_API_KEY", "\"$sendGridApiKey\"")
     }
 
     buildTypes {
