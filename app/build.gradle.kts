@@ -21,6 +21,8 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "SENDGRID_API_KEY", "\"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\"")
     }
 
     buildTypes {

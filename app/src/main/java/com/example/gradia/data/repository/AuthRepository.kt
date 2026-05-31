@@ -1,13 +1,18 @@
 package com.example.gradia.data.repository
 
+import com.example.gradia.data.email.EmailService
 import com.example.gradia.data.firebase.FirebaseAuthService
 import com.example.gradia.data.local.entity.User
 import com.google.firebase.auth.FirebaseUser
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 class AuthRepository(
     private val authService: FirebaseAuthService,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val emailService: EmailService? = null
 ) {
     val currentUser = authService.currentUser
 
@@ -32,6 +37,11 @@ class AuthRepository(
             result.fold(
                 onSuccess = { firebaseUser ->
                     val user = saveUserToLocalDb(firebaseUser)
+                    emailService?.let {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            it.sendWelcomeEmail(user.nombre, user.email)
+                        }
+                    }
                     Result.success(user)
                 },
                 onFailure = { Result.failure(it) }

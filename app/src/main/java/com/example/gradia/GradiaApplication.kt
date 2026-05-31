@@ -2,6 +2,7 @@ package com.example.gradia
 
 import android.app.Application
 import android.content.Context
+import com.example.gradia.data.email.EmailService
 import com.example.gradia.data.firebase.FirebaseAuthService
 import com.example.gradia.data.local.AppDatabase
 import com.example.gradia.data.repository.AsignaturaRepository
@@ -35,6 +36,7 @@ class GradiaApplication : Application() {
     val database by lazy { AppDatabase.getDatabase(this) }
 
     val firebaseAuthService by lazy { FirebaseAuthService() }
+    val emailService by lazy { EmailService(BuildConfig.SENDGRID_API_KEY) }
 
     val userRepository by lazy { UserRepository(database.userDao(), firebaseAuthService) }
     val asignaturaRepository by lazy { AsignaturaRepository(database.asignaturaDao()) }
@@ -57,7 +59,7 @@ class GradiaApplication : Application() {
         )
     }
 
-    val authRepository by lazy { AuthRepository(firebaseAuthService, userRepository) }
+    val authRepository by lazy { AuthRepository(firebaseAuthService, userRepository, emailService) }
 
     val calculateCurrentAverageUseCase by lazy { CalculateCurrentAverageUseCase() }
     val calculateRemainingPercentageUseCase by lazy { CalculateRemainingPercentageUseCase() }
