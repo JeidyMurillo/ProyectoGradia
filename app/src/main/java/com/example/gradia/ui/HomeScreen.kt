@@ -135,8 +135,10 @@ fun HomeScreen(
                             )
                         },
                         navigationIcon = {
-                            if (selectedTab in 3..7 || selectedTab == 9) {
-                                IconButton(onClick = { selectedTab = previousTab }) {
+                            if (selectedTab in 3..7 || selectedTab == 9 || selectedTab == 11) {
+                                IconButton(onClick = {
+                                    selectedTab = if (selectedTab == 11) 7 else previousTab
+                                }) {
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                         contentDescription = "Back",
@@ -156,7 +158,7 @@ fun HomeScreen(
                             }
                         },
                         actions = {
-                            if (selectedTab in 3..7 || selectedTab == 9) {
+                            if (selectedTab == 5 || selectedTab == 6) {
                                 Box {
                                     IconButton(onClick = { showMenu = true }) {
                                         Icon(
@@ -286,7 +288,6 @@ fun HomeScreen(
                         6 -> TasksScreen(viewModel = tasksViewModel)
                         7 -> SettingsScreen(
                                 onNavigateToAccount = {
-                                    previousTab = selectedTab
                                     selectedTab = 11
                                 },
                                 onNavigateToTerms = onNavigateToTerms
@@ -299,7 +300,7 @@ fun HomeScreen(
                                 },
                                 onDeleteAccount = onDeleteAccount,
                                 onBack = {
-                                    selectedTab = previousTab
+                                    selectedTab = 7
                                 }
                             )
                         9 -> selectedSubjectId?.let { SubjectDetailScreen(subjectId = it) }
