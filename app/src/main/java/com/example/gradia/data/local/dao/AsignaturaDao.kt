@@ -14,11 +14,11 @@ interface AsignaturaDao {
     @Query("SELECT * FROM asignaturas WHERE userId = :userId ORDER BY fechaCreacion DESC")
     fun getAsignaturasByUser(userId: String): Flow<List<Asignatura>>
 
-    @Query("SELECT * FROM asignaturas WHERE id = :id")
-    fun getAsignaturaById(id: Long): Flow<Asignatura?>
+    @Query("SELECT * FROM asignaturas WHERE id = :id AND userId = :userId")
+    fun getAsignaturaById(id: Long, userId: String): Flow<Asignatura?>
 
-    @Query("SELECT * FROM asignaturas WHERE id = :id")
-    suspend fun getAsignaturaByIdSync(id: Long): Asignatura?
+    @Query("SELECT * FROM asignaturas WHERE id = :id AND userId = :userId")
+    suspend fun getAsignaturaByIdSync(id: Long, userId: String): Asignatura?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAsignatura(asignatura: Asignatura): Long
@@ -29,8 +29,8 @@ interface AsignaturaDao {
     @Delete
     suspend fun deleteAsignatura(asignatura: Asignatura)
 
-    @Query("DELETE FROM asignaturas WHERE id = :id")
-    suspend fun deleteAsignaturaById(id: Long)
+    @Query("DELETE FROM asignaturas WHERE id = :id AND userId = :userId")
+    suspend fun deleteAsignaturaById(id: Long, userId: String)
 
     @Query("SELECT COUNT(*) FROM asignaturas WHERE userId = :userId")
     suspend fun getCantidadAsignaturas(userId: String): Int

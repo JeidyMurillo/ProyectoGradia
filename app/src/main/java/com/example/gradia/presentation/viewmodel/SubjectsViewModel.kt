@@ -68,6 +68,18 @@ class SubjectsViewModel(
         }
     }
 
+    fun deleteSubject(subjectId: Long, onSuccess: () -> Unit = {}) {
+        viewModelScope.launch {
+            error.value = null
+            try {
+                subjectRepository.deleteSubject(subjectId)
+                onSuccess()
+            } catch (e: Exception) {
+                error.value = e.message ?: "Error al eliminar la asignatura"
+            }
+        }
+    }
+
     fun clearError() {
         error.value = null
     }
