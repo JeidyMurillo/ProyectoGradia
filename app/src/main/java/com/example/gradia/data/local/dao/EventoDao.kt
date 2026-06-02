@@ -49,4 +49,7 @@ interface EventoDao {
 
     @Query("DELETE FROM eventos WHERE userId = :userId")
     suspend fun deleteAllEventosByUser(userId: String)
+
+    @Query("SELECT * FROM eventos WHERE fecha > :now AND completado = 0 ORDER BY fecha ASC")
+    suspend fun getAllEventosPendientesSync(now: Long): List<Evento>
 }

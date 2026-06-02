@@ -1,5 +1,6 @@
 package com.example.gradia.ui
 
+import android.app.TimePickerDialog
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -7,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -32,6 +35,14 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+private val recordatorioOpciones = listOf(
+    15 to "15 min",
+    30 to "30 min",
+    60 to "1 hora",
+    120 to "2 horas",
+    1440 to "1 día"
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TasksScreen(
@@ -39,6 +50,7 @@ fun TasksScreen(
     onBackClick: () -> Unit = {}
 ) {
     val state by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
     var showDatePicker by remember { mutableStateOf(false) }
     var showSubjectDropdown by remember { mutableStateOf(false) }
 
@@ -55,7 +67,14 @@ fun TasksScreen(
                             timeInMillis = millis
                         }
                         val localCal = java.util.Calendar.getInstance().apply {
-                            set(utcCal.get(java.util.Calendar.YEAR), utcCal.get(java.util.Calendar.MONTH), utcCal.get(java.util.Calendar.DAY_OF_MONTH), 12, 0, 0)
+                            set(
+                                utcCal.get(java.util.Calendar.YEAR),
+                                utcCal.get(java.util.Calendar.MONTH),
+                                utcCal.get(java.util.Calendar.DAY_OF_MONTH),
+                                state.currentHora,
+                                state.currentMinuto,
+                                0
+                            )
                             set(java.util.Calendar.MILLISECOND, 0)
                         }
                         viewModel.onFechaChange(localCal.timeInMillis)
@@ -105,7 +124,20 @@ fun TasksScreen(
                 title = state.currentTitle,
                 onTitleChange = viewModel::onTitleChange,
                 fecha = state.currentFecha,
+                hora = state.currentHora,
+                minuto = state.currentMinuto,
                 onFechaClick = { showDatePicker = true },
+                onHoraClick = {
+                    TimePickerDialog(
+                        context,
+                        { _, h, m -> viewModel.onHoraChange(h, m) },
+                        state.currentHora,
+                        state.currentMinuto,
+                        false
+                    ).show()
+                },
+                recordatorioMinutos = state.currentRecordatorioMinutos,
+                onRecordatorioChange = viewModel::onRecordatorioChange,
                 asignaturas = state.asignaturas,
                 selectedAsignaturaId = state.selectedAsignaturaId,
                 onAsignaturaSelected = viewModel::onAsignaturaSelected,
@@ -215,7 +247,12 @@ fun CreateTaskCard(
     title: String,
     onTitleChange: (String) -> Unit,
     fecha: Long,
+    hora: Int,
+    minuto: Int,
     onFechaClick: () -> Unit,
+    onHoraClick: () -> Unit,
+    recordatorioMinutos: Int,
+    onRecordatorioChange: (Int) -> Unit,
     asignaturas: List<com.example.gradia.data.local.entity.Asignatura>,
     selectedAsignaturaId: Long?,
     onAsignaturaSelected: (Long?) -> Unit,
@@ -223,6 +260,7 @@ fun CreateTaskCard(
     onSubjectDropdownChange: (Boolean) -> Unit
 ) {
     val selectedAsignatura = asignaturas.find { it.id == selectedAsignaturaId }
+    val horaFormateada = String.format(Locale.getDefault(), "%02d:%02d", hora, minuto)
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -280,12 +318,26 @@ fun CreateTaskCard(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            formatFecha(fecha),
+                            formatFechaCorta(fecha),
                             color = if (fecha > 0) Color(0xFF453284) else Color.LightGray,
                             fontSize = 13.sp,
                             modifier = Modifier.clickable { onFechaClick() }
                         )
-                        Spacer(modifier = Modifier.width(16.dp))
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Icon(
+                            painter = painterResource(id = R.drawable.clock),
+                            contentDescription = null,
+                            tint = Color.Unspecified,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            horaFormateada,
+                            color = Color(0xFF453284),
+                            fontSize = 13.sp,
+                            modifier = Modifier.clickable { onHoraClick() }
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
                         Icon(
                             painter = painterResource(id = R.drawable.graduation_cap_gray),
                             contentDescription = null,
@@ -322,6 +374,36 @@ fun CreateTaskCard(
                                 )
                             }
                         }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+            HorizontalDivider(color = Color.LightGray.copy(alpha = 0.4f))
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Text(
+                "Recordatorio",
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color.Gray
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(recordatorioOpciones) { (minutos, etiqueta) ->
+                    val seleccionado = recordatorioMinutos == minutos
+                    Surface(
+                        shape = RoundedCornerShape(20.dp),
+                        color = if (seleccionado) PurpleGradia else Color(0xFFE9E4F0),
+                        modifier = Modifier.clickable { onRecordatorioChange(minutos) }
+                    ) {
+                        Text(
+                            text = etiqueta,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                            fontSize = 12.sp,
+                            fontWeight = if (seleccionado) FontWeight.Bold else FontWeight.Normal,
+                            color = if (seleccionado) Color.White else Color(0xFF453284)
+                        )
                     }
                 }
             }
@@ -484,15 +566,20 @@ private fun urgencyColor(urgencia: Urgencia): Color = when (urgencia) {
     Urgencia.BAJO -> Color(0xFFA5D6A7)
 }
 
+private fun formatFechaCorta(fecha: Long): String {
+    if (fecha <= 0) return "Fecha"
+    return SimpleDateFormat("MMM dd", Locale.getDefault()).format(Date(fecha))
+}
+
 private fun formatFecha(fecha: Long): String {
     if (fecha <= 0) return ""
-    val cal = java.util.Calendar.getInstance()
     val hoyCal = java.util.Calendar.getInstance()
     val fechaCal = java.util.Calendar.getInstance().apply { timeInMillis = fecha }
 
-    if (hoyCal.get(java.util.Calendar.YEAR) == fechaCal.get(java.util.Calendar.YEAR) &&
+    return if (hoyCal.get(java.util.Calendar.YEAR) == fechaCal.get(java.util.Calendar.YEAR) &&
         hoyCal.get(java.util.Calendar.DAY_OF_YEAR) == fechaCal.get(java.util.Calendar.DAY_OF_YEAR)) {
-        return SimpleDateFormat("'Hoy,' h:mm a", Locale.getDefault()).format(Date(fecha))
+        SimpleDateFormat("'Hoy,' h:mm a", Locale.getDefault()).format(Date(fecha))
+    } else {
+        SimpleDateFormat("MMM dd, h:mm a", Locale.getDefault()).format(Date(fecha))
     }
-    return SimpleDateFormat("MMM dd", Locale.getDefault()).format(Date(fecha))
 }

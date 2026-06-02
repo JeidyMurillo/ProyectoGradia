@@ -44,4 +44,7 @@ class EventoRepository(private val eventoDao: EventoDao) {
 
     suspend fun deleteAllEventosByUser(userId: String) =
         eventoDao.deleteAllEventosByUser(userId)
+
+    suspend fun getAllEventosPendientesSync(now: Long): List<Evento> =
+        eventoDao.getAllEventosPendientesSync(now)
 }
