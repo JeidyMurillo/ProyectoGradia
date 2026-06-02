@@ -25,7 +25,8 @@ class BootReceiver : BroadcastReceiver() {
                         evento.id,
                         evento.titulo,
                         evento.fecha,
-                        evento.recordatorioMinutosAntes
+                        evento.recordatorioMinutosAntes,
+                        evento.userId
                     )
                 }
             } finally {

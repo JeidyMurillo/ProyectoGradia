@@ -112,12 +112,12 @@ fun HomeScreen(
                     TopAppBar(
                         title = {
                             Text(
-                                when (selectedTab) {
-                                    0 -> "Home"
-                                    1 -> "Nota Final"
-                                    2 -> "Añadir"
-                                    3 -> "Materias"
-                                    4 -> "Calendario"
+                                 when (selectedTab) {
+                                     0 -> "Home"
+                                     1 -> "Materias"
+                                     2 -> "Añadir"
+                                     3 -> "Nota Final"
+                                     4 -> "Calendario"
                                     5 -> "Notas"
                                     6 -> "Tareas"
                                     7 -> "Ajustes"
@@ -136,7 +136,7 @@ fun HomeScreen(
                             )
                         },
                         navigationIcon = {
-                            if (selectedTab in 3..7 || selectedTab == 9 || selectedTab == 11) {
+                            if (selectedTab in 5..7 || selectedTab == 9 || selectedTab == 11) {
                                 IconButton(onClick = {
                                     selectedTab = if (selectedTab == 11) 7 else previousTab
                                 }) {
@@ -275,8 +275,7 @@ fun HomeScreen(
                                 selectedTab = 9
                             }
                         )
-                        1 -> FinalGradeScreen()
-                        3 -> SubjectsScreen(
+                         1 -> SubjectsScreen(
                             onSubjectClick = { subject ->
                                 selectedSubjectId = subject.id
                                 selectedSubjectName = subject.name
@@ -284,6 +283,7 @@ fun HomeScreen(
                                 selectedTab = 9
                             }
                         )
+                        3 -> FinalGradeScreen()
                         4 -> CalendarScreen()
                         5 -> NotesScreen(viewModel = notesViewModel)
                         6 -> TasksScreen(viewModel = tasksViewModel)
@@ -940,11 +940,11 @@ fun GradiaBottomBar(selectedTab: Int, onTabSelected: (Int) -> Unit, isQuickAddOp
             BottomBarItem(
                 isSelected = selectedTab == 1 && !isQuickAddOpen,
                 onClick = { onTabSelected(1) },
-                whiteIconId = R.drawable.calculator_white,
-                purpleIconId = R.drawable.calculator_purple,
-                contentDescription = "Calculator"
+                whiteIconId = R.drawable.books_add_white,
+                purpleIconId = R.drawable.books_add_purple,
+                contentDescription = "Books"
             )
-            
+
             // Special Plus Button (The "Add" icon selected when in Notes or Tasks from Quick Add)
             val isAddIconSelected = isQuickAddOpen || selectedTab == 5 || selectedTab == 6
             IconButton(
@@ -972,9 +972,9 @@ fun GradiaBottomBar(selectedTab: Int, onTabSelected: (Int) -> Unit, isQuickAddOp
             BottomBarItem(
                 isSelected = selectedTab == 3 && !isQuickAddOpen,
                 onClick = { onTabSelected(3) },
-                whiteIconId = R.drawable.books_add_white,
-                purpleIconId = R.drawable.books_add_purple,
-                contentDescription = "Books"
+                whiteIconId = R.drawable.calculator_white,
+                purpleIconId = R.drawable.calculator_purple,
+                contentDescription = "Calculator"
             )
             BottomBarItem(
                 isSelected = selectedTab == 4 && !isQuickAddOpen,

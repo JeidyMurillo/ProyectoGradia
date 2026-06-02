@@ -5,15 +5,15 @@ import com.example.gradia.domain.model.GradeItem
 class CalculateCurrentAverageUseCase {
 
     operator fun invoke(gradeItems: List<GradeItem>): Double {
-        val gradedItems = gradeItems.filter { it.grade != null && it.grade!! > 0 }
+        val gradedItems = gradeItems.filter { it.grade != null }
 
         if (gradedItems.isEmpty()) return 0.0
 
         val weightedSum = gradedItems.sumOf { (it.grade!! * it.percentage) }
-        val totalPercentage = gradedItems.sumOf { it.percentage }
+        val totalCoursePercentage = gradeItems.sumOf { it.percentage }
 
-        return if (totalPercentage > 0) {
-            roundToDecimal(weightedSum / totalPercentage)
+        return if (totalCoursePercentage > 0) {
+            roundToDecimal(weightedSum / totalCoursePercentage)
         } else {
             0.0
         }

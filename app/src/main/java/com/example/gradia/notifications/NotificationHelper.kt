@@ -31,7 +31,7 @@ class NotificationHelper(private val context: Context) {
         }
     }
 
-    fun showReminder(eventId: Long, title: String) {
+    fun showReminder(eventId: Long, title: String, userId: String) {
         val openIntent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
@@ -44,6 +44,7 @@ class NotificationHelper(private val context: Context) {
 
         val completeIntent = Intent(context, CompleteTaskReceiver::class.java).apply {
             putExtra(CompleteTaskReceiver.EXTRA_EVENT_ID, eventId)
+            putExtra(CompleteTaskReceiver.EXTRA_USER_ID, userId)
         }
         val completePendingIntent = PendingIntent.getBroadcast(
             context,

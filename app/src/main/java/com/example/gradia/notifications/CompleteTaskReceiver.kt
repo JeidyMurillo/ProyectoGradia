@@ -13,10 +13,12 @@ class CompleteTaskReceiver : BroadcastReceiver() {
 
     companion object {
         const val EXTRA_EVENT_ID = "extra_event_id"
+        const val EXTRA_USER_ID = "extra_user_id"
     }
 
     override fun onReceive(context: Context, intent: Intent) {
         val eventId = intent.getLongExtra(EXTRA_EVENT_ID, -1L)
+        val userId = intent.getStringExtra(EXTRA_USER_ID) ?: return
         if (eventId == -1L) return
 
         val app = context.applicationContext as GradiaApplication
@@ -24,7 +26,7 @@ class CompleteTaskReceiver : BroadcastReceiver() {
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                app.eventoRepository.updateEstadoCompletado(eventId, true)
+                app.eventoRepository.updateEstadoCompletado(eventId, true, userId)
                 app.reminderScheduler.cancelReminder(eventId)
                 val notificationManager =
                     context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager

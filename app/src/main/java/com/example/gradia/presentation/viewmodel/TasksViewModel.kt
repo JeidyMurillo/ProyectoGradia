@@ -217,7 +217,7 @@ class TasksViewModel(
                     )
                     reminderScheduler.scheduleReminder(
                         state.editingTaskId, state.currentTitle, fechaFinal,
-                        state.currentRecordatorioMinutos
+                        state.currentRecordatorioMinutos, uid
                     )
                 } else {
                     val newId = eventoRepository.insertEvento(
@@ -232,7 +232,7 @@ class TasksViewModel(
                     )
                     reminderScheduler.scheduleReminder(
                         newId, state.currentTitle, fechaFinal,
-                        state.currentRecordatorioMinutos
+                        state.currentRecordatorioMinutos, uid
                     )
                 }
 
@@ -263,10 +263,10 @@ class TasksViewModel(
                 if (newCompleted) {
                     reminderScheduler.cancelReminder(id)
                 } else {
-                    val evento = eventoRepository.getEventoByIdSync(id)
+                    val evento = eventoRepository.getEventoByIdSync(id, uid)
                     if (evento != null) {
                         reminderScheduler.scheduleReminder(
-                            evento.id, evento.titulo, evento.fecha, evento.recordatorioMinutosAntes
+                            evento.id, evento.titulo, evento.fecha, evento.recordatorioMinutosAntes, uid
                         )
                     }
                 }

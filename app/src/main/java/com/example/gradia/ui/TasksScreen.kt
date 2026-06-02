@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -193,7 +194,9 @@ fun TasksScreen(
                     isSelected = tarea.id in state.selectedTaskIds,
                     onToggleCompletion = { viewModel.toggleTaskCompletion(tarea.id, false) },
                     onClick = { viewModel.loadTaskForEditing(tarea) },
-                    onLongClick = { viewModel.toggleTaskSelection(tarea.id) }
+                    onLongClick = { viewModel.toggleTaskSelection(tarea.id) },
+                    onEdit = { viewModel.loadTaskForEditing(tarea) },
+                    onDelete = { viewModel.deleteTask(tarea.id) }
                 )
             }
         }
@@ -213,7 +216,9 @@ fun TasksScreen(
                     isSelected = tarea.id in state.selectedTaskIds,
                     onToggleCompletion = { viewModel.toggleTaskCompletion(tarea.id, false) },
                     onClick = { viewModel.loadTaskForEditing(tarea) },
-                    onLongClick = { viewModel.toggleTaskSelection(tarea.id) }
+                    onLongClick = { viewModel.toggleTaskSelection(tarea.id) },
+                    onEdit = { viewModel.loadTaskForEditing(tarea) },
+                    onDelete = { viewModel.deleteTask(tarea.id) }
                 )
             }
         }
@@ -233,7 +238,9 @@ fun TasksScreen(
                     isSelected = tarea.id in state.selectedTaskIds,
                     onToggleCompletion = { viewModel.toggleTaskCompletion(tarea.id, true) },
                     onClick = { viewModel.loadTaskForEditing(tarea) },
-                    onLongClick = { viewModel.toggleTaskSelection(tarea.id) }
+                    onLongClick = { viewModel.toggleTaskSelection(tarea.id) },
+                    onEdit = { viewModel.loadTaskForEditing(tarea) },
+                    onDelete = { viewModel.deleteTask(tarea.id) }
                 )
             }
         }
@@ -457,7 +464,9 @@ fun TaskCard(
     isSelected: Boolean = false,
     onToggleCompletion: (() -> Unit)? = null,
     onClick: (() -> Unit)? = null,
-    onLongClick: (() -> Unit)? = null
+    onLongClick: (() -> Unit)? = null,
+    onEdit: (() -> Unit)? = null,
+    onDelete: (() -> Unit)? = null
 ) {
     val alpha = if (isCompleted) 0.5f else 1f
     val borderColor = if (isSelected) PurpleGradia else Color.LightGray.copy(alpha = 0.3f)
@@ -478,8 +487,29 @@ fun TaskCard(
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
             ) {
+                if (onEdit != null) {
+                    IconButton(onClick = onEdit, modifier = Modifier.size(32.dp)) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Editar tarea",
+                            tint = PurpleGradia,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+                if (onDelete != null) {
+                    IconButton(onClick = onDelete, modifier = Modifier.size(32.dp)) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.delete),
+                            contentDescription = "Eliminar tarea",
+                            tint = Color(0xFFC62828),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
                 UrgencyLabel(
                     text = urgency,
                     color = urgencyColor,
