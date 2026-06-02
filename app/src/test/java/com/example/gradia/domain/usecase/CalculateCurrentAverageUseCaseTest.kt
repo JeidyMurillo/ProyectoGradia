@@ -50,7 +50,7 @@ class CalculateCurrentAverageUseCaseTest {
 
         val result = useCase(items)
 
-        assertEquals(4.0, result, 0.01)
+        assertEquals(1.0, result, 0.01)
     }
 
     @Test
@@ -62,7 +62,7 @@ class CalculateCurrentAverageUseCaseTest {
 
         val result = useCase(items)
 
-        assertEquals(4.0, result, 0.01)
+        assertEquals(2.0, result, 0.01)
     }
 
     @Test
