@@ -19,6 +19,7 @@ desugar_jdk_libs = "2.1.4"
 playServicesAuth = "21.3.0"
 facebookLogin = "18.1.3"
 coilCompose = "2.7.0"
+coroutinesTest = "1.9.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -47,6 +48,7 @@ desugarJdkLibs = { group = "com.android.tools", name = "desugar_jdk_libs", versi
 play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "playServicesAuth" }
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coilCompose" }
 facebook-login = { group = "com.facebook.android", name = "facebook-login", version.ref = "facebookLogin" }
+kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutinesTest" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

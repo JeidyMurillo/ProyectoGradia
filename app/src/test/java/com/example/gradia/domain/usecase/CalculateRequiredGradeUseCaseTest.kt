@@ -90,7 +90,7 @@ class CalculateRequiredGradeUseCaseTest {
     }
 
     @Test
-    fun `returns AlreadyAchieved for Fisica II when average exceeds target`() {
+    fun `returns required grade for Fisica II when average is below target`() {
         val items = listOf(
             GradeItem(1, 2, "Parcial 1", 30.0, 4.2),
             GradeItem(2, 2, "Parcial 2", 30.0, 3.8),
@@ -98,9 +98,9 @@ class CalculateRequiredGradeUseCaseTest {
             GradeItem(4, 2, "Examen Final", 20.0, null)
         )
 
-        val result = useCase(items, 4.0)
+        val result = useCase(items, 4.0) as RequiredGradeResult.Success
 
-        assertEquals(RequiredGradeResult.AlreadyAchieved, result)
+        assertEquals(3.5, result.grade, 0.1)
     }
 
     @Test
