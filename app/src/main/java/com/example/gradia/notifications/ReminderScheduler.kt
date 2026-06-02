@@ -9,13 +9,14 @@ class ReminderScheduler(private val context: Context) {
 
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-    fun scheduleReminder(eventId: Long, title: String, eventTimeMs: Long, minutesBefore: Int) {
+    fun scheduleReminder(eventId: Long, title: String, eventTimeMs: Long, minutesBefore: Int, userId: String) {
         val triggerTime = eventTimeMs - minutesBefore * 60_000L
         if (triggerTime <= System.currentTimeMillis()) return
 
         val intent = Intent(context, ReminderReceiver::class.java).apply {
             putExtra(ReminderReceiver.EXTRA_EVENT_ID, eventId)
             putExtra(ReminderReceiver.EXTRA_TITLE, title)
+            putExtra(ReminderReceiver.EXTRA_USER_ID, userId)
         }
         val pendingIntent = PendingIntent.getBroadcast(
             context,
