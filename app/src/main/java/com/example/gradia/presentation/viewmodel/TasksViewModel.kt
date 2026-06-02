@@ -7,6 +7,7 @@ import com.example.gradia.data.local.entity.Evento
 import com.example.gradia.data.repository.AsignaturaRepository
 import com.example.gradia.data.repository.EventoRepository
 import com.example.gradia.data.repository.UserRepository
+import com.example.gradia.notifications.ReminderScheduler
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.Calendar
@@ -20,7 +21,8 @@ data class TareaUi(
     val asignaturaId: Long?,
     val asignaturaNombre: String?,
     val completado: Boolean,
-    val urgencia: Urgencia
+    val urgencia: Urgencia,
+    val recordatorioMinutosAntes: Int = 30
 )
 
 data class TasksUiState(
@@ -30,6 +32,9 @@ data class TasksUiState(
     val asignaturas: List<Asignatura> = emptyList(),
     val currentTitle: String = "",
     val currentFecha: Long = System.currentTimeMillis(),
+    val currentHora: Int = 8,
+    val currentMinuto: Int = 0,
+    val currentRecordatorioMinutos: Int = 30,
     val selectedAsignaturaId: Long? = null,
     val editingTaskId: Long? = null,
     val selectedTaskIds: Set<Long> = emptySet(),
@@ -40,7 +45,8 @@ data class TasksUiState(
 class TasksViewModel(
     private val userRepository: UserRepository,
     private val eventoRepository: EventoRepository,
-    private val asignaturaRepository: AsignaturaRepository
+    private val asignaturaRepository: AsignaturaRepository,
+    private val reminderScheduler: ReminderScheduler
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(TasksUiState())
@@ -111,7 +117,8 @@ class TasksViewModel(
             asignaturaId = asignaturaId,
             asignaturaNombre = asignaturaId?.let { asignaturaMap[it] },
             completado = completado,
-            urgencia = calcularUrgencia(fecha)
+            urgencia = calcularUrgencia(fecha),
+            recordatorioMinutosAntes = recordatorioMinutosAntes
         )
     }
 
@@ -136,16 +143,28 @@ class TasksViewModel(
         _uiState.update { it.copy(currentFecha = fecha) }
     }
 
+    fun onHoraChange(hora: Int, minuto: Int) {
+        _uiState.update { it.copy(currentHora = hora, currentMinuto = minuto) }
+    }
+
+    fun onRecordatorioChange(minutos: Int) {
+        _uiState.update { it.copy(currentRecordatorioMinutos = minutos) }
+    }
+
     fun onAsignaturaSelected(asignaturaId: Long?) {
         _uiState.update { it.copy(selectedAsignaturaId = asignaturaId) }
     }
 
     fun loadTaskForEditing(tarea: TareaUi) {
+        val cal = Calendar.getInstance().apply { timeInMillis = tarea.fecha }
         _uiState.update {
             it.copy(
                 editingTaskId = tarea.id,
                 currentTitle = tarea.titulo,
                 currentFecha = tarea.fecha,
+                currentHora = cal.get(Calendar.HOUR_OF_DAY),
+                currentMinuto = cal.get(Calendar.MINUTE),
+                currentRecordatorioMinutos = tarea.recordatorioMinutosAntes,
                 selectedAsignaturaId = tarea.asignaturaId
             )
         }
@@ -157,6 +176,9 @@ class TasksViewModel(
                 editingTaskId = null,
                 currentTitle = "",
                 currentFecha = System.currentTimeMillis(),
+                currentHora = 8,
+                currentMinuto = 0,
+                currentRecordatorioMinutos = 30,
                 selectedAsignaturaId = null
             )
         }
@@ -171,26 +193,46 @@ class TasksViewModel(
             try {
                 val uid = currentUserId ?: return@launch
 
+                val fechaCal = Calendar.getInstance().apply {
+                    timeInMillis = state.currentFecha
+                    set(Calendar.HOUR_OF_DAY, state.currentHora)
+                    set(Calendar.MINUTE, state.currentMinuto)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }
+                val fechaFinal = fechaCal.timeInMillis
+
                 if (state.editingTaskId != null) {
+                    reminderScheduler.cancelReminder(state.editingTaskId)
                     eventoRepository.updateEvento(
                         Evento(
                             id = state.editingTaskId,
                             userId = uid,
                             asignaturaId = state.selectedAsignaturaId,
                             titulo = state.currentTitle,
-                            fecha = state.currentFecha,
-                            tipo = "TAREA"
+                            fecha = fechaFinal,
+                            tipo = "TAREA",
+                            recordatorioMinutosAntes = state.currentRecordatorioMinutos
                         )
                     )
+                    reminderScheduler.scheduleReminder(
+                        state.editingTaskId, state.currentTitle, fechaFinal,
+                        state.currentRecordatorioMinutos
+                    )
                 } else {
-                    eventoRepository.insertEvento(
+                    val newId = eventoRepository.insertEvento(
                         Evento(
                             userId = uid,
                             asignaturaId = state.selectedAsignaturaId,
                             titulo = state.currentTitle,
-                            fecha = state.currentFecha,
-                            tipo = "TAREA"
+                            fecha = fechaFinal,
+                            tipo = "TAREA",
+                            recordatorioMinutosAntes = state.currentRecordatorioMinutos
                         )
+                    )
+                    reminderScheduler.scheduleReminder(
+                        newId, state.currentTitle, fechaFinal,
+                        state.currentRecordatorioMinutos
                     )
                 }
 
@@ -199,6 +241,9 @@ class TasksViewModel(
                         editingTaskId = null,
                         currentTitle = "",
                         currentFecha = System.currentTimeMillis(),
+                        currentHora = 8,
+                        currentMinuto = 0,
+                        currentRecordatorioMinutos = 30,
                         selectedAsignaturaId = null,
                         isSaving = false
                     )
@@ -212,7 +257,18 @@ class TasksViewModel(
     fun toggleTaskCompletion(id: Long, currentCompleted: Boolean) {
         viewModelScope.launch {
             try {
-                eventoRepository.updateEstadoCompletado(id, !currentCompleted)
+                val newCompleted = !currentCompleted
+                eventoRepository.updateEstadoCompletado(id, newCompleted)
+                if (newCompleted) {
+                    reminderScheduler.cancelReminder(id)
+                } else {
+                    val evento = eventoRepository.getEventoByIdSync(id)
+                    if (evento != null) {
+                        reminderScheduler.scheduleReminder(
+                            evento.id, evento.titulo, evento.fecha, evento.recordatorioMinutosAntes
+                        )
+                    }
+                }
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = e.message) }
             }
@@ -236,7 +292,10 @@ class TasksViewModel(
         if (ids.isEmpty()) return
         viewModelScope.launch {
             ids.forEach { id ->
-                try { eventoRepository.deleteEventoById(id) } catch (_: Exception) { }
+                try {
+                    reminderScheduler.cancelReminder(id)
+                    eventoRepository.deleteEventoById(id)
+                } catch (_: Exception) { }
             }
             _uiState.update { it.copy(selectedTaskIds = emptySet()) }
         }
@@ -244,7 +303,10 @@ class TasksViewModel(
 
     fun deleteTask(id: Long) {
         viewModelScope.launch {
-            try { eventoRepository.deleteEventoById(id) } catch (_: Exception) { }
+            try {
+                reminderScheduler.cancelReminder(id)
+                eventoRepository.deleteEventoById(id)
+            } catch (_: Exception) { }
         }
     }
 

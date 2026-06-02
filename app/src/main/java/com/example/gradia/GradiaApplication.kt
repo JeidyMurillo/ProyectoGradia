@@ -23,6 +23,8 @@ import com.example.gradia.domain.usecase.notes.GetCategoriesUseCase
 import com.example.gradia.domain.usecase.notes.GetNotesUseCase
 import com.example.gradia.domain.usecase.notes.SaveNoteUseCase
 import com.example.gradia.domain.usecase.notes.UpdateCategoryUseCase
+import com.example.gradia.notifications.NotificationHelper
+import com.example.gradia.notifications.ReminderScheduler
 import com.example.gradia.presentation.viewmodel.FinalGradeViewModel
 import com.example.gradia.presentation.viewmodel.NotesViewModel
 import com.example.gradia.presentation.viewmodel.SubjectDetailViewModel
@@ -30,6 +32,11 @@ import com.example.gradia.presentation.viewmodel.SubjectsViewModel
 import com.example.gradia.presentation.viewmodel.TasksViewModel
 
 class GradiaApplication : Application() {
+
+    override fun onCreate() {
+        super.onCreate()
+        NotificationHelper(this).createNotificationChannel()
+    }
 
     val database by lazy { AppDatabase.getDatabase(this) }
 
@@ -53,6 +60,8 @@ class GradiaApplication : Application() {
             notaCategoriaDao = database.notaCategoriaDao()
         )
     }
+
+    val reminderScheduler by lazy { ReminderScheduler(this) }
 
     val firebaseAuthService by lazy { FirebaseAuthService() }
     val authRepository by lazy { AuthRepository(firebaseAuthService, userRepository) }
@@ -107,7 +116,8 @@ class GradiaApplication : Application() {
         return TasksViewModel(
             userRepository = userRepository,
             eventoRepository = eventoRepository,
-            asignaturaRepository = asignaturaRepository
+            asignaturaRepository = asignaturaRepository,
+            reminderScheduler = reminderScheduler
         )
     }
 
