@@ -24,7 +24,7 @@ class CompleteTaskReceiver : BroadcastReceiver() {
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                app.eventoRepository.updateEstadoCompletado(eventId, true)
+                app.eventoRepository.updateEstadoCompletadoById(eventId, true)
                 app.reminderScheduler.cancelReminder(eventId)
                 val notificationManager =
                     context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager

@@ -20,6 +20,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
@@ -47,7 +49,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.layout.ContentScale
 import java.io.File
 import java.io.FileOutputStream
 
@@ -593,6 +594,42 @@ fun NoteEditorCard(
                 )
             }
 
+            if (imagePaths.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(12.dp))
+                imagePaths.forEachIndexed { index, path ->
+                    val bitmap = remember(path) {
+                        try { BitmapFactory.decodeFile(path)?.asImageBitmap() } catch (_: Exception) { null }
+                    }
+                    bitmap?.let {
+                        Box {
+                            Image(
+                                bitmap = it,
+                                contentDescription = "Imagen",
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp)
+                                    .clip(RoundedCornerShape(8.dp)),
+                                contentScale = ContentScale.FillWidth
+                            )
+                            IconButton(
+                                onClick = { imagePaths = imagePaths.filterIndexed { i, _ -> i != index } },
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .size(28.dp)
+                                    .background(Color.Black.copy(alpha = 0.5f), CircleShape)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = "Eliminar imagen",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
             if (allCategories.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(12.dp))
                 LazyRow(
@@ -894,19 +931,32 @@ fun NoteGridItem(
             },
             confirmButton = {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    TextButton(
+                    IconButton(
                         onClick = {
                             onDelete(note.id)
                             showFullNote = false
-                        },
-                        colors = ButtonDefaults.textButtonColors(contentColor = Color.Red)
-                    ) { Text("Eliminar") }
-                    TextButton(
+                        }
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.delete),
+                            contentDescription = "Eliminar nota",
+                            tint = Color(0xFFC62828),
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+                    IconButton(
                         onClick = {
                             onEdit(note)
                             showFullNote = false
                         }
-                    ) { Text("Editar") }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Editar nota",
+                            tint = PurpleGradia,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
                 }
             },
             dismissButton = {

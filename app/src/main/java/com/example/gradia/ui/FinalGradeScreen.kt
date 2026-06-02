@@ -181,8 +181,23 @@ fun FinalGradeScreen(viewModel: FinalGradeViewModel = viewModel(
                 )
                 OutlinedTextField(
                     value = metaInput,
-                    onValueChange = {
-                        if (it.isEmpty() || it.toDoubleOrNull() != null) metaInput = it
+                    onValueChange = { input ->
+                        if (uiState.error != null) viewModel.clearError()
+                        if (input.isEmpty()) {
+                            metaInput = ""
+                        } else {
+                            val lastChar = input.last()
+                            if (lastChar.isDigit() && !input.contains(".") && input.length >= 2) {
+                                val intVal = input.toIntOrNull()
+                                if (intVal != null && intVal > 5) {
+                                    metaInput = "%.1f".format(intVal / 10.0)
+                                } else {
+                                    metaInput = input
+                                }
+                            } else {
+                                metaInput = input
+                            }
+                        }
                     },
                     placeholder = { Text("Ej: 4.5", color = Color.Gray.copy(alpha = 0.4f), fontSize = 14.sp) },
                     modifier = Modifier
@@ -257,7 +272,7 @@ fun FinalGradeScreen(viewModel: FinalGradeViewModel = viewModel(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "Actividad pendiente:",
+                    text = if (pendingActivities.size > 1) "Actividad a calcular:" else "Actividad pendiente:",
                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                     color = Color.Black.copy(alpha = 0.7f),
                     modifier = Modifier.weight(1.6f)
@@ -363,8 +378,20 @@ fun FinalGradeScreen(viewModel: FinalGradeViewModel = viewModel(
 
         Button(
             onClick = {
-                metaInput.toDoubleOrNull()?.let { viewModel.updateTargetGrade(it) }
-                viewModel.calculateRequiredGrade()
+                if (metaInput.isBlank()) {
+                    viewModel.setError("Ingrese un número válido en el campo Meta")
+                } else {
+                    val metaValue = metaInput.toDoubleOrNull()
+                    if (metaValue == null) {
+                        viewModel.setError("Ingrese un número válido en el campo Meta")
+                    } else {
+                        if (!metaInput.contains(".")) {
+                            metaInput = "%.1f".format(metaValue)
+                        }
+                        viewModel.updateTargetGrade(metaValue)
+                        viewModel.calculateRequiredGrade(currentActivity?.id)
+                    }
+                }
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -396,16 +423,38 @@ fun FinalGradeScreen(viewModel: FinalGradeViewModel = viewModel(
             ResultCard(
                 result = result,
                 targetGrade = uiState.targetGrade,
-                activityName = currentActivity?.name ?: "actividad"
+                activityName = currentActivity?.name ?: "actividad",
+                pendingCount = pendingActivities.size,
+                hasSelectedActivity = currentActivity != null
             )
         }
 
         uiState.error?.let { error ->
-            Text(
-                text = error,
-                color = Color.Red,
-                modifier = Modifier.padding(vertical = 16.dp)
-            )
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 12.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF0F0))
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = null,
+                        tint = Color(0xFFC62828),
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = error,
+                        color = Color(0xFFC62828),
+                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium)
+                    )
+                }
+            }
         }
 
         Spacer(modifier = Modifier.height(120.dp))
@@ -413,16 +462,37 @@ fun FinalGradeScreen(viewModel: FinalGradeViewModel = viewModel(
 }
 
 @Composable
-private fun ResultCard(result: RequiredGradeResult, targetGrade: Double, activityName: String) {
+private fun ResultCard(
+    result: RequiredGradeResult,
+    targetGrade: Double,
+    activityName: String,
+    pendingCount: Int = 0,
+    hasSelectedActivity: Boolean = false
+) {
     val resultText = when (result) {
         is RequiredGradeResult.Success -> buildAnnotatedString {
             append("Necesitas un ")
             withStyle(style = SpanStyle(fontWeight = FontWeight.ExtraBold, color = PurpleGradia, fontSize = 20.sp)) {
                 append("%.1f".format(result.grade))
             }
-            append(" en ")
-            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Black)) {
-                append(activityName)
+            if (hasSelectedActivity && pendingCount > 1) {
+                append(" en ")
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Black)) {
+                    append(activityName)
+                }
+                append(" (asumiendo 5.0 en las otras ${pendingCount - 1})")
+            } else if (hasSelectedActivity) {
+                append(" en ")
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Black)) {
+                    append(activityName)
+                }
+            } else if (pendingCount > 1) {
+                append(" en las ${pendingCount} actividades restantes")
+            } else {
+                append(" en ")
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Black)) {
+                    append(activityName)
+                }
             }
             append(" para alcanzar ")
             withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Black)) {
@@ -430,12 +500,27 @@ private fun ResultCard(result: RequiredGradeResult, targetGrade: Double, activit
             }
         }
         RequiredGradeResult.AlreadyAchieved -> buildAnnotatedString {
-            withStyle(style = SpanStyle(fontWeight = FontWeight.ExtraBold, color = PurpleGradia, fontSize = 18.sp)) {
-                append("\u00a1Ya alcanzaste tu meta!")
-            }
-            append("\nTu promedio actual ya supera ")
-            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Black)) {
-                append("%.1f".format(targetGrade))
+            if (hasSelectedActivity && pendingCount > 1) {
+                withStyle(style = SpanStyle(fontWeight = FontWeight.ExtraBold, color = PurpleGradia, fontSize = 18.sp)) {
+                    append("\u00a1Meta alcanzable!")
+                }
+                append("\nAsumiendo 5.0 en las otras ${pendingCount - 1}, ")
+                append("no necesitas nota en ")
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Black)) {
+                    append(activityName)
+                }
+                append(" para llegar a ")
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Black)) {
+                    append("%.1f".format(targetGrade))
+                }
+            } else {
+                withStyle(style = SpanStyle(fontWeight = FontWeight.ExtraBold, color = PurpleGradia, fontSize = 18.sp)) {
+                    append("\u00a1Ya alcanzaste tu meta!")
+                }
+                append("\nTu promedio actual ya supera ")
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Black)) {
+                    append("%.1f".format(targetGrade))
+                }
             }
         }
         RequiredGradeResult.Impossible -> buildAnnotatedString {
@@ -445,7 +530,15 @@ private fun ResultCard(result: RequiredGradeResult, targetGrade: Double, activit
             withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Black)) {
                 append("%.1f".format(targetGrade))
             }
-            append(" con el porcentaje restante")
+            if (hasSelectedActivity && pendingCount > 1) {
+                append("\nNi con 5.0 en ")
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Black)) {
+                    append(activityName)
+                }
+                append(" alcanzas la meta")
+            } else {
+                append(" con el porcentaje restante")
+            }
         }
         RequiredGradeResult.NoRemainingPercentage -> buildAnnotatedString {
             append("No hay ")

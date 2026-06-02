@@ -84,7 +84,15 @@ class FinalGradeViewModel(
         }
     }
 
-    fun calculateRequiredGrade() {
+    fun setError(message: String) {
+        _uiState.update { it.copy(error = message) }
+    }
+
+    fun clearError() {
+        _uiState.update { it.copy(error = null) }
+    }
+
+    fun calculateRequiredGrade(selectedActivityId: Long? = null) {
         val state = _uiState.value
 
         if (state.selectedSubject == null) {
@@ -97,7 +105,11 @@ class FinalGradeViewModel(
             return
         }
 
-        val result = calculateRequiredGrade(state.activities, state.targetGrade)
+        val selectedActivity = selectedActivityId?.let { id ->
+            state.activities.find { it.id == id }
+        }
+
+        val result = calculateRequiredGrade(state.activities, state.targetGrade, selectedActivity)
         _uiState.update {
             it.copy(requiredGradeResult = result, error = null)
         }

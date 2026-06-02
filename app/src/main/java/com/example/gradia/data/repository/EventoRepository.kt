@@ -42,6 +42,9 @@ class EventoRepository(private val eventoDao: EventoDao) {
     suspend fun updateEstadoCompletado(id: Long, completado: Boolean, userId: String) =
         eventoDao.updateEstadoCompletado(id, completado, userId)
 
+    suspend fun updateEstadoCompletadoById(id: Long, completado: Boolean) =
+        eventoDao.updateEstadoCompletadoById(id, completado)
+
     suspend fun deleteAllEventosByUser(userId: String) =
         eventoDao.deleteAllEventosByUser(userId)
 

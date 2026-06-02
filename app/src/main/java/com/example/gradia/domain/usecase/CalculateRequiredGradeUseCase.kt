@@ -16,12 +16,13 @@ class CalculateRequiredGradeUseCase(
 
     operator fun invoke(
         gradeItems: List<GradeItem>,
-        targetGrade: Double
+        targetGrade: Double,
+        selectedActivity: GradeItem? = null
     ): RequiredGradeResult {
         val currentAverage = calculateCurrentAverage(gradeItems)
         val remainingPercentage = calculateRemainingPercentage(gradeItems)
 
-        val gradedItems = gradeItems.filter { it.grade != null && it.grade!! > 0 }
+        val gradedItems = gradeItems.filter { it.grade != null }
         val currentWeightedSum = gradedItems.sumOf { it.grade!! * it.percentage }
 
         return when {
@@ -31,7 +32,13 @@ class CalculateRequiredGradeUseCase(
             }
             currentAverage >= targetGrade -> RequiredGradeResult.AlreadyAchieved
             else -> {
-                val required = (targetGrade * 100.0 - currentWeightedSum) / remainingPercentage
+                val required = if (selectedActivity != null && selectedActivity.percentage > 0) {
+                    val otherPending = gradeItems.filter { it.grade == null && it.id != selectedActivity.id }
+                    val otherContribution = otherPending.sumOf { 5.0 * it.percentage }
+                    (targetGrade * 100.0 - currentWeightedSum - otherContribution) / selectedActivity.percentage
+                } else {
+                    (targetGrade * 100.0 - currentWeightedSum) / remainingPercentage
+                }
                 val rounded = roundToDecimal(required)
 
                 when {

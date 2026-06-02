@@ -142,8 +142,9 @@ class SubjectDetailViewModel(
 
     private fun computeAverage(grades: List<GradeItem>): Double {
         val graded = grades.filter { it.grade != null }
-        val totalWeight = graded.sumOf { it.percentage }
-        if (totalWeight == 0.0) return 0.0
-        return graded.sumOf { (it.grade ?: 0.0) * it.percentage } / totalWeight
+        if (graded.isEmpty()) return 0.0
+        val totalCoursePercentage = grades.sumOf { it.percentage }
+        if (totalCoursePercentage == 0.0) return 0.0
+        return graded.sumOf { (it.grade ?: 0.0) * it.percentage } / totalCoursePercentage
     }
 }

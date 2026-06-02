@@ -47,6 +47,9 @@ interface EventoDao {
     @Query("UPDATE eventos SET completado = :completado WHERE id = :id AND userId = :userId")
     suspend fun updateEstadoCompletado(id: Long, completado: Boolean, userId: String)
 
+    @Query("UPDATE eventos SET completado = :completado WHERE id = :id")
+    suspend fun updateEstadoCompletadoById(id: Long, completado: Boolean)
+
     @Query("DELETE FROM eventos WHERE userId = :userId")
     suspend fun deleteAllEventosByUser(userId: String)
 
