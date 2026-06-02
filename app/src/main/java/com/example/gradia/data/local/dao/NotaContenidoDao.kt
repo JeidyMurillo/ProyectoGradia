@@ -18,14 +18,14 @@ interface NotaContenidoDao {
     fun getAllNotasConCategorias(userId: String): Flow<List<NotaConCategorias>>
 
     @Transaction
-    @Query("SELECT * FROM notas_contenido WHERE id = :id")
-    fun getNotaConCategoriasById(id: Long): Flow<NotaConCategorias?>
+    @Query("SELECT * FROM notas_contenido WHERE id = :id AND userId = :userId")
+    fun getNotaConCategoriasById(id: Long, userId: String): Flow<NotaConCategorias?>
 
     @Query("SELECT * FROM notas_contenido WHERE userId = :userId ORDER BY updatedAt DESC")
     fun getAllNotas(userId: String): Flow<List<NotaContenidoEntity>>
 
-    @Query("SELECT * FROM notas_contenido WHERE id = :id")
-    fun getNotaById(id: Long): Flow<NotaContenidoEntity?>
+    @Query("SELECT * FROM notas_contenido WHERE id = :id AND userId = :userId")
+    fun getNotaById(id: Long, userId: String): Flow<NotaContenidoEntity?>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertNota(nota: NotaContenidoEntity): Long
@@ -36,8 +36,8 @@ interface NotaContenidoDao {
     @Delete
     suspend fun deleteNota(nota: NotaContenidoEntity)
 
-    @Query("DELETE FROM notas_contenido WHERE id = :id")
-    suspend fun deleteNotaById(id: Long)
+    @Query("DELETE FROM notas_contenido WHERE id = :id AND userId = :userId")
+    suspend fun deleteNotaById(id: Long, userId: String)
 
     @Transaction
     @Query("SELECT nc.* FROM notas_contenido nc " +

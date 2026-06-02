@@ -20,14 +20,14 @@ interface EventoDao {
     @Query("SELECT * FROM eventos WHERE userId = :userId AND fecha >= :fecha AND completado = 0 ORDER BY fecha ASC")
     fun getEventosPendientes(userId: String, fecha: Long): Flow<List<Evento>>
 
-    @Query("SELECT * FROM eventos WHERE id = :id")
-    fun getEventoById(id: Long): Flow<Evento?>
+    @Query("SELECT * FROM eventos WHERE id = :id AND userId = :userId")
+    fun getEventoById(id: Long, userId: String): Flow<Evento?>
 
-    @Query("SELECT * FROM eventos WHERE id = :id")
-    suspend fun getEventoByIdSync(id: Long): Evento?
+    @Query("SELECT * FROM eventos WHERE id = :id AND userId = :userId")
+    suspend fun getEventoByIdSync(id: Long, userId: String): Evento?
 
-    @Query("SELECT * FROM eventos WHERE asignaturaId = :asignaturaId ORDER BY fecha ASC")
-    fun getEventosByAsignatura(asignaturaId: Long): Flow<List<Evento>>
+    @Query("SELECT * FROM eventos WHERE asignaturaId = :asignaturaId AND userId = :userId ORDER BY fecha ASC")
+    fun getEventosByAsignatura(asignaturaId: Long, userId: String): Flow<List<Evento>>
 
     @Query("SELECT * FROM eventos WHERE tipo = :tipo AND userId = :userId ORDER BY fecha ASC")
     fun getEventosByTipo(tipo: String, userId: String): Flow<List<Evento>>
@@ -41,11 +41,11 @@ interface EventoDao {
     @Delete
     suspend fun deleteEvento(evento: Evento)
 
-    @Query("DELETE FROM eventos WHERE id = :id")
-    suspend fun deleteEventoById(id: Long)
+    @Query("DELETE FROM eventos WHERE id = :id AND userId = :userId")
+    suspend fun deleteEventoById(id: Long, userId: String)
 
-    @Query("UPDATE eventos SET completado = :completado WHERE id = :id")
-    suspend fun updateEstadoCompletado(id: Long, completado: Boolean)
+    @Query("UPDATE eventos SET completado = :completado WHERE id = :id AND userId = :userId")
+    suspend fun updateEstadoCompletado(id: Long, completado: Boolean, userId: String)
 
     @Query("DELETE FROM eventos WHERE userId = :userId")
     suspend fun deleteAllEventosByUser(userId: String)

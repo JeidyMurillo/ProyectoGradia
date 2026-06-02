@@ -14,6 +14,10 @@ interface SubjectRepository {
 
     suspend fun insertSubject(subject: Subject): Long
 
+    suspend fun updateSubject(subject: Subject)
+
+    suspend fun deleteSubject(subjectId: Long)
+
     suspend fun insertGradeItem(gradeItem: GradeItem): Long
 
     suspend fun updateGradeItem(gradeItem: GradeItem)

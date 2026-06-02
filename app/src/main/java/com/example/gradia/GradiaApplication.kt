@@ -2,6 +2,10 @@ package com.example.gradia
 
 import android.app.Application
 import android.content.Context
+import com.example.gradia.data.email.EmailService
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import com.example.gradia.data.firebase.FirebaseAuthService
 import com.example.gradia.data.local.AppDatabase
 import com.example.gradia.data.repository.AsignaturaRepository
@@ -26,12 +30,15 @@ import com.example.gradia.domain.usecase.notes.UpdateCategoryUseCase
 import com.example.gradia.notifications.NotificationHelper
 import com.example.gradia.notifications.ReminderScheduler
 import com.example.gradia.presentation.viewmodel.FinalGradeViewModel
+import com.example.gradia.presentation.viewmodel.HomeViewModel
 import com.example.gradia.presentation.viewmodel.NotesViewModel
 import com.example.gradia.presentation.viewmodel.SubjectDetailViewModel
 import com.example.gradia.presentation.viewmodel.SubjectsViewModel
 import com.example.gradia.presentation.viewmodel.TasksViewModel
 
 class GradiaApplication : Application() {
+
+    val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onCreate() {
         super.onCreate()
@@ -40,7 +47,10 @@ class GradiaApplication : Application() {
 
     val database by lazy { AppDatabase.getDatabase(this) }
 
-    val userRepository by lazy { UserRepository(database.userDao()) }
+    val firebaseAuthService by lazy { FirebaseAuthService() }
+    val emailService by lazy { EmailService(BuildConfig.SENDGRID_API_KEY) }
+
+    val userRepository by lazy { UserRepository(database.userDao(), firebaseAuthService) }
     val asignaturaRepository by lazy { AsignaturaRepository(database.asignaturaDao()) }
     val notaRepository by lazy { NotaRepository(database.notaDao()) }
     val eventoRepository by lazy { EventoRepository(database.eventoDao()) }
@@ -63,8 +73,7 @@ class GradiaApplication : Application() {
 
     val reminderScheduler by lazy { ReminderScheduler(this) }
 
-    val firebaseAuthService by lazy { FirebaseAuthService() }
-    val authRepository by lazy { AuthRepository(firebaseAuthService, userRepository) }
+    val authRepository by lazy { AuthRepository(firebaseAuthService, userRepository, emailService, applicationScope) }
 
     val calculateCurrentAverageUseCase by lazy { CalculateCurrentAverageUseCase() }
     val calculateRemainingPercentageUseCase by lazy { CalculateRemainingPercentageUseCase() }
@@ -89,6 +98,13 @@ class GradiaApplication : Application() {
     var isRememberMeEnabled: Boolean
         get() = prefs.getBoolean("remember_me", false)
         set(value) = prefs.edit().putBoolean("remember_me", value).apply()
+
+    fun provideHomeViewModel(): HomeViewModel {
+        return HomeViewModel(
+            subjectRepository = subjectRepository,
+            calculateCurrentAverage = calculateCurrentAverageUseCase
+        )
+    }
 
     fun provideFinalGradeViewModel(): FinalGradeViewModel {
         return FinalGradeViewModel(

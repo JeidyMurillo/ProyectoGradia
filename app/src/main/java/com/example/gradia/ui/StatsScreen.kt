@@ -34,7 +34,7 @@ import com.example.gradia.ui.theme.InterFontFamily
 import com.example.gradia.ui.theme.PurpleGradia
 
 @Composable
-fun StatsScreen() {
+fun StatsScreen(onNavigateToPerformance: () -> Unit = {}) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -61,7 +61,7 @@ fun StatsScreen() {
 
             RecentMilestonesCard()
 
-            CTAButton()
+            CTAButton(onNavigateToPerformance = onNavigateToPerformance)
 
             Spacer(modifier = Modifier.height(80.dp))
     }
@@ -396,9 +396,9 @@ fun RecentMilestonesCard() {
 }
 
 @Composable
-fun CTAButton() {
+fun CTAButton(onNavigateToPerformance: () -> Unit = {}) {
     Button(
-        onClick = { /* Navigate to performance by subject */ },
+        onClick = onNavigateToPerformance,
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp),

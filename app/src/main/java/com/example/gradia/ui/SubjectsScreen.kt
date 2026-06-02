@@ -1,8 +1,10 @@
 package com.example.gradia.ui
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -14,6 +16,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
@@ -51,6 +54,7 @@ fun SubjectsScreen(onSubjectClick: (Subject) -> Unit = {}) {
     val snackbarHostState = remember { SnackbarHostState() }
 
     var showAddSheet by remember { mutableStateOf(false) }
+    var subjectToDelete by remember { mutableStateOf<Subject?>(null) }
 
     LaunchedEffect(state.error) {
         state.error?.let { message ->
@@ -70,7 +74,16 @@ fun SubjectsScreen(onSubjectClick: (Subject) -> Unit = {}) {
                 selected = state.filter,
                 onSelected = viewModel::onFilterChange
             )
-            Spacer(modifier = Modifier.height(18.dp))
+            if (state.subjects.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(
+                    text = "Mantén pulsada una asignatura para eliminarla",
+                    fontSize = 11.sp,
+                    color = Color(0xFFA098AA),
+                    fontFamily = InterFontFamily
+                )
+            }
+            Spacer(modifier = Modifier.height(14.dp))
 
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
@@ -81,7 +94,8 @@ fun SubjectsScreen(onSubjectClick: (Subject) -> Unit = {}) {
                 items(state.subjects, key = { it.id }) { subject ->
                     SubjectCard(
                         subject = subject,
-                        onClick = { onSubjectClick(subject) }
+                        onClick = { onSubjectClick(subject) },
+                        onLongClick = { subjectToDelete = subject }
                     )
                 }
                 item {
@@ -100,11 +114,45 @@ fun SubjectsScreen(onSubjectClick: (Subject) -> Unit = {}) {
     }
 
     if (showAddSheet) {
-        AddSubjectSheet(
+        SubjectFormSheet(
             isSaving = state.isSaving,
             onDismiss = { showAddSheet = false },
             onSave = { newSubject ->
                 viewModel.addSubject(newSubject) { showAddSheet = false }
+            }
+        )
+    }
+
+    subjectToDelete?.let { subject ->
+        AlertDialog(
+            onDismissRequest = { subjectToDelete = null },
+            title = {
+                Text(
+                    text = "Eliminar asignatura",
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFC62828),
+                    fontFamily = InterFontFamily
+                )
+            },
+            text = {
+                Text(
+                    text = "¿Seguro que quieres eliminar \"${subject.name}\"? También se eliminarán todas sus calificaciones. Esta acción no se puede deshacer.",
+                    fontFamily = InterFontFamily
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.deleteSubject(subject.id)
+                        subjectToDelete = null
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFC62828))
+                ) { Text("Eliminar", color = Color.White) }
+            },
+            dismissButton = {
+                TextButton(onClick = { subjectToDelete = null }) {
+                    Text("Cancelar", color = PurpleGradia)
+                }
             }
         )
     }
@@ -155,13 +203,21 @@ private fun FilterPill(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun SubjectCard(subject: Subject, onClick: () -> Unit) {
+private fun SubjectCard(
+    subject: Subject,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit
+) {
     val iconType = resolveSubjectIcon(subject.icon, subject.name)
     Surface(
         modifier = Modifier
             .aspectRatio(1f)
-            .clickable(onClick = onClick),
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            ),
         shape = RoundedCornerShape(22.dp),
         color = Color.White,
         border = BorderStroke(1.5.dp, Color(0xFFD9C7E8))
@@ -225,19 +281,24 @@ private fun AddSubjectCard(onClick: () -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AddSubjectSheet(
+fun SubjectFormSheet(
     isSaving: Boolean,
     onDismiss: () -> Unit,
-    onSave: (Subject) -> Unit
+    onSave: (Subject) -> Unit,
+    initial: Subject? = null,
+    onDelete: (() -> Unit)? = null
 ) {
+    val isEditing = initial != null
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    var name by remember { mutableStateOf("") }
-    var credits by remember { mutableStateOf("") }
-    var semester by remember { mutableStateOf("1") }
-    var professor by remember { mutableStateOf("") }
-    var classroom by remember { mutableStateOf("") }
-    var selectedIconOverride by remember { mutableStateOf<SubjectIconType?>(null) }
+    var name by remember { mutableStateOf(initial?.name ?: "") }
+    var credits by remember { mutableStateOf(initial?.creditHours?.takeIf { it > 0 }?.toString() ?: "") }
+    var semester by remember { mutableStateOf((initial?.semester ?: 1).toString()) }
+    var professor by remember { mutableStateOf(initial?.professor ?: "") }
+    var classroom by remember { mutableStateOf(initial?.classroom ?: "") }
+    var selectedIconOverride by remember {
+        mutableStateOf<SubjectIconType?>(initial?.let { resolveSubjectIcon(it.icon, it.name) })
+    }
     var iconMenuOpen by remember { mutableStateOf(false) }
 
     val effectiveIcon = selectedIconOverride ?: subjectIconType(name)
@@ -266,18 +327,30 @@ private fun AddSubjectSheet(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Agregar Asignatura",
+                    text = if (isEditing) "Editar Asignatura" else "Agregar Asignatura",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = Color(0xFF1F1F1F),
                     fontFamily = InterFontFamily
                 )
-                IconButton(onClick = onDismiss) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "Cerrar",
-                        tint = Color(0xFF4A4A4A)
-                    )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (onDelete != null) {
+                        IconButton(onClick = onDelete) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.delete),
+                                contentDescription = "Eliminar asignatura",
+                                tint = Color(0xFFC62828),
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
+                    }
+                    IconButton(onClick = onDismiss) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Cerrar",
+                            tint = Color(0xFF4A4A4A)
+                        )
+                    }
                 }
             }
 
@@ -370,15 +443,9 @@ private fun AddSubjectSheet(
                 Column(modifier = Modifier.weight(1f)) {
                     FieldLabel("Semestre")
                     Spacer(modifier = Modifier.height(8.dp))
-                    PillTextField(
+                    SemesterDropdownField(
                         value = semester,
-                        onValueChange = { input ->
-                            if (input.isEmpty() || input.toIntOrNull() != null) {
-                                semester = input
-                            }
-                        },
-                        placeholder = "1",
-                        keyboardType = KeyboardType.Number
+                        onSelect = { semester = it }
                     )
                 }
             }
@@ -427,9 +494,10 @@ private fun AddSubjectSheet(
                     val finalSemester = semesterInt ?: return@Button
                     onSave(
                         Subject(
-                            id = 0L,
+                            id = initial?.id ?: 0L,
                             name = name.trim(),
                             icon = iconStringFor(effectiveIcon),
+                            passingGrade = initial?.passingGrade ?: 3.0,
                             creditHours = finalCredits,
                             semester = finalSemester,
                             professor = professor.trim(),
@@ -455,7 +523,7 @@ private fun AddSubjectSheet(
                     )
                 } else {
                     Text(
-                        text = "Guardar Asignatura",
+                        text = if (isEditing) "Guardar cambios" else "Guardar Asignatura",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
@@ -476,6 +544,72 @@ private fun FieldLabel(text: String) {
         color = Color(0xFF1F1F1F),
         fontFamily = InterFontFamily
     )
+}
+
+@Composable
+private fun SemesterDropdownField(
+    value: String,
+    onSelect: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val selected = value.ifBlank { "1" }
+
+    Box(modifier = modifier) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(50))
+                .clickable { expanded = true },
+            shape = RoundedCornerShape(50),
+            color = Color(0xFFF3EDF7)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 18.dp, end = 10.dp, top = 8.dp, bottom = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "Semestre $selected",
+                    fontSize = 14.sp,
+                    color = Color(0xFF1F1F1F),
+                    fontFamily = InterFontFamily
+                )
+                Icon(
+                    imageVector = Icons.Default.ArrowDropDown,
+                    contentDescription = "Seleccionar semestre",
+                    tint = PurpleGradia,
+                    modifier = Modifier.size(22.dp)
+                )
+            }
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.heightIn(max = 280.dp)
+        ) {
+            (1..10).forEach { sem ->
+                val semStr = sem.toString()
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = "Semestre $sem",
+                            fontFamily = InterFontFamily,
+                            fontSize = 14.sp,
+                            fontWeight = if (selected == semStr) FontWeight.Bold else FontWeight.Normal,
+                            color = if (selected == semStr) PurpleGradia else Color(0xFF1F1F1F)
+                        )
+                    },
+                    onClick = {
+                        onSelect(semStr)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
 }
 
 @Composable

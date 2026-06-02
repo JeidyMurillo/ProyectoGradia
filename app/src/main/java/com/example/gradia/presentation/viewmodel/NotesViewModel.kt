@@ -143,7 +143,7 @@ class NotesViewModel(
 
     fun deleteNote(id: Long) {
         viewModelScope.launch {
-            deleteNoteUseCase(id)
+            deleteNoteUseCase(id, userId)
         }
     }
 
@@ -172,7 +172,7 @@ class NotesViewModel(
     fun updateCategory(id: Long, name: String, color: Long) {
         viewModelScope.launch {
             try {
-                updateCategoryUseCase(Category(id = id, name = name, color = color))
+                updateCategoryUseCase(Category(id = id, userId = userId, name = name, color = color))
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = e.message) }
             }
@@ -182,7 +182,7 @@ class NotesViewModel(
     fun deleteCategory(id: Long) {
         viewModelScope.launch {
             try {
-                deleteCategoryUseCase(id)
+                deleteCategoryUseCase(id, userId)
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = e.message) }
             }
@@ -205,7 +205,7 @@ class NotesViewModel(
         val ids = _uiState.value.selectedNoteIds.toList()
         if (ids.isEmpty()) return
         viewModelScope.launch {
-            ids.forEach { id -> deleteNoteUseCase(id) }
+            ids.forEach { id -> deleteNoteUseCase(id, userId) }
             _uiState.update { it.copy(selectedNoteIds = emptySet()) }
         }
     }

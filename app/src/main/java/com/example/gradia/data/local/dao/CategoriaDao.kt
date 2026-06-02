@@ -19,9 +19,9 @@ interface CategoriaDao {
     @Delete
     suspend fun deleteCategoria(categoria: CategoriaEntity)
 
-    @Query("DELETE FROM categorias WHERE id = :id")
-    suspend fun deleteCategoriaById(id: Long)
+    @Query("DELETE FROM categorias WHERE id = :id AND userId = :userId")
+    suspend fun deleteCategoriaById(id: Long, userId: String)
 
-    @Query("UPDATE categorias SET name = :name, color = :color WHERE id = :id")
-    suspend fun updateCategoria(id: Long, name: String, color: Long)
+    @Query("UPDATE categorias SET name = :name, color = :color WHERE id = :id AND userId = :userId")
+    suspend fun updateCategoria(id: Long, name: String, color: Long, userId: String)
 }

@@ -258,7 +258,8 @@ class TasksViewModel(
         viewModelScope.launch {
             try {
                 val newCompleted = !currentCompleted
-                eventoRepository.updateEstadoCompletado(id, newCompleted)
+                val uid = currentUserId ?: return@launch
+                eventoRepository.updateEstadoCompletado(id, newCompleted, uid)
                 if (newCompleted) {
                     reminderScheduler.cancelReminder(id)
                 } else {
@@ -291,10 +292,11 @@ class TasksViewModel(
         val ids = _uiState.value.selectedTaskIds.toList()
         if (ids.isEmpty()) return
         viewModelScope.launch {
+            val uid = currentUserId ?: return@launch
             ids.forEach { id ->
                 try {
                     reminderScheduler.cancelReminder(id)
-                    eventoRepository.deleteEventoById(id)
+                    eventoRepository.deleteEventoById(id, uid)
                 } catch (_: Exception) { }
             }
             _uiState.update { it.copy(selectedTaskIds = emptySet()) }
@@ -303,9 +305,10 @@ class TasksViewModel(
 
     fun deleteTask(id: Long) {
         viewModelScope.launch {
+            val uid = currentUserId ?: return@launch
             try {
                 reminderScheduler.cancelReminder(id)
-                eventoRepository.deleteEventoById(id)
+                eventoRepository.deleteEventoById(id, uid)
             } catch (_: Exception) { }
         }
     }
