@@ -33,6 +33,7 @@ import com.example.gradia.GradiaApplication
 import com.example.gradia.R
 import com.example.gradia.domain.model.Subject
 import com.example.gradia.domain.usecase.RequiredGradeResult
+import com.example.gradia.domain.validation.GradeValidation
 import com.example.gradia.presentation.viewmodel.FinalGradeViewModel
 import com.example.gradia.ui.theme.GradiaTheme
 import com.example.gradia.ui.theme.InterFontFamily
@@ -335,7 +336,7 @@ fun FinalGradeScreen(viewModel: FinalGradeViewModel = viewModel(
                             modifier = Modifier.weight(1f).fillMaxWidth()
                         ) {
                             Text(
-                                text = "%.0f".format(currentActivity?.percentage ?: 0),
+                                text = GradeValidation.formatPercentage(currentActivity?.percentage ?: 0.0),
                                 style = TextStyle(
                                     fontSize = 18.sp,
                                     fontWeight = FontWeight.Bold,
@@ -363,7 +364,7 @@ fun FinalGradeScreen(viewModel: FinalGradeViewModel = viewModel(
                     pendingActivities.forEachIndexed { index, activity ->
                         DropdownMenuItem(
                             text = { Text(activity.name) },
-                            trailingIcon = { Text("%.0f%%".format(activity.percentage), color = PurpleGradia) },
+                            trailingIcon = { Text("${GradeValidation.formatPercentage(activity.percentage)}%", color = PurpleGradia) },
                             onClick = {
                                 selectedActivityIndex = index
                                 showActivityDropdown = false

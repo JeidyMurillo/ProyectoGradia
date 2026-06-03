@@ -37,6 +37,7 @@ import com.example.gradia.GradiaApplication
 import com.example.gradia.R
 import com.example.gradia.domain.model.GradeItem
 import com.example.gradia.domain.model.Subject
+import com.example.gradia.domain.validation.GradeValidation
 import com.example.gradia.presentation.viewmodel.GradeFilter
 import com.example.gradia.ui.theme.InterFontFamily
 import com.example.gradia.ui.theme.PurpleGradia
@@ -125,7 +126,8 @@ fun SubjectDetailScreen(
             onDismiss = { showAddSheet = false },
             onSave = { newItem ->
                 viewModel.addGrade(newItem) { showAddSheet = false }
-            }
+            },
+            totalUsedPercentage = state.totalPercentage
         )
     }
 
@@ -141,7 +143,8 @@ fun SubjectDetailScreen(
             onDelete = {
                 editingGrade = null
                 gradeToDelete = grade
-            }
+            },
+            totalUsedPercentage = state.totalPercentage
         )
     }
 
@@ -487,7 +490,7 @@ private fun GradeRowContent(item: GradeItem, isPending: Boolean) {
                 fontFamily = InterFontFamily
             )
             Text(
-                text = "Peso: ${item.percentage.toInt()}%",
+                text = "Peso: ${GradeValidation.formatPercentage(item.percentage)}%",
                 fontSize = 11.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontFamily = InterFontFamily
@@ -583,25 +586,57 @@ private fun GradeFormSheet(
     onDismiss: () -> Unit,
     onSave: (GradeItem) -> Unit,
     initial: GradeItem? = null,
-    onDelete: (() -> Unit)? = null
+    onDelete: (() -> Unit)? = null,
+    totalUsedPercentage: Double = 0.0
 ) {
     val isEditing = initial != null
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     var name by remember { mutableStateOf(initial?.name ?: "") }
     var grade by remember { mutableStateOf(initial?.grade?.let { gradeToInput(it) } ?: "") }
-    var percentage by remember { mutableStateOf(initial?.percentage?.toInt()?.toString() ?: "") }
+    var percentage by remember {
+        mutableStateOf(initial?.percentage?.let { GradeValidation.formatPercentage(it) } ?: "")
+    }
     var selectedIconOverride by remember {
         mutableStateOf<GradeIconType?>(initial?.let { resolveGradeIcon(it.icon, it.name) })
     }
     var iconMenuOpen by remember { mutableStateOf(false) }
 
+    // Marca si el usuario ya intentó guardar o tocó cada campo, para no mostrar
+    // errores en un formulario aún en blanco (recién abierto).
+    var attemptedSave by remember { mutableStateOf(false) }
+    var nameTouched by remember { mutableStateOf(false) }
+    var percentageTouched by remember { mutableStateOf(false) }
+    var gradeTouched by remember { mutableStateOf(false) }
+
     val effectiveIcon = selectedIconOverride ?: gradeIconType(name)
     val percentageDouble = percentage.toDoubleOrNull()
     val gradeDouble = grade.toDoubleOrNull()
-    val isValid = name.isNotBlank() &&
-        percentageDouble != null && percentageDouble in 1.0..100.0 &&
-        (grade.isEmpty() || (gradeDouble != null && gradeDouble in 0.0..5.0))
+
+    // Porcentaje que ocupan las DEMÁS notas (al editar se excluye la actual) y el
+    // disponible hasta el 100%.
+    val usedByOthers = (totalUsedPercentage - (initial?.percentage ?: 0.0)).coerceAtLeast(0.0)
+    val available = (GradeValidation.MAX_TOTAL_PERCENTAGE - usedByOthers).coerceAtLeast(0.0)
+
+    val nameError: String? = if (name.trim().isEmpty()) "Ingresa el nombre de la actividad" else null
+    val percentageError: String? = when {
+        percentage.isEmpty() -> "Ingresa el porcentaje"
+        percentageDouble == null || percentageDouble <= 0.0 -> "Debe ser mayor que 0"
+        percentageDouble > GradeValidation.MAX_TOTAL_PERCENTAGE -> "No puede superar el 100%"
+        percentageDouble > available + 0.001 ->
+            "Supera el total. Disponible: ${GradeValidation.formatPercentage(available)}%"
+        else -> null
+    }
+    val gradeError: String? = when {
+        grade.isEmpty() -> null
+        gradeDouble == null || gradeDouble !in 0.0..5.0 -> "La nota debe estar entre 0.0 y 5.0"
+        else -> null
+    }
+
+    val isValid = nameError == null && percentageError == null && gradeError == null
+    val showNameError = (attemptedSave || nameTouched) && nameError != null
+    val showPercentageError = (attemptedSave || percentageTouched) && percentageError != null
+    val showGradeError = (attemptedSave || gradeTouched) && gradeError != null
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -708,9 +743,17 @@ private fun GradeFormSheet(
                     Spacer(modifier = Modifier.height(8.dp))
                     SheetPillTextField(
                         value = name,
-                        onValueChange = { name = it },
+                        onValueChange = {
+                            if (it.length <= GradeValidation.MAX_NAME_LENGTH) {
+                                name = it
+                                nameTouched = true
+                            }
+                        },
                         placeholder = "Ej: Parcial"
                     )
+                    if (showNameError) {
+                        SheetFieldHint(message = nameError!!, isError = true)
+                    }
                 }
             }
 
@@ -728,11 +771,15 @@ private fun GradeFormSheet(
                         onValueChange = { input ->
                             if (input.isEmpty() || input.matches(Regex("^\\d{0,1}(\\.\\d{0,2})?$"))) {
                                 grade = input
+                                gradeTouched = true
                             }
                         },
                         placeholder = "2.0",
                         keyboardType = KeyboardType.Decimal
                     )
+                    if (showGradeError) {
+                        SheetFieldHint(message = gradeError!!, isError = true)
+                    }
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     SheetFieldLabel("Porcentaje (%)")
@@ -740,12 +787,14 @@ private fun GradeFormSheet(
                     SheetPillTextField(
                         value = percentage,
                         onValueChange = { input ->
-                            if (input.isEmpty() || (input.toIntOrNull() != null && input.length <= 3)) {
+                            // Admite decimales: hasta 3 enteros y 2 decimales (ej. 12.4).
+                            if (input.isEmpty() || input.matches(Regex("^\\d{0,3}(\\.\\d{0,2})?$"))) {
                                 percentage = input
+                                percentageTouched = true
                             }
                         },
-                        placeholder = "25",
-                        keyboardType = KeyboardType.Number,
+                        placeholder = "Ej: 12.4",
+                        keyboardType = KeyboardType.Decimal,
                         trailingContent = {
                             Text(
                                 text = "%",
@@ -756,6 +805,14 @@ private fun GradeFormSheet(
                             )
                         }
                     )
+                    if (showPercentageError) {
+                        SheetFieldHint(message = percentageError!!, isError = true)
+                    } else {
+                        SheetFieldHint(
+                            message = "Disponible: ${GradeValidation.formatPercentage(available)}%",
+                            isError = false
+                        )
+                    }
                 }
             }
 
@@ -763,6 +820,8 @@ private fun GradeFormSheet(
 
             Button(
                 onClick = {
+                    attemptedSave = true
+                    if (!isValid) return@Button
                     val pct = percentageDouble ?: return@Button
                     onSave(
                         GradeItem(
@@ -775,7 +834,7 @@ private fun GradeFormSheet(
                         )
                     )
                 },
-                enabled = isValid && !isSaving,
+                enabled = !isSaving,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(54.dp),
@@ -813,6 +872,18 @@ private fun SheetFieldLabel(text: String) {
         fontWeight = FontWeight.Bold,
         color = MaterialTheme.colorScheme.onSurface,
         fontFamily = InterFontFamily
+    )
+}
+
+/** Mensaje pequeño bajo un campo: rojo si es error, gris si es una ayuda neutral. */
+@Composable
+private fun SheetFieldHint(message: String, isError: Boolean) {
+    Text(
+        text = message,
+        fontSize = 11.sp,
+        color = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+        fontFamily = InterFontFamily,
+        modifier = Modifier.padding(top = 4.dp, start = 6.dp)
     )
 }
 
