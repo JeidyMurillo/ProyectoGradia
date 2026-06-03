@@ -8,7 +8,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -18,23 +17,28 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.gradia.R
+import com.example.gradia.presentation.viewmodel.StatsUiState
+import com.example.gradia.presentation.viewmodel.StatsViewModel
 import com.example.gradia.ui.theme.InterFontFamily
 import com.example.gradia.ui.theme.PurpleGradia
 
 @Composable
-fun StatsScreen(onNavigateToPerformance: () -> Unit = {}) {
+fun StatsScreen(
+    statsViewModel: StatsViewModel,
+    onNavigateToPerformance: () -> Unit = {}
+) {
+    val state by statsViewModel.uiState.collectAsState()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -45,30 +49,70 @@ fun StatsScreen(onNavigateToPerformance: () -> Unit = {}) {
     ) {
         Spacer(modifier = Modifier.height(8.dp))
 
+        if (state.hasData) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 AverageCard(
+                    average = state.generalAverage,
+                    trend = state.generalTrend,
                     modifier = Modifier.weight(1.5f)
                 )
                 CreditsCard(
+                    creditsApproved = state.totalCreditsApproved,
+                    totalCredits = state.totalCredits,
                     modifier = Modifier.weight(1f)
                 )
             }
 
-            DistributionChartCard()
+            DistributionChartCard(
+                excellentCount = state.excellentCount,
+                approvedCount = state.approvedCount,
+                regularCount = state.regularCount,
+                failedCount = state.failedCount,
+                totalItems = state.totalGradedItems
+            )
 
-            RecentMilestonesCard()
+            RecentMilestonesCard(
+                bestSubjectName = state.bestSubjectName,
+                bestSubjectAverage = state.bestSubjectAverage,
+                bestGradeName = state.bestGradeName,
+                bestGradeValue = state.bestGradeValue
+            )
+        } else {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    if (state.totalSubjects == 0) "Aún no tienes asignaturas registradas"
+                    else "Registra notas en tus asignaturas para ver estadísticas",
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontFamily = InterFontFamily
+                    )
+                )
+            }
+        }
 
-            CTAButton(onNavigateToPerformance = onNavigateToPerformance)
+        CTAButton(onNavigateToPerformance = onNavigateToPerformance)
 
-            Spacer(modifier = Modifier.height(80.dp))
+        Spacer(modifier = Modifier.height(80.dp))
     }
 }
 
 @Composable
-fun AverageCard(modifier: Modifier = Modifier) {
+private fun AverageCard(
+    average: Double,
+    trend: Double,
+    modifier: Modifier = Modifier
+) {
+    val trendText = if (trend >= 0) "+%.1f".format(trend) else "%.1f".format(trend)
+    val trendColor = if (trend >= 0) Color(0xFF34C759) else MaterialTheme.colorScheme.error
+
     Card(
         modifier = modifier
             .border(2.dp, PurpleGradia, RoundedCornerShape(24.dp)),
@@ -95,7 +139,7 @@ fun AverageCard(modifier: Modifier = Modifier) {
                 verticalAlignment = Alignment.Bottom
             ) {
                 Text(
-                    "4.2",
+                    "%.1f".format(average),
                     style = MaterialTheme.typography.headlineLarge.copy(
                         fontWeight = FontWeight.Bold,
                         color = PurpleGradia,
@@ -108,11 +152,11 @@ fun AverageCard(modifier: Modifier = Modifier) {
                     horizontalAlignment = Alignment.End
                 ) {
                     Text(
-                        "+0.2",
+                        trendText,
                         style = MaterialTheme.typography.bodySmall.copy(
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 10.sp,
-                            color = Color(0xFF34C759),
+                            color = trendColor,
                             fontFamily = InterFontFamily
                         ),
                         modifier = Modifier.offset(x = 25.dp, y = 12.dp)
@@ -121,7 +165,7 @@ fun AverageCard(modifier: Modifier = Modifier) {
                         painter = painterResource(R.drawable.ic_average),
                         contentDescription = null,
                         modifier = Modifier.size(25.dp),
-                        tint = Color(0xFF34C759)
+                        tint = trendColor
                     )
                 }
             }
@@ -130,7 +174,11 @@ fun AverageCard(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun CreditsCard(modifier: Modifier = Modifier) {
+private fun CreditsCard(
+    creditsApproved: Int,
+    totalCredits: Int,
+    modifier: Modifier = Modifier
+) {
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(24.dp),
@@ -156,7 +204,7 @@ fun CreditsCard(modifier: Modifier = Modifier) {
                 verticalAlignment = Alignment.Bottom
             ) {
                 Text(
-                    "95",
+                    "$creditsApproved",
                     style = MaterialTheme.typography.headlineLarge.copy(
                         fontWeight = FontWeight.Bold,
                         color = PurpleGradia,
@@ -165,7 +213,7 @@ fun CreditsCard(modifier: Modifier = Modifier) {
                     )
                 )
                 Text(
-                    " / 154",
+                    " / $totalCredits",
                     style = MaterialTheme.typography.titleMedium.copy(
                         color = MaterialTheme.colorScheme.onSurface,
                         fontFamily = InterFontFamily
@@ -177,37 +225,19 @@ fun CreditsCard(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun DiagonalProgressBar() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(12.dp)
-            .clip(RoundedCornerShape(6.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant)
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth(0.62f)
-                .fillMaxHeight()
-                .clip(RoundedCornerShape(6.dp))
-                .background(PurpleGradia)
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(12.dp)
-                    .align(Alignment.TopEnd)
-                    .offset(x = 4.dp, y = (-2).dp)
-                    .background(
-                        color = MaterialTheme.colorScheme.surfaceVariant,
-                        shape = RoundedCornerShape(topStart = 4.dp)
-                    )
-            )
-        }
-    }
-}
+private fun DistributionChartCard(
+    excellentCount: Int,
+    approvedCount: Int,
+    regularCount: Int,
+    failedCount: Int,
+    totalItems: Int
+) {
+    val total = excellentCount + approvedCount + regularCount + failedCount
+    val ePct = if (total > 0) excellentCount.toFloat() / total else 0f
+    val aPct = if (total > 0) approvedCount.toFloat() / total else 0f
+    val rPct = if (total > 0) regularCount.toFloat() / total else 0f
+    val fPct = if (total > 0) failedCount.toFloat() / total else 0f
 
-@Composable
-fun DistributionChartCard() {
     Card(
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -233,26 +263,29 @@ fun DistributionChartCard() {
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                DonutChart()
+                DonutChart(
+                    percentages = listOf(ePct, aPct, rPct, fPct),
+                    totalItems = totalItems
+                )
                 Spacer(modifier = Modifier.width(16.dp))
                 Column(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     LegendItem(
                         color = Color(0xFF4CAF50),
-                        label = "Excelente (30%)"
+                        label = "Excelente (${excellentCount})"
                     )
                     LegendItem(
                         color = Color(0xFF81C784),
-                        label = "Aprobado (50%)"
+                        label = "Aprobado (${approvedCount})"
                     )
                     LegendItem(
                         color = Color(0xFFFFF176),
-                        label = "Regular (10%)"
+                        label = "Regular (${regularCount})"
                     )
                     LegendItem(
                         color = Color(0xFFEF9A9A),
-                        label = "Reprobado (10%)"
+                        label = "Reprobado (${failedCount})"
                     )
                 }
             }
@@ -261,7 +294,10 @@ fun DistributionChartCard() {
 }
 
 @Composable
-fun DonutChart() {
+private fun DonutChart(
+    percentages: List<Float>,
+    totalItems: Int
+) {
     val animatedSweep by animateFloatAsState(
         targetValue = 1f,
         animationSpec = tween(1000),
@@ -283,7 +319,6 @@ fun DonutChart() {
                 Color(0xFFFFF176),
                 Color(0xFFEF9A9A)
             )
-            val percentages = listOf(0.30f, 0.50f, 0.10f, 0.10f)
 
             var startAngle = -90f
 
@@ -302,7 +337,7 @@ fun DonutChart() {
         }
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                "6",
+                "$totalItems",
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface,
@@ -311,7 +346,7 @@ fun DonutChart() {
                 )
             )
             Text(
-                "Asignaturas",
+                "Calificaciones",
                 style = MaterialTheme.typography.bodySmall.copy(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontFamily = InterFontFamily
@@ -322,7 +357,7 @@ fun DonutChart() {
 }
 
 @Composable
-fun LegendItem(color: Color, label: String) {
+private fun LegendItem(color: Color, label: String) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Box(
             modifier = Modifier
@@ -341,7 +376,12 @@ fun LegendItem(color: Color, label: String) {
 }
 
 @Composable
-fun RecentMilestonesCard() {
+private fun RecentMilestonesCard(
+    bestSubjectName: String,
+    bestSubjectAverage: Double,
+    bestGradeName: String,
+    bestGradeValue: Double
+) {
     Card(
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -373,22 +413,26 @@ fun RecentMilestonesCard() {
                 )
                 Spacer(modifier = Modifier.width(16.dp))
                 Column {
-                    Text(
-                        "Mejor promedio: Base de datos",
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            fontFamily = InterFontFamily
+                    if (bestSubjectName.isNotEmpty()) {
+                        Text(
+                            "Mejor promedio: $bestSubjectName",
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontFamily = InterFontFamily
+                            )
                         )
-                    )
+                    }
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        "Has alcanzado un 4.8 en el último parcial",
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontFamily = InterFontFamily
+                    if (bestGradeName.isNotEmpty()) {
+                        Text(
+                            "Has alcanzado un ${"%.1f".format(bestGradeValue)} en $bestGradeName",
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontFamily = InterFontFamily
+                            )
                         )
-                    )
+                    }
                 }
             }
         }
@@ -409,7 +453,7 @@ fun CTAButton(onNavigateToPerformance: () -> Unit = {}) {
             "Ver rendimiento por asignatura",
             style = MaterialTheme.typography.bodyLarge.copy(
                 fontWeight = FontWeight.SemiBold,
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onPrimary,
                 fontFamily = InterFontFamily
             )
         )
@@ -417,7 +461,7 @@ fun CTAButton(onNavigateToPerformance: () -> Unit = {}) {
         Icon(
             imageVector = Icons.AutoMirrored.Filled.ArrowForward,
             contentDescription = null,
-            tint = Color.White
+            tint = MaterialTheme.colorScheme.onPrimary
         )
     }
 }

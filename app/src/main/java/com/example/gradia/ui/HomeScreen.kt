@@ -72,6 +72,8 @@ fun HomeScreen(
     val notesState by notesViewModel.uiState.collectAsState()
     val tasksViewModel = remember { app.provideTasksViewModel() }
     val tasksState by tasksViewModel.uiState.collectAsState()
+    val statsViewModel = remember { app.provideStatsViewModel() }
+    val statsState by statsViewModel.uiState.collectAsState()
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -116,12 +118,12 @@ fun HomeScreen(
                     TopAppBar(
                         title = {
                             Text(
-                                 when (selectedTab) {
-                                     0 -> "Home"
-                                     1 -> "Materias"
-                                     2 -> "Añadir"
-                                     3 -> "Nota Final"
-                                     4 -> "Calendario"
+                                when (selectedTab) {
+                                    0 -> "Home"
+                                    1 -> "Nota Final"
+                                    2 -> "Añadir"
+                                    3 -> "Materias"
+                                    4 -> "Calendario"
                                     5 -> "Notas"
                                     6 -> "Tareas"
                                     7 -> "Ajustes"
@@ -140,10 +142,8 @@ fun HomeScreen(
                             )
                         },
                         navigationIcon = {
-                            if (selectedTab in 5..7 || selectedTab == 9 || selectedTab == 11) {
-                                IconButton(onClick = {
-                                    selectedTab = if (selectedTab == 11) 7 else previousTab
-                                }) {
+                            if (selectedTab in 3..7 || selectedTab == 9 || selectedTab == 12) {
+                                IconButton(onClick = { selectedTab = previousTab }) {
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                         contentDescription = "Back",
@@ -163,7 +163,7 @@ fun HomeScreen(
                             }
                         },
                         actions = {
-                            if (selectedTab == 5 || selectedTab == 6) {
+                            if (selectedTab in 3..7 || selectedTab == 9) {
                                 Box {
                                     IconButton(onClick = { showMenu = true }) {
                                         Icon(
@@ -253,7 +253,7 @@ fun HomeScreen(
                 bottomBar = {
                     GradiaBottomBar(
                         selectedTab = selectedTab,
-                        onTabSelected = { 
+                        onTabSelected = {
                             if (it == 2) {
                                 isQuickAddOpen = !isQuickAddOpen
                             } else {
@@ -279,7 +279,8 @@ fun HomeScreen(
                                 selectedTab = 9
                             }
                         )
-                         1 -> SubjectsScreen(
+                        1 -> FinalGradeScreen()
+                        3 -> SubjectsScreen(
                             onSubjectClick = { subject ->
                                 selectedSubjectId = subject.id
                                 selectedSubjectName = subject.name
@@ -287,27 +288,27 @@ fun HomeScreen(
                                 selectedTab = 9
                             }
                         )
-                        3 -> FinalGradeScreen()
                         4 -> CalendarScreen()
                         5 -> NotesScreen(viewModel = notesViewModel)
                         6 -> TasksScreen(viewModel = tasksViewModel)
                         7 -> SettingsScreen(
-                                onNavigateToAccount = {
-                                    selectedTab = 11
-                                },
-                                onNavigateToTerms = onNavigateToTerms
-                            )
+                            onNavigateToAccount = {
+                                previousTab = selectedTab
+                                selectedTab = 11
+                            },
+                            onNavigateToTerms = onNavigateToTerms
+                        )
                         8 -> ProfileScreen(userId = currentUserId)
                         11 -> AccountScreen(
-                                onNavigateToProfile = {
-                                    previousTab = selectedTab
-                                    selectedTab = 8
-                                },
-                                onDeleteAccount = onDeleteAccount,
-                                onBack = {
-                                    selectedTab = 7
-                                }
-                            )
+                            onNavigateToProfile = {
+                                previousTab = selectedTab
+                                selectedTab = 8
+                            },
+                            onDeleteAccount = onDeleteAccount,
+                            onBack = {
+                                selectedTab = previousTab
+                            }
+                        )
                         9 -> selectedSubjectId?.let {
                             SubjectDetailScreen(
                                 subjectId = it,
@@ -315,12 +316,14 @@ fun HomeScreen(
                             )
                         }
                         10 -> StatsScreen(
+                            statsViewModel = statsViewModel,
                             onNavigateToPerformance = {
                                 previousTab = selectedTab
                                 selectedTab = 12
                             }
                         )
                         12 -> SubjectPerformanceScreen(
+                            subjects = statsState.subjectsPerformance,
                             onBackClick = { selectedTab = previousTab }
                         )
                         else -> {
@@ -366,7 +369,7 @@ fun HomeScreen(
                                             Text("Eliminar", color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
                                         }
                                     }
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+                                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
                                 }
                             }
                         }
@@ -409,7 +412,7 @@ fun HomeScreen(
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         QuickAddMenuItem(
-                            label = "Agregar nota", 
+                            label = "Agregar nota",
                             iconRes = R.drawable.sticky,
                             onClick = {
                                 previousTab = selectedTab
@@ -418,7 +421,7 @@ fun HomeScreen(
                             }
                         )
                         QuickAddMenuItem(
-                            label = "To-do List", 
+                            label = "To-do List",
                             iconRes = R.drawable.todo,
                             onClick = {
                                 previousTab = selectedTab
@@ -437,7 +440,7 @@ fun HomeScreen(
 fun QuickAddMenuItem(label: String, iconRes: Int, onClick: () -> Unit) {
     Surface(
         shape = RoundedCornerShape(24.dp),
-        color = MaterialTheme.colorScheme.surface, 
+        color = Color.White,
         modifier = Modifier
             .width(220.dp)
             .height(55.dp)
@@ -538,9 +541,9 @@ fun GradiaDrawerContent(
                         contentScale = ContentScale.Crop
                     )
                 }
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 Text(
                     text = userName,
                     style = MaterialTheme.typography.titleMedium.copy(
@@ -560,7 +563,7 @@ fun GradiaDrawerContent(
             }
 
             Spacer(modifier = Modifier.height(32.dp))
-                                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
             Spacer(modifier = Modifier.height(32.dp))
 
             // Menu Items
@@ -603,7 +606,7 @@ fun GradiaDrawerContent(
                 isSelected = selectedItem == "Log Out",
                 onClick = { onItemClick("Log Out") }
             )
-            
+
             Spacer(modifier = Modifier.height(24.dp))
         }
     }
@@ -790,7 +793,7 @@ fun EmptySubjectsCard() {
             Text(
                 text = "Ve a \"Materias\" en la barra inferior para crear tu primera asignatura.",
                 fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = Color.Gray,
                 textAlign = TextAlign.Center,
                 fontFamily = InterFontFamily
             )
@@ -829,11 +832,11 @@ private fun performanceFor(average: Double, hasGrades: Boolean): PerformanceInfo
 
 @Composable
 fun CircularProgressChart(progress: Float, score: String, status: String) {
-    val backgroundColor = MaterialTheme.colorScheme.surfaceVariant
+    val surfaceVariant = MaterialTheme.colorScheme.surfaceVariant
     Box(contentAlignment = Alignment.Center, modifier = Modifier.size(160.dp)) {
         Canvas(modifier = Modifier.size(160.dp)) {
             drawArc(
-                color = backgroundColor,
+                color = surfaceVariant,
                 startAngle = -90f,
                 sweepAngle = 360f,
                 useCenter = false,
@@ -947,9 +950,9 @@ fun GradiaBottomBar(selectedTab: Int, onTabSelected: (Int) -> Unit, isQuickAddOp
             BottomBarItem(
                 isSelected = selectedTab == 1 && !isQuickAddOpen,
                 onClick = { onTabSelected(1) },
-                whiteIconId = R.drawable.books_add_white,
-                purpleIconId = R.drawable.books_add_purple,
-                contentDescription = "Books"
+                whiteIconId = R.drawable.calculator_white,
+                purpleIconId = R.drawable.calculator_purple,
+                contentDescription = "Calculator"
             )
 
             // Special Plus Button (The "Add" icon selected when in Notes or Tasks from Quick Add)
@@ -979,9 +982,9 @@ fun GradiaBottomBar(selectedTab: Int, onTabSelected: (Int) -> Unit, isQuickAddOp
             BottomBarItem(
                 isSelected = selectedTab == 3 && !isQuickAddOpen,
                 onClick = { onTabSelected(3) },
-                whiteIconId = R.drawable.calculator_white,
-                purpleIconId = R.drawable.calculator_purple,
-                contentDescription = "Calculator"
+                whiteIconId = R.drawable.books_add_white,
+                purpleIconId = R.drawable.books_add_purple,
+                contentDescription = "Books"
             )
             BottomBarItem(
                 isSelected = selectedTab == 4 && !isQuickAddOpen,
