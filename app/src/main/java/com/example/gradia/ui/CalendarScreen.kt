@@ -50,7 +50,7 @@ fun CalendarScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(CalendarBg)
+            .background(MaterialTheme.colorScheme.background)
             .verticalScroll(rememberScrollState())
     ) {
         Spacer(modifier = Modifier.height(16.dp))
@@ -105,7 +105,7 @@ private fun CalendarCard(
             .fillMaxWidth()
             .padding(horizontal = 24.dp),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = androidx.compose.foundation.BorderStroke(2.dp, PurpleGradia),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
@@ -138,7 +138,7 @@ private fun CalendarCard(
                     text = currentMonth.month.getDisplayName(TextStyle.FULL, Locale.forLanguageTag("es")),
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF4A4A4A),
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontFamily = InterFontFamily,
                         fontSize = 14.sp
                     ),
@@ -152,7 +152,7 @@ private fun CalendarCard(
                     text = currentMonth.year.toString(),
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF4A4A4A),
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontFamily = InterFontFamily,
                         fontSize = 14.sp
                     ),
@@ -185,7 +185,7 @@ private fun CalendarCard(
                         text = day,
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontWeight = FontWeight.SemiBold,
-                            color = Color(0xFF9E9E9E),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontFamily = InterFontFamily,
                             fontSize = 11.sp
                         ),
@@ -242,7 +242,7 @@ private fun CalendarCard(
                                     .background(
                                         when {
                                             isSelected -> PurpleGradia
-                                            isToday -> Color(0xFF7B39A3).copy(alpha = 0.2f)
+                                            isToday -> PurpleGradia.copy(alpha = 0.2f)
                                             else -> Color.Transparent
                                         }
                                     )
@@ -254,9 +254,9 @@ private fun CalendarCard(
                                     style = MaterialTheme.typography.labelMedium.copy(
                                         fontWeight = FontWeight.Medium,
                                         color = when {
-                                            isSelected -> Color.White
+                                            isSelected -> MaterialTheme.colorScheme.onPrimary
                                             day < 10 -> PurpleGradia
-                                            else -> Color(0xFF9E9E9E)
+                                            else -> MaterialTheme.colorScheme.onSurfaceVariant
                                         },
                                         fontFamily = InterFontFamily,
                                         fontSize = 12.sp
@@ -279,7 +279,7 @@ private fun EventoCard(evento: EventoUI) {
         "PARCIAL" -> Triple(EventParcialBg, Color(0xFF8B4513), Color(0xFF5D2C14))
         "TAREA" -> Triple(EventTareasBg, Color(0xFF1565C0), Color(0xFF0D47A1))
         "EVENTO" -> Triple(EventosBg, Color(0xFF2E7D32), Color(0xFF1B5E20))
-        else -> Triple(EventParcialBg, Color(0xFF2C2C2C), Color(0xFF4A4A4A))
+        else -> Triple(EventParcialBg, Color(0xFF2C2C2C), MaterialTheme.colorScheme.onSurface)
     }
 
     Card(
@@ -312,7 +312,7 @@ private fun EventoCard(evento: EventoUI) {
                         else -> painterResource(id = R.drawable.document)
                     },
                     contentDescription = evento.tipo,
-                    tint = Color.White,
+                    tint = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -341,7 +341,7 @@ private fun EventoCard(evento: EventoUI) {
                 Text(
                     text = evento.descripcion,
                     style = MaterialTheme.typography.bodySmall.copy(
-                        color = Color(0xFF666666),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontFamily = InterFontFamily,
                         fontSize = 12.sp
                     ),

@@ -2,6 +2,7 @@ package com.example.gradia
 
 import android.Manifest
 import android.app.AlarmManager
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
@@ -49,8 +50,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        window.statusBarColor = android.graphics.Color.WHITE
-        window.navigationBarColor = android.graphics.Color.WHITE
 
         enableEdgeToEdge()
 
@@ -87,7 +86,29 @@ class MainActivity : ComponentActivity() {
                 checkingSession = false
             }
 
-            GradiaTheme {
+            val prefs = remember { this@MainActivity.getSharedPreferences("gradia_prefs", Context.MODE_PRIVATE) }
+            var isDarkMode by remember { mutableStateOf(prefs.getBoolean("dark_mode", false)) }
+
+            SideEffect {
+                val window = this@MainActivity.window
+                if (isDarkMode) {
+                    window.statusBarColor = android.graphics.Color.BLACK
+                    window.navigationBarColor = android.graphics.Color.BLACK
+                    WindowCompat.getInsetsController(window, window.decorView).apply {
+                        isAppearanceLightStatusBars = false
+                        isAppearanceLightNavigationBars = false
+                    }
+                } else {
+                    window.statusBarColor = android.graphics.Color.WHITE
+                    window.navigationBarColor = android.graphics.Color.WHITE
+                    WindowCompat.getInsetsController(window, window.decorView).apply {
+                        isAppearanceLightStatusBars = true
+                        isAppearanceLightNavigationBars = true
+                    }
+                }
+            }
+
+            GradiaTheme(darkTheme = isDarkMode) {
                 if (checkingSession) return@GradiaTheme
 
                 NavHost(
@@ -418,6 +439,11 @@ class MainActivity : ComponentActivity() {
                         HomeScreen(
                             userName = user?.nombre ?: "Usuario",
                             userEmail = user?.email ?: "",
+                            isDarkMode = isDarkMode,
+                            onToggleTheme = {
+                                isDarkMode = !isDarkMode
+                                prefs.edit().putBoolean("dark_mode", isDarkMode).apply()
+                            },
                             onNavigateToTerms = { navController.navigate("terms_and_conditions") },
                             onLogout = {
                                 app.isRememberMeEnabled = false

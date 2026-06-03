@@ -91,7 +91,7 @@ fun SubjectDetailScreen(
                     text = "Calificaciones detalladas",
                     fontSize = 17.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF4A4A4A),
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontFamily = InterFontFamily,
                     modifier = Modifier.padding(top = 4.dp)
                 )
@@ -101,7 +101,7 @@ fun SubjectDetailScreen(
             }
             item {
                 HorizontalDivider(
-                    color = Color(0xFFE6DDEF),
+                    color = MaterialTheme.colorScheme.outlineVariant,
                     thickness = 1.dp,
                     modifier = Modifier.padding(vertical = 4.dp)
                 )
@@ -193,8 +193,8 @@ private fun SubjectInfoCard(subject: Subject, onEdit: () -> Unit) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
-        color = Color.White,
-        border = androidx.compose.foundation.BorderStroke(1.5.dp, Color(0xFFE0D4EE))
+        color = MaterialTheme.colorScheme.surface,
+        border = androidx.compose.foundation.BorderStroke(1.5.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Column(modifier = Modifier.padding(horizontal = 18.dp, vertical = 16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -216,19 +216,19 @@ private fun SubjectInfoCard(subject: Subject, onEdit: () -> Unit) {
                         text = subject.name,
                         fontSize = 17.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1F1F1F),
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontFamily = InterFontFamily
                     )
                     Text(
                         text = "Semestre ${subject.semester} · ${subject.creditHours} créditos",
                         fontSize = 12.sp,
-                        color = Color.Gray,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontFamily = InterFontFamily
                     )
                 }
                 Surface(
                     shape = CircleShape,
-                    color = Color(0xFFF3EDF7),
+                    color = MaterialTheme.colorScheme.surfaceVariant,
                     modifier = Modifier.clickable(onClick = onEdit)
                 ) {
                     Row(
@@ -271,13 +271,13 @@ private fun SubjectInfoCard(subject: Subject, onEdit: () -> Unit) {
 private fun InfoChip(text: String) {
     Surface(
         shape = RoundedCornerShape(50),
-        color = Color(0xFFF7F1FB)
+        color = MaterialTheme.colorScheme.surfaceVariant
     ) {
         Text(
             text = text,
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp),
             fontSize = 12.sp,
-            color = Color(0xFF6B6B6B),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontFamily = InterFontFamily
         )
     }
@@ -293,13 +293,13 @@ private fun ConfirmDeleteDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text(title, fontWeight = FontWeight.Bold, color = Color(0xFFC62828), fontFamily = InterFontFamily)
+            Text(title, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error, fontFamily = InterFontFamily)
         },
         text = { Text(message, fontFamily = InterFontFamily) },
         confirmButton = {
             Button(
                 onClick = onConfirm,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFC62828))
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
             ) { Text("Eliminar", color = Color.White) }
         },
         dismissButton = {
@@ -313,7 +313,7 @@ private fun CurrentAverageCard(average: Double) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
-        color = Color(0xFFF3EDF7)
+        color = MaterialTheme.colorScheme.surfaceVariant
     ) {
         Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 18.dp)) {
             Row(
@@ -326,7 +326,7 @@ private fun CurrentAverageCard(average: Double) {
                         text = "PROMEDIO ACTUAL",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF6B6B6B),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontFamily = InterFontFamily,
                         letterSpacing = 0.5.sp
                     )
@@ -342,7 +342,7 @@ private fun CurrentAverageCard(average: Double) {
                 Box(
                     modifier = Modifier
                         .size(40.dp)
-                        .background(Color.White, CircleShape),
+                        .background(MaterialTheme.colorScheme.surface, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -361,13 +361,13 @@ private fun CurrentAverageCard(average: Double) {
                     .height(6.dp)
                     .clip(RoundedCornerShape(3.dp)),
                 color = PurpleGradia,
-                trackColor = Color(0xFFE2D6EE)
+                trackColor = MaterialTheme.colorScheme.surfaceVariant
             )
             Spacer(modifier = Modifier.height(10.dp))
             Text(
                 text = "Lorem ipsum dolor sit amet.",
                 fontSize = 12.sp,
-                color = Color.Gray,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontFamily = InterFontFamily
             )
         }
@@ -399,7 +399,7 @@ private fun FilterPill(
     val isSelected = selected == value
     Surface(
         shape = RoundedCornerShape(50),
-        color = if (isSelected) PurpleGradia else Color(0xFFF3EDF7),
+        color = if (isSelected) PurpleGradia else MaterialTheme.colorScheme.surfaceVariant,
         modifier = Modifier
             .height(32.dp)
             .clickable { onSelected(value) }
@@ -430,7 +430,7 @@ private fun GradeRow(item: GradeItem, onClick: () -> Unit) {
             .fillMaxWidth()
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(50),
-        color = Color(0xFFF7F1FB)
+        color = MaterialTheme.colorScheme.surfaceVariant
     ) {
         GradeRowContent(item = item, isPending = false)
     }
@@ -442,7 +442,7 @@ private fun PendingGradeRow(item: GradeItem, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(28.dp))
-            .dashedBorder(color = Color(0xFFC9BDD6), cornerRadius = 28.dp)
+            .dashedBorder(color = MaterialTheme.colorScheme.outline, cornerRadius = 28.dp)
             .clickable(onClick = onClick)
     ) {
         GradeRowContent(item = item, isPending = true)
@@ -461,14 +461,14 @@ private fun GradeRowContent(item: GradeItem, isPending: Boolean) {
             modifier = Modifier
                 .size(44.dp)
                 .background(
-                    if (isPending) Color(0xFFF3EDF7) else Color.White,
+                    if (isPending) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface,
                     RoundedCornerShape(14.dp)
                 ),
             contentAlignment = Alignment.Center
         ) {
             GradeIconRender(
                 type = resolveGradeIcon(item.icon, item.name),
-                tint = if (isPending) Color(0xFFB0A4BC) else PurpleGradia,
+                tint = if (isPending) MaterialTheme.colorScheme.onSurfaceVariant else PurpleGradia,
                 size = 22.dp
             )
         }
@@ -478,13 +478,13 @@ private fun GradeRowContent(item: GradeItem, isPending: Boolean) {
                 text = item.name,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                color = if (isPending) Color(0xFFA098AA) else Color(0xFF4A4A4A),
+                color = if (isPending) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
                 fontFamily = InterFontFamily
             )
             Text(
                 text = "Peso: ${item.percentage.toInt()}%",
                 fontSize = 11.sp,
-                color = Color.Gray,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontFamily = InterFontFamily
             )
         }
@@ -498,7 +498,7 @@ private fun GradeRowContent(item: GradeItem, isPending: Boolean) {
                     text = "%.1f".format(item.grade),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF4A4A4A),
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontFamily = InterFontFamily
                 )
                 Spacer(modifier = Modifier.height(3.dp))
@@ -513,7 +513,7 @@ private fun GradeRowContent(item: GradeItem, isPending: Boolean) {
 @Composable
 private fun StatusChip(grade: Double) {
     val (label, bg, fg) = when {
-        grade < 3.0 -> Triple("REPROBADO", Color(0xFFFFE0E0), Color(0xFFC62828))
+        grade < 3.0 -> Triple("REPROBADO", Color(0xFFFFE0E0), MaterialTheme.colorScheme.error)
         grade < 4.0 -> Triple("REGULAR", Color(0xFFFFF3B0), Color(0xFF8A6D00))
         grade < 4.5 -> Triple("APROBADO", Color(0xFFCDEFCD), Color(0xFF2E7D32))
         else -> Triple("EXCELENTE", Color(0xFFBCEFC4), Color(0xFF1B5E20))
@@ -539,13 +539,13 @@ private fun PendingLabel() {
         Box(
             modifier = Modifier
                 .size(6.dp)
-                .background(Color(0xFFA098AA), CircleShape)
+                .background(MaterialTheme.colorScheme.onSurfaceVariant, CircleShape)
         )
         Spacer(modifier = Modifier.width(6.dp))
         Text(
             text = "Pendiente",
             fontSize = 12.sp,
-            color = Color(0xFFA098AA),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontWeight = FontWeight.SemiBold,
             fontFamily = InterFontFamily
         )
@@ -558,14 +558,14 @@ private fun AddGradeButton(onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .height(50.dp)
-            .dashedBorder(color = Color(0xFFC9BDD6), cornerRadius = 25.dp)
+            .dashedBorder(color = MaterialTheme.colorScheme.outline, cornerRadius = 25.dp)
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
         Icon(
             imageVector = Icons.Default.Add,
             contentDescription = "Agregar nota",
-            tint = Color(0xFFA098AA),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.size(28.dp)
         )
     }
@@ -601,9 +601,9 @@ private fun GradeFormSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = Color.White,
+        containerColor = MaterialTheme.colorScheme.surface,
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
-        dragHandle = { BottomSheetDefaults.DragHandle(color = Color(0xFFCFC2DC)) }
+        dragHandle = { BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.onSurfaceVariant) }
     ) {
         Column(
             modifier = Modifier
@@ -620,7 +620,7 @@ private fun GradeFormSheet(
                     text = if (isEditing) "Editar nota" else "Agregar nota",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.ExtraBold,
-                    color = Color(0xFF1F1F1F),
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontFamily = InterFontFamily
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -629,7 +629,7 @@ private fun GradeFormSheet(
                             Icon(
                                 painter = painterResource(id = R.drawable.delete),
                                 contentDescription = "Eliminar nota",
-                                tint = Color(0xFFC62828),
+                                tint = MaterialTheme.colorScheme.error,
                                 modifier = Modifier.size(22.dp)
                             )
                         }
@@ -638,7 +638,7 @@ private fun GradeFormSheet(
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Cerrar",
-                            tint = Color(0xFF4A4A4A)
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
@@ -671,7 +671,7 @@ private fun GradeFormSheet(
                                             fontFamily = InterFontFamily,
                                             fontSize = 14.sp,
                                             fontWeight = FontWeight.SemiBold,
-                                            color = Color(0xFF1F1F1F)
+                                            color = MaterialTheme.colorScheme.onSurface
                                         )
                                     },
                                     leadingIcon = {
@@ -806,7 +806,7 @@ private fun SheetFieldLabel(text: String) {
         text = text,
         fontSize = 13.sp,
         fontWeight = FontWeight.Bold,
-        color = Color(0xFF1F1F1F),
+        color = MaterialTheme.colorScheme.onSurface,
         fontFamily = InterFontFamily
     )
 }
@@ -824,7 +824,7 @@ private fun SheetPillTextField(
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(50),
-        color = Color(0xFFF3EDF7)
+        color = MaterialTheme.colorScheme.surfaceVariant
     ) {
         Row(
             modifier = Modifier
@@ -853,7 +853,7 @@ private fun SheetPillTextField(
                 singleLine = true,
                 textStyle = TextStyle(
                     fontSize = 14.sp,
-                    color = Color(0xFF1F1F1F),
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontFamily = InterFontFamily
                 ),
                 cursorBrush = SolidColor(PurpleGradia),
@@ -862,7 +862,7 @@ private fun SheetPillTextField(
                         if (value.isEmpty()) {
                             Text(
                                 text = placeholder,
-                                color = Color(0xFFB3A8C4),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 14.sp,
                                 fontFamily = InterFontFamily
                             )
