@@ -37,6 +37,7 @@ import com.example.gradia.GradiaApplication
 import com.example.gradia.R
 import com.example.gradia.domain.model.Subject
 import com.example.gradia.presentation.viewmodel.NotesViewModel
+import com.example.gradia.presentation.viewmodel.NotificationsViewModel
 import com.example.gradia.presentation.viewmodel.TasksViewModel
 import com.example.gradia.ui.theme.*
 import com.example.gradia.ui.AccountScreen
@@ -76,6 +77,8 @@ fun HomeScreen(
     val calendarState by calendarViewModel.uiState.collectAsState()
     val statsViewModel = remember { app.provideStatsViewModel() }
     val statsState by statsViewModel.uiState.collectAsState()
+    val notificationsViewModel = remember { app.provideNotificationsViewModel() }
+    val notificationsState by notificationsViewModel.uiState.collectAsState()
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -133,6 +136,7 @@ fun HomeScreen(
                                     9 -> selectedSubjectName.ifBlank { "Materia" }
                                     10 -> "Estadísticas"
                                     12 -> "Rendimiento"
+                                    13 -> "Notificaciones"
                                     else -> "Gradia"
                                 },
                                 modifier = Modifier.fillMaxWidth(),
@@ -144,7 +148,7 @@ fun HomeScreen(
                             )
                         },
                         navigationIcon = {
-                            if (selectedTab in 3..7 || selectedTab == 9 || selectedTab == 12) {
+                            if (selectedTab in 3..7 || selectedTab == 9 || selectedTab == 12 || selectedTab == 13) {
                                 IconButton(onClick = { selectedTab = previousTab }) {
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -223,7 +227,10 @@ fun HomeScreen(
                             } else {
                                 Box(modifier = Modifier.padding(end = 8.dp)) {
                                     IconButton(
-                                        onClick = { /* TODO */ },
+                                        onClick = {
+                                            previousTab = selectedTab
+                                            selectedTab = 13
+                                        },
                                         modifier = Modifier
                                             .background(SocialIconBg, CircleShape)
                                             .size(40.dp)
@@ -235,14 +242,15 @@ fun HomeScreen(
                                             modifier = Modifier.size(24.dp)
                                         )
                                     }
-                                    // Badge rojo
-                                    Box(
-                                        modifier = Modifier
-                                            .size(10.dp)
-                                            .background(MaterialTheme.colorScheme.error, CircleShape)
-                                            .align(Alignment.TopEnd)
-                                            .offset(x = (-2).dp, y = 2.dp)
-                                    )
+                                    if (notificationsState.totalCount > 0) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(10.dp)
+                                                .background(MaterialTheme.colorScheme.error, CircleShape)
+                                                .align(Alignment.TopEnd)
+                                                .offset(x = (-2).dp, y = 2.dp)
+                                        )
+                                    }
                                 }
                             }
                         },
@@ -328,6 +336,7 @@ fun HomeScreen(
                             subjects = statsState.subjectsPerformance,
                             onBackClick = { selectedTab = previousTab }
                         )
+                        13 -> NotificationsScreen(viewModel = notificationsViewModel)
                         else -> {
                             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                 Text("Próximamente", style = MaterialTheme.typography.titleLarge)
