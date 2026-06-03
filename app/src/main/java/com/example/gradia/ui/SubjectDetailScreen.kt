@@ -29,6 +29,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -48,6 +49,7 @@ fun SubjectDetailScreen(
     val app = LocalContext.current.applicationContext as GradiaApplication
     val viewModel = remember(subjectId) { app.provideSubjectDetailViewModel(subjectId) }
     val state by viewModel.uiState.collectAsState()
+    val otherSubjectNames by viewModel.otherSubjectNames.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
     var showAddSheet by remember { mutableStateOf(false) }
@@ -156,7 +158,8 @@ fun SubjectDetailScreen(
                 onDelete = {
                     showEditSubjectSheet = false
                     showDeleteSubjectDialog = true
-                }
+                },
+                existingNames = otherSubjectNames
             )
         }
     }
@@ -217,7 +220,9 @@ private fun SubjectInfoCard(subject: Subject, onEdit: () -> Unit) {
                         fontSize = 17.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface,
-                        fontFamily = InterFontFamily
+                        fontFamily = InterFontFamily,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
                     )
                     Text(
                         text = "Semestre ${subject.semester} · ${subject.creditHours} créditos",

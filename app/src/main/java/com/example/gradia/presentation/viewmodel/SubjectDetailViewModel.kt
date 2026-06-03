@@ -5,7 +5,12 @@ import androidx.lifecycle.viewModelScope
 import com.example.gradia.domain.model.GradeItem
 import com.example.gradia.domain.model.Subject
 import com.example.gradia.domain.repository.SubjectRepository
+import com.example.gradia.domain.validation.SubjectValidation
+import com.example.gradia.ui.GradeIconType
+import com.example.gradia.ui.resolveGradeIcon
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -30,6 +35,13 @@ class SubjectDetailViewModel(
 
     private val subjectFlow = subjectRepository.getSubjectById(subjectId)
     private val gradesFlow = subjectRepository.getGradeItemsBySubject(subjectId)
+
+    /** Nombres de las demás asignaturas (excluye la actual) para avisar de
+     *  duplicados en línea al editar, sin marcar la propia como repetida. */
+    val otherSubjectNames: StateFlow<List<String>> =
+        subjectRepository.getSubjects()
+            .map { list -> list.filter { it.id != subjectId }.map { s -> s.name } }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     private val filter = MutableStateFlow(GradeFilter.TODAS)
     private val isSaving = MutableStateFlow(false)
@@ -98,7 +110,11 @@ class SubjectDetailViewModel(
             isSaving.value = true
             error.value = null
             try {
-                subjectRepository.updateSubject(subject.copy(id = subjectId))
+                val target = subject.copy(id = subjectId)
+                // Snapshot puntual de las asignaturas del usuario para detectar
+                // nombres duplicados (validate excluye la propia por id).
+                SubjectValidation.validate(target, subjectRepository.getSubjects().first())
+                subjectRepository.updateSubject(target)
                 onSuccess()
             } catch (e: Exception) {
                 error.value = e.message ?: "Error al actualizar la asignatura"
@@ -124,19 +140,19 @@ class SubjectDetailViewModel(
         error.value = null
     }
 
+    // El filtro se basa en el tipo (icono) que el usuario eligió explícitamente al
+    // crear la nota; si no hay icono guardado, resolveGradeIcon lo deduce a partir
+    // del nombre. Esto evita que las notas se "pierdan" del filtro cuando el nombre
+    // no contiene una palabra clave concreta.
     private fun applyFilter(grades: List<GradeItem>, value: GradeFilter): List<GradeItem> =
         when (value) {
             GradeFilter.TODAS -> grades
             GradeFilter.PARCIALES -> grades.filter {
-                it.name.contains("Parcial", ignoreCase = true) ||
-                    it.name.contains("Examen", ignoreCase = true)
+                val type = resolveGradeIcon(it.icon, it.name)
+                type == GradeIconType.Examen || type == GradeIconType.Final
             }
             GradeFilter.TALLERES -> grades.filter {
-                it.name.contains("Taller", ignoreCase = true) ||
-                    it.name.contains("Tarea", ignoreCase = true) ||
-                    it.name.contains("Quiz", ignoreCase = true) ||
-                    it.name.contains("Laboratorio", ignoreCase = true) ||
-                    it.name.contains("Proyecto", ignoreCase = true)
+                resolveGradeIcon(it.icon, it.name) == GradeIconType.Actividad
             }
         }
 
