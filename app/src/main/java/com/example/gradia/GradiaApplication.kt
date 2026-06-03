@@ -32,6 +32,7 @@ import com.example.gradia.presentation.viewmodel.CalendarViewModel
 import com.example.gradia.presentation.viewmodel.FinalGradeViewModel
 import com.example.gradia.presentation.viewmodel.HomeViewModel
 import com.example.gradia.presentation.viewmodel.NotesViewModel
+import com.example.gradia.presentation.viewmodel.NotificationsViewModel
 import com.example.gradia.presentation.viewmodel.StatsViewModel
 import com.example.gradia.presentation.viewmodel.SubjectDetailViewModel
 import com.example.gradia.presentation.viewmodel.SubjectsViewModel
@@ -158,6 +159,15 @@ class GradiaApplication : Application() {
         return SubjectDetailViewModel(
             subjectId = subjectId,
             subjectRepository = subjectRepository
+        )
+    }
+
+    fun provideNotificationsViewModel(): NotificationsViewModel {
+        return NotificationsViewModel(
+            subjectRepository = subjectRepository,
+            userRepository = userRepository,
+            eventoRepository = eventoRepository,
+            calculateCurrentAverage = calculateCurrentAverageUseCase
         )
     }
 }
