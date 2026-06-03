@@ -49,6 +49,8 @@ fun HomeScreen(
     onLogout: () -> Unit = {},
     onDeleteAccount: () -> Unit = {},
     onNavigateToTerms: () -> Unit = {},
+    onToggleTheme: () -> Unit = {},
+    isDarkMode: Boolean = false,
     userName: String = "Usuario",
     userEmail: String = ""
 ) {
@@ -80,6 +82,8 @@ fun HomeScreen(
                 onClose = { scope.launch { drawerState.close() } },
                 userName = userName,
                 userEmail = userEmail,
+                isDarkMode = isDarkMode,
+                onToggleTheme = onToggleTheme,
                 onItemClick = { item ->
                     if (item == "Log Out") {
                         onLogout()
@@ -131,7 +135,7 @@ fun HomeScreen(
                                 textAlign = TextAlign.Center,
                                 style = MaterialTheme.typography.titleLarge.copy(
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF4A4A4A)
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                             )
                         },
@@ -176,26 +180,26 @@ fun HomeScreen(
                                     ) {
                                         if (selectedTab == 5 && notesState.selectedNoteIds.isNotEmpty()) {
                                             DropdownMenuItem(
-                                                text = { Text("Eliminar seleccionadas (${notesState.selectedNoteIds.size})", color = Color.Red) },
+                                                text = { Text("Eliminar seleccionadas (${notesState.selectedNoteIds.size})", color = MaterialTheme.colorScheme.error) },
                                                 onClick = {
                                                     showMenu = false
                                                     notesViewModel.deleteSelectedNotes()
                                                 },
                                                 leadingIcon = {
-                                                    Icon(Icons.Default.Delete, contentDescription = null, tint = Color.Red)
+                                                    Icon(Icons.Default.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.error)
                                                 }
                                             )
                                             HorizontalDivider()
                                         }
                                         if (selectedTab == 6 && tasksState.selectedTaskIds.isNotEmpty()) {
                                             DropdownMenuItem(
-                                                text = { Text("Eliminar seleccionadas (${tasksState.selectedTaskIds.size})", color = Color.Red) },
+                                                text = { Text("Eliminar seleccionadas (${tasksState.selectedTaskIds.size})", color = MaterialTheme.colorScheme.error) },
                                                 onClick = {
                                                     showMenu = false
                                                     tasksViewModel.deleteSelectedTasks()
                                                 },
                                                 leadingIcon = {
-                                                    Icon(Icons.Default.Delete, contentDescription = null, tint = Color.Red)
+                                                    Icon(Icons.Default.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.error)
                                                 }
                                             )
                                             HorizontalDivider()
@@ -233,7 +237,7 @@ fun HomeScreen(
                                     Box(
                                         modifier = Modifier
                                             .size(10.dp)
-                                            .background(Color.Red, CircleShape)
+                                            .background(MaterialTheme.colorScheme.error, CircleShape)
                                             .align(Alignment.TopEnd)
                                             .offset(x = (-2).dp, y = 2.dp)
                                     )
@@ -242,7 +246,7 @@ fun HomeScreen(
                         },
                         colors = TopAppBarDefaults.topAppBarColors(
                             containerColor = Color.Transparent,
-                            scrolledContainerColor = Color.White
+                            scrolledContainerColor = MaterialTheme.colorScheme.surface
                         )
                     )
                 },
@@ -263,7 +267,7 @@ fun HomeScreen(
                         isQuickAddOpen = isQuickAddOpen
                     )
                 },
-                containerColor = Color(0xFFFBF8FF)
+                containerColor = MaterialTheme.colorScheme.background
             ) { innerPadding ->
                 Box(modifier = Modifier.padding(innerPadding)) {
                     when (selectedTab) {
@@ -335,7 +339,7 @@ fun HomeScreen(
                     text = {
                         Column {
                             if (notesState.allCategories.isEmpty()) {
-                                Text("No hay categorías creadas.", color = Color.Gray)
+                                Text("No hay categorías creadas.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                             } else {
                                 notesState.allCategories.forEach { cat ->
                                     Row(
@@ -359,10 +363,10 @@ fun HomeScreen(
                                         TextButton(onClick = {
                                             notesViewModel.deleteCategory(cat.id)
                                         }) {
-                                            Text("Eliminar", color = Color.Red, fontSize = 12.sp)
+                                            Text("Eliminar", color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
                                         }
                                     }
-                                    HorizontalDivider(color = Color.LightGray.copy(alpha = 0.3f))
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
                                 }
                             }
                         }
@@ -433,7 +437,7 @@ fun HomeScreen(
 fun QuickAddMenuItem(label: String, iconRes: Int, onClick: () -> Unit) {
     Surface(
         shape = RoundedCornerShape(24.dp),
-        color = Color(0xFFF3EDF7), 
+        color = MaterialTheme.colorScheme.surface, 
         modifier = Modifier
             .width(220.dp)
             .height(55.dp)
@@ -468,6 +472,8 @@ fun GradiaDrawerContent(
     selectedItem: String,
     onClose: () -> Unit,
     onItemClick: (String) -> Unit,
+    isDarkMode: Boolean = false,
+    onToggleTheme: () -> Unit = {},
     userName: String = "Usuario",
     userEmail: String = ""
 ) {
@@ -481,7 +487,7 @@ fun GradiaDrawerContent(
     val fotoUrl = user?.fotoUrl
 
     ModalDrawerSheet(
-        drawerContainerColor = Color.White,
+        drawerContainerColor = MaterialTheme.colorScheme.surface,
         drawerShape = RoundedCornerShape(topEnd = 32.dp, bottomEnd = 32.dp),
         modifier = Modifier.width(330.dp)
     ) {
@@ -546,7 +552,7 @@ fun GradiaDrawerContent(
                 Text(
                     text = userEmail,
                     style = MaterialTheme.typography.bodySmall.copy(
-                        color = Color.Gray,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontFamily = InterFontFamily,
                         fontSize = 15.sp
                     )
@@ -554,7 +560,7 @@ fun GradiaDrawerContent(
             }
 
             Spacer(modifier = Modifier.height(32.dp))
-            HorizontalDivider(color = Color.LightGray.copy(alpha = 0.3f))
+                                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
             Spacer(modifier = Modifier.height(32.dp))
 
             // Menu Items
@@ -584,11 +590,11 @@ fun GradiaDrawerContent(
 
             // Bottom Items
             DrawerMenuItem(
-                label = "Tema Oscuro",
-                outlineIconId = R.drawable.sun_light,
-                boldIconId = R.drawable.sun_light, 
-                isSelected = selectedItem == "Tema Oscuro",
-                onClick = { onItemClick("Tema Oscuro") }
+                label = if (isDarkMode) "Tema Claro" else "Tema Oscuro",
+                outlineIconId = if (isDarkMode) R.drawable.sun_light else R.drawable.moon,
+                boldIconId = if (isDarkMode) R.drawable.sun_light else R.drawable.moon,
+                isSelected = false,
+                onClick = onToggleTheme
             )
             DrawerMenuItem(
                 label = "Log Out",
@@ -616,7 +622,7 @@ fun DrawerMenuItem(
             .fillMaxWidth()
             .padding(vertical = 4.dp)
             .clip(RoundedCornerShape(12.dp))
-            .background(if (isSelected) Color(0xFFEDEDED) else Color.Transparent)
+            .background(if (isSelected) MaterialTheme.colorScheme.surfaceVariant else Color.Transparent)
             .clickable(onClick = onClick)
             .padding(vertical = 12.dp, horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -661,7 +667,7 @@ fun HomeContent(onSubjectClick: (Subject) -> Unit = {}) {
                 "Mi Semestre",
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF4A4A4A),
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontFamily = InterFontFamily
                 ),
                 modifier = Modifier.padding(top = 8.dp)
@@ -672,7 +678,7 @@ fun HomeContent(onSubjectClick: (Subject) -> Unit = {}) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(32.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
                 Column(
@@ -685,7 +691,7 @@ fun HomeContent(onSubjectClick: (Subject) -> Unit = {}) {
                         "Promedio General",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF4A4A4A)
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     )
 
@@ -708,7 +714,7 @@ fun HomeContent(onSubjectClick: (Subject) -> Unit = {}) {
                     Text(
                         text = performance.message,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Gray,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center
                     )
                 }
@@ -725,7 +731,7 @@ fun HomeContent(onSubjectClick: (Subject) -> Unit = {}) {
                     "Materias",
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF4A4A4A),
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontFamily = InterFontFamily
                     )
                 )
@@ -757,7 +763,7 @@ fun EmptySubjectsCard() {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFF3EDF7)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
@@ -776,7 +782,7 @@ fun EmptySubjectsCard() {
             Text(
                 text = "Aún no tienes asignaturas",
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF4A4A4A),
+                color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 15.sp,
                 fontFamily = InterFontFamily
             )
@@ -784,7 +790,7 @@ fun EmptySubjectsCard() {
             Text(
                 text = "Ve a \"Materias\" en la barra inferior para crear tu primera asignatura.",
                 fontSize = 12.sp,
-                color = Color.Gray,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
                 fontFamily = InterFontFamily
             )
@@ -823,10 +829,11 @@ private fun performanceFor(average: Double, hasGrades: Boolean): PerformanceInfo
 
 @Composable
 fun CircularProgressChart(progress: Float, score: String, status: String) {
+    val backgroundColor = MaterialTheme.colorScheme.surfaceVariant
     Box(contentAlignment = Alignment.Center, modifier = Modifier.size(160.dp)) {
         Canvas(modifier = Modifier.size(160.dp)) {
             drawArc(
-                color = Color(0xFFE9E4F0),
+                color = backgroundColor,
                 startAngle = -90f,
                 sweepAngle = 360f,
                 useCenter = false,
@@ -845,7 +852,7 @@ fun CircularProgressChart(progress: Float, score: String, status: String) {
                 text = score,
                 fontSize = 36.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF4A4A4A)
+                color = MaterialTheme.colorScheme.onSurface
             )
             Text(
                 text = status,
@@ -869,7 +876,7 @@ fun SubjectHomeItem(subject: Subject, onClick: () -> Unit = {}) {
             .height(82.dp)
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(50.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Row(
@@ -900,13 +907,13 @@ fun SubjectHomeItem(subject: Subject, onClick: () -> Unit = {}) {
                         fontSize = 16.sp,
                         fontFamily = InterFontFamily
                     ),
-                    color = Color(0xFF4A4A4A)
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(3.dp))
                 Text(
                     text = subtitle,
                     fontSize = 12.sp,
-                    color = Color.Gray,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontFamily = InterFontFamily
                 )
             }
@@ -951,7 +958,7 @@ fun GradiaBottomBar(selectedTab: Int, onTabSelected: (Int) -> Unit, isQuickAddOp
                 onClick = { onTabSelected(2) },
                 modifier = if (isAddIconSelected) {
                     Modifier
-                        .background(Color.White, RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(12.dp))
                         .size(35.dp)
                 } else {
                     Modifier.size(40.dp)
@@ -964,7 +971,7 @@ fun GradiaBottomBar(selectedTab: Int, onTabSelected: (Int) -> Unit, isQuickAddOp
                         painterResource(id = R.drawable.plus_white)
                     },
                     contentDescription = "Quick Add",
-                    tint = if (isAddIconSelected) PurpleGradia else Color.White,
+                    tint = if (isAddIconSelected) PurpleGradia else MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.size(26.dp)
                 )
             }
@@ -999,7 +1006,7 @@ fun BottomBarItem(
         onClick = onClick,
         modifier = if (isSelected) {
             Modifier
-                .background(Color.White, RoundedCornerShape(12.dp))
+                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(12.dp))
                 .size(35.dp)
         } else {
             Modifier.size(40.dp)
@@ -1008,7 +1015,7 @@ fun BottomBarItem(
         Icon(
             painter = painterResource(id = if (isSelected) purpleIconId else whiteIconId),
             contentDescription = contentDescription,
-            tint = if (isSelected) PurpleGradia else Color.White,
+            tint = if (isSelected) PurpleGradia else MaterialTheme.colorScheme.onPrimary,
             modifier = Modifier.size(26.dp)
         )
     }

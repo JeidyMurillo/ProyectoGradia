@@ -115,7 +115,7 @@ fun NotesScreen(viewModel: NotesViewModel? = null) {
                         }
                         Button(
                             onClick = vm::deleteSelectedNotes,
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Red.copy(alpha = 0.8f)),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error.copy(alpha = 0.8f)),
                             shape = RoundedCornerShape(8.dp),
                             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
                         ) {
@@ -186,11 +186,11 @@ fun CategoryRow(
             Box(
                 modifier = Modifier
                     .size(32.dp)
-                    .border(1.dp, Color.LightGray, RoundedCornerShape(8.dp))
+                    .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(8.dp))
                     .clickable { showCreateDialog = true },
                 contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Add Category", modifier = Modifier.size(16.dp), tint = Color.Gray)
+                Icon(Icons.Default.Add, contentDescription = "Add Category", modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }
@@ -246,8 +246,8 @@ fun CategoryRow(
 fun CategoryChip(label: String, backgroundColor: Color, isSelected: Boolean = false, onClick: () -> Unit = {}, onLongClick: () -> Unit = {}) {
     Surface(
         shape = RoundedCornerShape(12.dp),
-        color = if (isSelected) backgroundColor else Color.White,
-        border = if (!isSelected) androidx.compose.foundation.BorderStroke(1.dp, Color.LightGray.copy(alpha = 0.5f)) else null,
+        color = if (isSelected) backgroundColor else MaterialTheme.colorScheme.surface,
+        border = if (!isSelected) androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline) else null,
         modifier = Modifier
             .height(32.dp)
             .combinedClickable(onClick = onClick, onLongClick = onLongClick)
@@ -260,7 +260,7 @@ fun CategoryChip(label: String, backgroundColor: Color, isSelected: Boolean = fa
                 text = label,
                 style = MaterialTheme.typography.labelMedium.copy(
                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                    color = Color.DarkGray,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontFamily = InterFontFamily
                 )
             )
@@ -307,7 +307,7 @@ fun CreateCategoryDialog(
                                 .background(Color(color))
                                 .border(
                                     if (selectedColor == color) 2.dp else 0.dp,
-                                    if (selectedColor == color) Color.DarkGray else Color.Transparent,
+                                    if (selectedColor == color) MaterialTheme.colorScheme.onSurface else Color.Transparent,
                                     RoundedCornerShape(8.dp)
                                 )
                                 .clickable { selectedColor = color }
@@ -372,7 +372,7 @@ fun EditCategoryDialog(
                                 .background(Color(color))
                                 .border(
                                     if (selectedColor == color) 2.dp else 0.dp,
-                                    if (selectedColor == color) Color.DarkGray else Color.Transparent,
+                                    if (selectedColor == color) MaterialTheme.colorScheme.onSurface else Color.Transparent,
                                     RoundedCornerShape(8.dp)
                                 )
                                 .clickable { selectedColor = color }
@@ -384,7 +384,7 @@ fun EditCategoryDialog(
                 Spacer(modifier = Modifier.height(8.dp))
                 TextButton(
                     onClick = onDelete,
-                    colors = ButtonDefaults.textButtonColors(contentColor = Color.Red)
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
                 ) {
                     Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(4.dp))
@@ -495,7 +495,7 @@ fun NoteEditorCard(
             .fillMaxWidth()
             .shadow(4.dp, RoundedCornerShape(20.dp)),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = androidx.compose.foundation.BorderStroke(1.dp, PurpleGradia.copy(alpha = 0.3f))
     ) {
         Column(
@@ -504,7 +504,7 @@ fun NoteEditorCard(
             TextField(
                 value = title,
                 onValueChange = onTitleChange,
-                placeholder = { Text("Title", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Gray) },
+                placeholder = { Text("Title", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant) },
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.Transparent,
                     unfocusedContainerColor = Color.Transparent,
@@ -515,7 +515,7 @@ fun NoteEditorCard(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            HorizontalDivider(color = Color.LightGray.copy(alpha = 0.5f), thickness = 1.dp)
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 1.dp)
 
             Box(
                 modifier = Modifier
@@ -577,16 +577,16 @@ fun NoteEditorCard(
                     visualTransformation = visualTransformation,
                     cursorBrush = SolidColor(PurpleGradia),
                     textStyle = MaterialTheme.typography.bodyLarge.copy(
-                        color = Color.Black,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 16.sp
                     ),
                     modifier = Modifier.fillMaxWidth(),
                     decorationBox = { innerTextField ->
                         if (tfValue.text.isEmpty()) {
                             Text(
-                                "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus condimentum magna eu augue malesuada, vitae vestibulum odio varius. Suspendisse nec mauris ut arcu venenatis laoreet eget id ex.",
+                                "Añade un texto aquí",
                                 fontSize = 16.sp,
-                                color = Color.Gray
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                         innerTextField()
@@ -640,9 +640,9 @@ fun NoteEditorCard(
                         val isSelected = noteCategories.any { it.id == category.id }
                         Surface(
                             shape = RoundedCornerShape(8.dp),
-                            color = if (isSelected) Color(category.color) else Color.White,
+                            color = if (isSelected) Color(category.color) else MaterialTheme.colorScheme.surfaceVariant,
                             border = if (!isSelected) androidx.compose.foundation.BorderStroke(
-                                1.dp, Color.LightGray.copy(alpha = 0.5f)
+                                1.dp, MaterialTheme.colorScheme.outline
                             ) else null,
                             modifier = Modifier.height(28.dp).clickable { onCategoryToggle(category.id) }
                         ) {
@@ -654,7 +654,7 @@ fun NoteEditorCard(
                                     text = category.name,
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                        color = Color.DarkGray,
+                                        color = MaterialTheme.colorScheme.onSurface,
                                         fontSize = 11.sp
                                     )
                                 )
@@ -665,7 +665,7 @@ fun NoteEditorCard(
             }
 
             Spacer(modifier = Modifier.height(12.dp))
-            HorizontalDivider(color = Color.LightGray.copy(alpha = 0.3f), thickness = 1.dp)
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 1.dp)
             Spacer(modifier = Modifier.height(12.dp))
 
             Row(
@@ -680,7 +680,7 @@ fun NoteEditorCard(
                     Text(
                         "B",
                         fontWeight = if (isBoldActive) FontWeight.ExtraBold else FontWeight.Bold,
-                        color = if (isBoldActive) Color(0xFF4A0072) else PurpleGradia,
+                        color = if (isBoldActive) MaterialTheme.colorScheme.primary else PurpleGradia,
                         fontSize = 18.sp,
                         modifier = Modifier.clickable {
                             val sel = tfValue.selection
@@ -694,7 +694,7 @@ fun NoteEditorCard(
                     Icon(
                         painter = painterResource(id = R.drawable.italic),
                         contentDescription = "Italic",
-                        tint = if (isItalicActive) Color(0xFF4A0072) else PurpleGradia,
+                        tint = if (isItalicActive) MaterialTheme.colorScheme.primary else PurpleGradia,
                         modifier = Modifier.size(18.dp).clickable {
                             val sel = tfValue.selection
                             if (sel.collapsed) {
@@ -723,7 +723,7 @@ fun NoteEditorCard(
                     Icon(
                         painter = painterResource(id = R.drawable.list),
                         contentDescription = "Bullets",
-                        tint = if (isBulletActive) Color(0xFF4A0072) else PurpleGradia,
+                        tint = if (isBulletActive) MaterialTheme.colorScheme.primary else PurpleGradia,
                         modifier = Modifier.size(18.dp).clickable {
                             val text = tfValue.text
                             val cursor = tfValue.selection.start
@@ -806,16 +806,16 @@ fun NoteGridItem(
             ) {
                 Text(
                     text = note.title.ifEmpty { "Sin título" },
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = Color.Black),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                HorizontalDivider(color = Color.Black.copy(alpha = 0.1f), thickness = 0.5.dp)
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = previewText.ifEmpty { "Sin contenido" },
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.bodySmall.copy(color = Color.Black),
                     maxLines = 4,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -849,7 +849,8 @@ fun NoteGridItem(
             title = {
                 Text(
                     text = note.title.ifEmpty { "Sin título" },
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
                 )
             },
             text = {
@@ -876,7 +877,7 @@ fun NoteGridItem(
 
                     Text(
                         text = annotatedText,
-                        style = MaterialTheme.typography.bodyLarge
+                        style = MaterialTheme.typography.bodyLarge.copy(color = Color.Black)
                     )
 
                     if (fullData.imagePaths.isNotEmpty()) {
@@ -901,7 +902,7 @@ fun NoteGridItem(
 
                     if (note.categories.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(16.dp))
-                        HorizontalDivider(color = Color.LightGray.copy(alpha = 0.5f))
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             "Categorías:",
@@ -920,7 +921,7 @@ fun NoteGridItem(
                                         Text(
                                             text = category.name,
                                             style = MaterialTheme.typography.labelSmall,
-                                            color = Color.DarkGray
+                                            color = MaterialTheme.colorScheme.onSurface
                                         )
                                     }
                                 }
@@ -940,7 +941,7 @@ fun NoteGridItem(
                         Icon(
                             painter = painterResource(id = R.drawable.delete),
                             contentDescription = "Eliminar nota",
-                            tint = Color(0xFFC62828),
+                            tint = MaterialTheme.colorScheme.error,
                             modifier = Modifier.size(22.dp)
                         )
                     }

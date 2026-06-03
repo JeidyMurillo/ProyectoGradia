@@ -308,51 +308,51 @@ fun SubjectFormSheet(
         creditsInt != null && creditsInt in 1..6 &&
         semesterInt != null && semesterInt >= 1
 
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        containerColor = Color.White,
-        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
-        dragHandle = { BottomSheetDefaults.DragHandle(color = Color(0xFFCFC2DC)) }
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp)
-                .padding(bottom = 24.dp)
+        ModalBottomSheet(
+            onDismissRequest = onDismiss,
+            sheetState = sheetState,
+            containerColor = MaterialTheme.colorScheme.surface,
+            shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+            dragHandle = { BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.onSurfaceVariant) }
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
+                    .padding(bottom = 24.dp)
             ) {
-                Text(
-                    text = if (isEditing) "Editar Asignatura" else "Agregar Asignatura",
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = Color(0xFF1F1F1F),
-                    fontFamily = InterFontFamily
-                )
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (onDelete != null) {
-                        IconButton(onClick = onDelete) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = if (isEditing) "Editar Asignatura" else "Agregar Asignatura",
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontFamily = InterFontFamily
+                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (onDelete != null) {
+                            IconButton(onClick = onDelete) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.delete),
+                                    contentDescription = "Eliminar asignatura",
+                                    tint = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier.size(22.dp)
+                                )
+                            }
+                        }
+                        IconButton(onClick = onDismiss) {
                             Icon(
-                                painter = painterResource(id = R.drawable.delete),
-                                contentDescription = "Eliminar asignatura",
-                                tint = Color(0xFFC62828),
-                                modifier = Modifier.size(22.dp)
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Cerrar",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
-                    IconButton(onClick = onDismiss) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "Cerrar",
-                            tint = Color(0xFF4A4A4A)
-                        )
-                    }
                 }
-            }
 
             Spacer(modifier = Modifier.height(18.dp))
 
@@ -381,7 +381,7 @@ fun SubjectFormSheet(
                                             fontFamily = InterFontFamily,
                                             fontSize = 14.sp,
                                             fontWeight = FontWeight.SemiBold,
-                                            color = Color(0xFF1F1F1F)
+                                            color = MaterialTheme.colorScheme.onSurface
                                         )
                                     },
                                     leadingIcon = {
@@ -541,7 +541,7 @@ private fun FieldLabel(text: String) {
         text = text,
         fontSize = 13.sp,
         fontWeight = FontWeight.Bold,
-        color = Color(0xFF1F1F1F),
+        color = MaterialTheme.colorScheme.onSurface,
         fontFamily = InterFontFamily
     )
 }
@@ -562,7 +562,7 @@ private fun SemesterDropdownField(
                 .clip(RoundedCornerShape(50))
                 .clickable { expanded = true },
             shape = RoundedCornerShape(50),
-            color = Color(0xFFF3EDF7)
+            color = MaterialTheme.colorScheme.surfaceVariant
         ) {
             Row(
                 modifier = Modifier
@@ -574,7 +574,7 @@ private fun SemesterDropdownField(
                 Text(
                     text = "Semestre $selected",
                     fontSize = 14.sp,
-                    color = Color(0xFF1F1F1F),
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontFamily = InterFontFamily
                 )
                 Icon(
@@ -599,7 +599,7 @@ private fun SemesterDropdownField(
                             fontFamily = InterFontFamily,
                             fontSize = 14.sp,
                             fontWeight = if (selected == semStr) FontWeight.Bold else FontWeight.Normal,
-                            color = if (selected == semStr) PurpleGradia else Color(0xFF1F1F1F)
+                            color = if (selected == semStr) PurpleGradia else MaterialTheme.colorScheme.onSurface
                         )
                     },
                     onClick = {
@@ -624,7 +624,7 @@ private fun PillTextField(
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(50),
-        color = Color(0xFFF3EDF7)
+        color = MaterialTheme.colorScheme.surfaceVariant
     ) {
         Row(
             modifier = Modifier
@@ -653,7 +653,7 @@ private fun PillTextField(
                 singleLine = true,
                 textStyle = TextStyle(
                     fontSize = 14.sp,
-                    color = Color(0xFF1F1F1F),
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontFamily = InterFontFamily
                 ),
                 cursorBrush = androidx.compose.ui.graphics.SolidColor(PurpleGradia),
@@ -662,7 +662,7 @@ private fun PillTextField(
                         if (value.isEmpty()) {
                             Text(
                                 text = placeholder,
-                                color = Color(0xFFB3A8C4),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 14.sp,
                                 fontFamily = InterFontFamily
                             )

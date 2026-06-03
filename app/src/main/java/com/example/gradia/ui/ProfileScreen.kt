@@ -96,7 +96,7 @@ fun ProfileScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFFBF8FF))
+            .background(MaterialTheme.colorScheme.background)
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -115,7 +115,7 @@ fun ProfileScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .clip(CircleShape)
-                        .background(Color.White),
+                        .background(MaterialTheme.colorScheme.surface),
                     contentScale = ContentScale.Crop,
                     error = painterResource(id = R.drawable.splash_logo)
                 )
@@ -126,7 +126,7 @@ fun ProfileScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .clip(CircleShape)
-                        .background(Color.White),
+                        .background(MaterialTheme.colorScheme.surface),
                     contentScale = ContentScale.Crop
                 )
             }
@@ -187,7 +187,7 @@ fun ProfileScreen(
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontFamily = InterFontFamily,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFF4A4A4A),
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 16.sp
                 )
             )
@@ -202,7 +202,7 @@ Box(
                         spotColor = Color.Black.copy(alpha = 0.3f)
                     )
                     .background(
-                        Color.White,
+                        MaterialTheme.colorScheme.surface,
                         RoundedCornerShape(30.dp)
                     )
                     .border(
@@ -226,7 +226,7 @@ Box(
                             singleLine = true,
                             textStyle = MaterialTheme.typography.bodyLarge.copy(
                                 fontFamily = InterFontFamily,
-                                color = Color(0xFF4A4A4A),
+                                color = MaterialTheme.colorScheme.onSurface,
                                 fontSize = 16.sp,
                                 textAlign = TextAlign.Center
                             ),
@@ -242,7 +242,7 @@ Box(
                             text = semester,
                             style = MaterialTheme.typography.bodyLarge.copy(
                                 fontFamily = InterFontFamily,
-                                color = Color(0xFF4A4A4A),
+                                color = MaterialTheme.colorScheme.onSurface,
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Normal
                             ),
@@ -339,7 +339,7 @@ Box(
                         .height(44.dp),
                     shape = RoundedCornerShape(24.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF9E9E9E)
+                        containerColor = MaterialTheme.colorScheme.onSurfaceVariant
                     ),
                     contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp)
                 ) {
@@ -405,7 +405,7 @@ fun ProfileField(
             style = MaterialTheme.typography.bodyMedium.copy(
                 fontFamily = InterFontFamily,
                 fontWeight = FontWeight.SemiBold,
-                color = Color(0xFF4A4A4A),
+                color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 16.sp
             )
         )
@@ -422,7 +422,7 @@ fun ProfileField(
                     spotColor = Color.Black.copy(alpha = 0.3f)
                 )
                 .background(
-                    Color.White,
+                    MaterialTheme.colorScheme.surface,
                     RoundedCornerShape(30.dp)
                 )
                 .border(
@@ -441,7 +441,7 @@ fun ProfileField(
                         .heightIn(min = 20.dp),
                     textStyle = MaterialTheme.typography.bodyLarge.copy(
                         fontFamily = InterFontFamily,
-                        color = Color(0xFF4A4A4A),
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 16.sp
                     ),
                     singleLine = true,
@@ -452,7 +452,7 @@ fun ProfileField(
                     text = value,
                     style = MaterialTheme.typography.bodyLarge.copy(
                         fontFamily = InterFontFamily,
-                        color = Color(0xFF4A4A4A),
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Normal
                     )
@@ -475,7 +475,7 @@ fun PasswordField(
             style = MaterialTheme.typography.bodyMedium.copy(
                 fontFamily = InterFontFamily,
                 fontWeight = FontWeight.SemiBold,
-                color = Color(0xFF4A4A4A),
+                color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 16.sp
             )
         )
@@ -492,7 +492,7 @@ fun PasswordField(
                     spotColor = Color.Black.copy(alpha = 0.3f)
                 )
                 .background(
-                    Color.White,
+                    MaterialTheme.colorScheme.surface,
                     RoundedCornerShape(30.dp)
                 )
                 .border(
@@ -511,7 +511,7 @@ fun PasswordField(
                     modifier = Modifier.weight(1f),
                     style = MaterialTheme.typography.bodyLarge.copy(
                         fontFamily = InterFontFamily,
-                        color = Color(0xFF4A4A4A),
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 16.sp
                     )
                 )
@@ -559,7 +559,7 @@ fun ChangePasswordDialog(
                 "Cambiar contraseña",
                 fontWeight = FontWeight.Bold,
                 fontFamily = InterFontFamily,
-                color = Color(0xFF4A4A4A)
+                color = MaterialTheme.colorScheme.onSurface
             )
         },
         text = {
@@ -567,7 +567,7 @@ fun ChangePasswordDialog(
                 errorMessage?.let {
                     Text(
                         it,
-                        color = Color.Red,
+                        color = MaterialTheme.colorScheme.error,
                         fontSize = 13.sp,
                         fontFamily = InterFontFamily
                     )
@@ -639,7 +639,7 @@ fun ChangePasswordDialog(
                 onClick = onDismiss,
                 enabled = !isLoading
             ) {
-                Text("Cancelar", color = Color(0xFF9E9E9E))
+                Text("Cancelar", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     )
@@ -658,7 +658,7 @@ fun DialogPasswordField(
             text = label,
             fontSize = 13.sp,
             fontWeight = FontWeight.Medium,
-            color = Color(0xFF4A4A4A),
+            color = MaterialTheme.colorScheme.onSurface,
             fontFamily = InterFontFamily
         )
         Spacer(modifier = Modifier.height(4.dp))
@@ -670,7 +670,7 @@ fun DialogPasswordField(
                     color = PurpleGradia,
                     shape = RoundedCornerShape(16.dp)
                 )
-                .background(Color.White, RoundedCornerShape(16.dp))
+                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp))
                 .padding(horizontal = 12.dp, vertical = 4.dp)
         ) {
             Row(
@@ -684,7 +684,7 @@ fun DialogPasswordField(
                     visualTransformation = if (visible) VisualTransformation.None else PasswordVisualTransformation(),
                     textStyle = MaterialTheme.typography.bodyMedium.copy(
                         fontFamily = InterFontFamily,
-                        color = Color(0xFF4A4A4A),
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 14.sp
                     ),
                     cursorBrush = SolidColor(PurpleGradia)

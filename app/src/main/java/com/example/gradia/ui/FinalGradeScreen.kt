@@ -100,7 +100,7 @@ fun FinalGradeScreen(viewModel: FinalGradeViewModel = viewModel(
             text = "\u00bfQue necesito sacar?",
             style = MaterialTheme.typography.headlineSmall.copy(
                 fontWeight = FontWeight.ExtraBold,
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontFamily = InterFontFamily
             )
         )
@@ -108,7 +108,7 @@ fun FinalGradeScreen(viewModel: FinalGradeViewModel = viewModel(
         Text(
             text = "Calcula la nota minima para alcanzar\ntu meta academica",
             style = MaterialTheme.typography.bodyMedium.copy(
-                color = Color.Gray,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
                 fontFamily = InterFontFamily
             ),
@@ -125,7 +125,7 @@ fun FinalGradeScreen(viewModel: FinalGradeViewModel = viewModel(
                 Text(
                     text = "Asignatura:",
                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                    color = Color.Black.copy(alpha = 0.7f),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(bottom = 6.dp, start = 4.dp)
                 )
                 OutlinedTextField(
@@ -143,11 +143,11 @@ fun FinalGradeScreen(viewModel: FinalGradeViewModel = viewModel(
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = PurpleGradia,
                         unfocusedBorderColor = PurpleGradia,
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = Color.White
+                        focusedContainerColor = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface
                     ),
                     singleLine = true,
-                    textStyle = TextStyle(fontSize = 15.sp, color = Color.Black)
+                    textStyle = TextStyle(fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface)
                 )
             }
             ExposedDropdownMenu(
@@ -176,7 +176,7 @@ fun FinalGradeScreen(viewModel: FinalGradeViewModel = viewModel(
                 Text(
                     text = "Nota objetivo (Meta):",
                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                    color = Color.Black.copy(alpha = 0.7f),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(bottom = 6.dp, start = 4.dp)
                 )
                 OutlinedTextField(
@@ -199,7 +199,7 @@ fun FinalGradeScreen(viewModel: FinalGradeViewModel = viewModel(
                             }
                         }
                     },
-                    placeholder = { Text("Ej: 4.5", color = Color.Gray.copy(alpha = 0.4f), fontSize = 14.sp) },
+                    placeholder = { Text("Ej: 4.5", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f), fontSize = 14.sp) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp)
@@ -216,11 +216,11 @@ fun FinalGradeScreen(viewModel: FinalGradeViewModel = viewModel(
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = PurpleGradia,
                         unfocusedBorderColor = PurpleGradia,
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = Color.White
+                        focusedContainerColor = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface
                     ),
                     singleLine = true,
-                    textStyle = TextStyle(fontSize = 15.sp, color = Color.Black),
+                    textStyle = TextStyle(fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
                 )
             }
@@ -229,7 +229,7 @@ fun FinalGradeScreen(viewModel: FinalGradeViewModel = viewModel(
                 Text(
                     text = "Promedio actual:",
                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                    color = Color.Black.copy(alpha = 0.7f),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(bottom = 6.dp, start = 4.dp)
                 )
                 Surface(
@@ -238,7 +238,7 @@ fun FinalGradeScreen(viewModel: FinalGradeViewModel = viewModel(
                         .height(56.dp)
                         .shadow(4.dp, RoundedCornerShape(24.dp), spotColor = Color.Black.copy(alpha = 0.1f)),
                     shape = RoundedCornerShape(24.dp),
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.surface,
                     border = BorderStroke(1.5.dp, PurpleGradia)
                 ) {
                     Row(
@@ -256,7 +256,7 @@ fun FinalGradeScreen(viewModel: FinalGradeViewModel = viewModel(
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
                             text = "%.1f".format(uiState.currentAverage),
-                            style = TextStyle(fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color.Black),
+                            style = TextStyle(fontSize = 15.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface),
                             fontFamily = InterFontFamily
                         )
                     }
@@ -274,13 +274,13 @@ fun FinalGradeScreen(viewModel: FinalGradeViewModel = viewModel(
                 Text(
                     text = if (pendingActivities.size > 1) "Actividad a calcular:" else "Actividad pendiente:",
                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                    color = Color.Black.copy(alpha = 0.7f),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.weight(1.6f)
                 )
                 Text(
                     text = "Porcentaje (%)",
                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                    color = Color.Black.copy(alpha = 0.7f),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.weight(1f),
                     textAlign = TextAlign.End
                 )
@@ -299,7 +299,7 @@ fun FinalGradeScreen(viewModel: FinalGradeViewModel = viewModel(
                         .menuAnchor(MenuAnchorType.PrimaryNotEditable)
                         .shadow(4.dp, RoundedCornerShape(24.dp), spotColor = Color.Black.copy(alpha = 0.1f)),
                     shape = RoundedCornerShape(24.dp),
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.surface,
                     border = BorderStroke(1.5.dp, PurpleGradia)
                 ) {
                     Row(
@@ -319,14 +319,14 @@ fun FinalGradeScreen(viewModel: FinalGradeViewModel = viewModel(
                             text = currentActivity?.name ?: "Seleccionar...",
                             modifier = Modifier.weight(1.6f).padding(horizontal = 8.dp),
                             fontSize = 15.sp,
-                            color = Color.Black
+                            color = MaterialTheme.colorScheme.onSurface
                         )
 
                         Box(
                             modifier = Modifier
                                 .height(24.dp)
                                 .width(1.dp)
-                                .background(Color.Gray.copy(alpha = 0.2f))
+                                .background(MaterialTheme.colorScheme.outlineVariant)
                         )
 
                         Row(
@@ -352,7 +352,7 @@ fun FinalGradeScreen(viewModel: FinalGradeViewModel = viewModel(
                                 )
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Icon(Icons.Default.KeyboardArrowDown, null, tint = Color.Gray, modifier = Modifier.size(20.dp))
+                            Icon(Icons.Default.KeyboardArrowDown, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
                         }
                     }
                 }
@@ -435,7 +435,7 @@ fun FinalGradeScreen(viewModel: FinalGradeViewModel = viewModel(
                     .fillMaxWidth()
                     .padding(vertical = 12.dp),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF0F0))
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
             ) {
                 Row(
                     modifier = Modifier.padding(16.dp),
@@ -444,13 +444,13 @@ fun FinalGradeScreen(viewModel: FinalGradeViewModel = viewModel(
                     Icon(
                         imageVector = Icons.Default.Info,
                         contentDescription = null,
-                        tint = Color(0xFFC62828),
+                        tint = MaterialTheme.colorScheme.error,
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
                         text = error,
-                        color = Color(0xFFC62828),
+                        color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium)
                     )
                 }
@@ -469,6 +469,7 @@ private fun ResultCard(
     pendingCount: Int = 0,
     hasSelectedActivity: Boolean = false
 ) {
+    val onSurface = MaterialTheme.colorScheme.onSurface
     val resultText = when (result) {
         is RequiredGradeResult.Success -> buildAnnotatedString {
             append("Necesitas un ")
@@ -477,25 +478,25 @@ private fun ResultCard(
             }
             if (hasSelectedActivity && pendingCount > 1) {
                 append(" en ")
-                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Black)) {
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = onSurface)) {
                     append(activityName)
                 }
                 append(" (asumiendo 5.0 en las otras ${pendingCount - 1})")
             } else if (hasSelectedActivity) {
                 append(" en ")
-                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Black)) {
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = onSurface)) {
                     append(activityName)
                 }
             } else if (pendingCount > 1) {
                 append(" en las ${pendingCount} actividades restantes")
             } else {
                 append(" en ")
-                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Black)) {
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = onSurface)) {
                     append(activityName)
                 }
             }
             append(" para alcanzar ")
-            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Black)) {
+            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = onSurface)) {
                 append("%.1f".format(targetGrade))
             }
         }
@@ -506,11 +507,11 @@ private fun ResultCard(
                 }
                 append("\nAsumiendo 5.0 en las otras ${pendingCount - 1}, ")
                 append("no necesitas nota en ")
-                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Black)) {
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = onSurface)) {
                     append(activityName)
                 }
                 append(" para llegar a ")
-                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Black)) {
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = onSurface)) {
                     append("%.1f".format(targetGrade))
                 }
             } else {
@@ -518,7 +519,7 @@ private fun ResultCard(
                     append("\u00a1Ya alcanzaste tu meta!")
                 }
                 append("\nTu promedio actual ya supera ")
-                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Black)) {
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = onSurface)) {
                     append("%.1f".format(targetGrade))
                 }
             }
@@ -527,12 +528,12 @@ private fun ResultCard(
             withStyle(style = SpanStyle(fontWeight = FontWeight.ExtraBold, color = Color.Red, fontSize = 18.sp)) {
                 append("No es posible alcanzar ")
             }
-            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Black)) {
+            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = onSurface)) {
                 append("%.1f".format(targetGrade))
             }
             if (hasSelectedActivity && pendingCount > 1) {
                 append("\nNi con 5.0 en ")
-                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Black)) {
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = onSurface)) {
                     append(activityName)
                 }
                 append(" alcanzas la meta")
@@ -542,7 +543,7 @@ private fun ResultCard(
         }
         RequiredGradeResult.NoRemainingPercentage -> buildAnnotatedString {
             append("No hay ")
-            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Black)) {
+            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = onSurface)) {
                 append("porcentaje restante")
             }
             append(" por evaluar")
@@ -552,7 +553,7 @@ private fun ResultCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(28.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = BorderStroke(1.dp, PurpleGradia.copy(alpha = 0.2f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
@@ -567,14 +568,14 @@ private fun ResultCard(
                     Icon(
                         Icons.Default.Info,
                         contentDescription = null,
-                        tint = Color.White,
+                        tint = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier.size(28.dp)
                     )
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Text(
                     text = resultText,
-                    style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 22.sp, color = Color.DarkGray)
+                    style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 22.sp, color = MaterialTheme.colorScheme.onSurface)
                 )
             }
 
@@ -583,7 +584,7 @@ private fun ResultCard(
             Text(
                 text = "Basado en el sistema de evaluacion estandar de la asignatura.",
                 style = MaterialTheme.typography.bodySmall.copy(
-                    color = Color.Gray,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 12.sp,
                     textAlign = TextAlign.Start
                 ),

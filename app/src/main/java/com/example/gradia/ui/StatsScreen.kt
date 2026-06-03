@@ -38,7 +38,7 @@ fun StatsScreen(onNavigateToPerformance: () -> Unit = {}) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFFBF8FF))
+            .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 24.dp)
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(20.dp)
@@ -73,7 +73,7 @@ fun AverageCard(modifier: Modifier = Modifier) {
         modifier = modifier
             .border(2.dp, PurpleGradia, RoundedCornerShape(24.dp)),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFF3E5F5)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
@@ -134,7 +134,7 @@ fun CreditsCard(modifier: Modifier = Modifier) {
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
@@ -147,7 +147,7 @@ fun CreditsCard(modifier: Modifier = Modifier) {
                 "Créditos",
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFF4A4A4A),
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontFamily = InterFontFamily
                 )
             )
@@ -167,7 +167,7 @@ fun CreditsCard(modifier: Modifier = Modifier) {
                 Text(
                     " / 154",
                     style = MaterialTheme.typography.titleMedium.copy(
-                        color = Color(0xFF4A4A4A),
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontFamily = InterFontFamily
                     )
                 )
@@ -183,7 +183,7 @@ fun DiagonalProgressBar() {
             .fillMaxWidth()
             .height(12.dp)
             .clip(RoundedCornerShape(6.dp))
-            .background(Color(0xFFE9E4F0))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Box(
             modifier = Modifier
@@ -198,7 +198,7 @@ fun DiagonalProgressBar() {
                     .align(Alignment.TopEnd)
                     .offset(x = 4.dp, y = (-2).dp)
                     .background(
-                        color = Color(0xFFE9E4F0),
+                        color = MaterialTheme.colorScheme.surfaceVariant,
                         shape = RoundedCornerShape(topStart = 4.dp)
                     )
             )
@@ -210,7 +210,7 @@ fun DiagonalProgressBar() {
 fun DistributionChartCard() {
     Card(
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
@@ -222,7 +222,7 @@ fun DistributionChartCard() {
                 "Distribución de notas",
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF4A4A4A),
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontFamily = InterFontFamily
                 )
             )
@@ -305,7 +305,7 @@ fun DonutChart() {
                 "6",
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF4A4A4A),
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 24.sp,
                     fontFamily = InterFontFamily
                 )
@@ -313,7 +313,7 @@ fun DonutChart() {
             Text(
                 "Asignaturas",
                 style = MaterialTheme.typography.bodySmall.copy(
-                    color = Color.Gray,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontFamily = InterFontFamily
                 )
             )
@@ -333,7 +333,7 @@ fun LegendItem(color: Color, label: String) {
         Text(
             label,
             style = MaterialTheme.typography.bodySmall.copy(
-                color = Color(0xFF4A4A4A),
+                color = MaterialTheme.colorScheme.onSurface,
                 fontFamily = InterFontFamily
             )
         )
@@ -344,7 +344,7 @@ fun LegendItem(color: Color, label: String) {
 fun RecentMilestonesCard() {
     Card(
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
@@ -356,7 +356,7 @@ fun RecentMilestonesCard() {
                 "Hitos recientes",
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF4A4A4A),
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontFamily = InterFontFamily
                 )
             )
@@ -377,7 +377,7 @@ fun RecentMilestonesCard() {
                         "Mejor promedio: Base de datos",
                         style = MaterialTheme.typography.bodyLarge.copy(
                             fontWeight = FontWeight.SemiBold,
-                            color = Color(0xFF4A4A4A),
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontFamily = InterFontFamily
                         )
                     )
@@ -385,7 +385,7 @@ fun RecentMilestonesCard() {
                     Text(
                         "Has alcanzado un 4.8 en el último parcial",
                         style = MaterialTheme.typography.bodySmall.copy(
-                            color = Color.Gray,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontFamily = InterFontFamily
                         )
                     )

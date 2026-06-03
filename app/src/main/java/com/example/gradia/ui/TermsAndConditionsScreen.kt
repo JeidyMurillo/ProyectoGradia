@@ -47,7 +47,7 @@ fun TermsAndConditionsScreen(
                 )
             )
         },
-        containerColor = Color(0xFFFBF8FF)
+        containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -61,7 +61,7 @@ fun TermsAndConditionsScreen(
             Text(
                 text = stringResource(R.string.terms_last_updated),
                 style = MaterialTheme.typography.bodyLarge.copy(fontSize = 13.sp),
-                color = Color(0xFF9E9E9E),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(bottom = 4.dp)
             )
 
@@ -121,7 +121,7 @@ private fun TermsSection(title: String, content: String) {
     Text(
         text = content,
         style = MaterialTheme.typography.bodyLarge,
-        color = Color(0xFF444444)
+        color = MaterialTheme.colorScheme.onSurface
     )
 }
 
