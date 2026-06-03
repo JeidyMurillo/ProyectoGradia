@@ -6,17 +6,19 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -35,45 +37,27 @@ data class SubjectPerformanceData(
     val currentAverage: Double,
     val trend: Double,               // e.g. +4.0 or -2.0
     val grades: List<Double>,        // one value per activity
-    val activityLabels: List<String> // same length as grades
+    val activityLabels: List<String>, // same length as grades
+    val semester: Int = 1
 )
 
 // ─── Screen ────────────────────────────────────────────────────────────────────
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SubjectPerformanceScreen(onBackClick: () -> Unit = {}) {
-    // ── Mock data – replace with ViewModel / repository data ──────────────────
-    val subjects = listOf(
-        SubjectPerformanceData(
-            subjectName    = "Calculo IV",
-            currentAverage = 4.5,
-            trend          = 4.0,
-            grades         = listOf(3.8, 4.0, 3.5, 4.2, 4.8),
-            activityLabels = listOf("EVA 1", "TALLER", "PROY", "EVA 2", "EXAM")
-        ),
-        SubjectPerformanceData(
-            subjectName    = "Física II",
-            currentAverage = 3.2,
-            trend          = -2.0,
-            grades         = listOf(3.5, 3.8, 3.2, 2.9, 2.8),
-            activityLabels = listOf("EVA 1", "ENSAYO", "PROY", "MAPA", "EXAM")
-        ),
-        SubjectPerformanceData(
-            subjectName    = "Base de Datos",
-            currentAverage = 4.1,
-            trend          = 1.5,
-            grades         = listOf(3.9, 4.0, 4.1, 4.3, 4.5),
-            activityLabels = listOf("QUIZ 1", "TALLER", "PROY", "QUIZ 2", "FINAL")
-        ),
-        SubjectPerformanceData(
-            subjectName    = "Programación III",
-            currentAverage = 3.7,
-            trend          = -0.5,
-            grades         = listOf(3.9, 4.1, 3.8, 3.5, 3.2),
-            activityLabels = listOf("EVA 1", "TALLER", "PROY", "EVA 2", "EXAM")
-        )
-    )
+fun SubjectPerformanceScreen(
+    subjects: List<SubjectPerformanceData> = emptyList(),
+    onBackClick: () -> Unit = {}
+) {
+    var selectedSemester by remember { mutableStateOf(0) }
+    val semesters = remember(subjects) {
+        subjects.map { it.semester }.distinct().sortedDescending()
+    }
+    val filteredSubjects = remember(subjects, selectedSemester) {
+        if (selectedSemester == 0) subjects
+        else subjects.filter { it.semester == selectedSemester }
+    }
+    var expanded by remember { mutableStateOf(false) }
 
     LazyColumn(
         modifier = Modifier
@@ -93,11 +77,117 @@ fun SubjectPerformanceScreen(onBackClick: () -> Unit = {}) {
             )
         }
 
-        items(subjects) { subject ->
-            SubjectPerformanceCard(subject = subject)
+        if (semesters.isNotEmpty()) {
+            item {
+                SemesterFilter(
+                    semesters = semesters,
+                    selectedSemester = selectedSemester,
+                    expanded = expanded,
+                    onExpandedChange = { expanded = it },
+                    onSelect = { selectedSemester = it; expanded = false }
+                )
+            }
+        }
+
+        if (filteredSubjects.isEmpty()) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 40.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        "No hay datos de rendimiento disponibles",
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontFamily = InterFontFamily
+                        )
+                    )
+                }
+            }
+        } else {
+            items(filteredSubjects) { subject ->
+                SubjectPerformanceCard(subject = subject)
+            }
         }
 
         item { Spacer(modifier = Modifier.height(100.dp)) }
+    }
+}
+
+@Composable
+private fun SemesterFilter(
+    semesters: List<Int>,
+    selectedSemester: Int,
+    expanded: Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    onSelect: (Int) -> Unit
+) {
+    val label = if (selectedSemester == 0) "Todos los semestres"
+    else "Semestre $selectedSemester"
+
+    Box(modifier = Modifier.padding(bottom = 8.dp)) {
+        Surface(
+            modifier = Modifier
+                .clip(RoundedCornerShape(50))
+                .clickable { onExpandedChange(true) },
+            shape = RoundedCornerShape(50),
+            color = MaterialTheme.colorScheme.surfaceVariant
+        ) {
+            Row(
+                modifier = Modifier
+                    .padding(start = 18.dp, end = 10.dp, top = 8.dp, bottom = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = label,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = PurpleGradia,
+                    fontFamily = InterFontFamily
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Icon(
+                    imageVector = Icons.Default.ArrowDropDown,
+                    contentDescription = "Filtrar por semestre",
+                    tint = PurpleGradia,
+                    modifier = Modifier.size(22.dp)
+                )
+            }
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { onExpandedChange(false) },
+            modifier = Modifier.heightIn(max = 280.dp)
+        ) {
+            DropdownMenuItem(
+                text = {
+                    Text(
+                        "Todos los semestres",
+                        fontFamily = InterFontFamily,
+                        fontSize = 14.sp,
+                        fontWeight = if (selectedSemester == 0) FontWeight.Bold else FontWeight.Normal,
+                        color = if (selectedSemester == 0) PurpleGradia else MaterialTheme.colorScheme.onBackground
+                    )
+                },
+                onClick = { onSelect(0) }
+            )
+            semesters.forEach { sem ->
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            "Semestre $sem",
+                            fontFamily = InterFontFamily,
+                            fontSize = 14.sp,
+                            fontWeight = if (selectedSemester == sem) FontWeight.Bold else FontWeight.Normal,
+                            color = if (selectedSemester == sem) PurpleGradia else MaterialTheme.colorScheme.onBackground
+                        )
+                    },
+                    onClick = { onSelect(sem) }
+                )
+            }
+        }
     }
 }
 
@@ -110,7 +200,7 @@ private fun SubjectPerformanceCard(subject: SubjectPerformanceData) {
     val lineColor  = if (isPositive) Color(0xFF5B9BD5) else Color(0xFFE8845A)
     val fillColor  = if (isPositive) Color(0xFF5B9BD5) else Color(0xFFE8845A)
     val badgeBg    = if (isPositive) Color(0xFFE6F4EA) else Color(0xFFFFEBEE)
-    val badgeFg    = if (isPositive) Color(0xFF2E7D32) else Color(0xFFC62828)
+    val badgeFg    = if (isPositive) Color(0xFF2E7D32) else MaterialTheme.colorScheme.error
     val trendText  = if (isPositive) "+${subject.trend.toInt()}%" else "${subject.trend.toInt()}%"
 
     // Animation progress (0f → 1f)
@@ -122,8 +212,8 @@ private fun SubjectPerformanceCard(subject: SubjectPerformanceData) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        border = androidx.compose.foundation.BorderStroke(1.5.dp, Color(0xFFE8DFF2)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = androidx.compose.foundation.BorderStroke(1.5.dp, MaterialTheme.colorScheme.outlineVariant),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
@@ -172,7 +262,7 @@ private fun SubjectPerformanceCard(subject: SubjectPerformanceData) {
                 Text(
                     text = "Promedio actual: ",
                     style = MaterialTheme.typography.bodyMedium.copy(
-                        color = Color(0xFF6B6B6B),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontFamily = InterFontFamily
                     )
                 )
@@ -215,7 +305,7 @@ private fun SubjectPerformanceCard(subject: SubjectPerformanceData) {
                     Text(
                         text = label,
                         style = MaterialTheme.typography.labelSmall.copy(
-                            color = Color(0xFF9E9E9E),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontFamily = InterFontFamily,
                             fontSize = 9.sp,
                             fontWeight = FontWeight.Medium
@@ -239,6 +329,7 @@ private fun SparklineChart(
     animProgress: Float,
     modifier: Modifier = Modifier
 ) {
+    val surfaceColor = MaterialTheme.colorScheme.surface
     Canvas(modifier = modifier) {
         if (grades.size < 2) return@Canvas
 
@@ -302,7 +393,7 @@ private fun SparklineChart(
         // ── Draw endpoint dot ────────────────────────────────────────────────
         val last = drawnPoints.last()
         drawCircle(color = lineColor, radius = 4.dp.toPx(), center = last)
-        drawCircle(color = Color.White, radius = 2.dp.toPx(), center = last)
+        drawCircle(color = surfaceColor, radius = 2.dp.toPx(), center = last)
     }
 }
 

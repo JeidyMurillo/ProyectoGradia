@@ -27,11 +27,11 @@ import com.example.gradia.domain.usecase.notes.GetCategoriesUseCase
 import com.example.gradia.domain.usecase.notes.GetNotesUseCase
 import com.example.gradia.domain.usecase.notes.SaveNoteUseCase
 import com.example.gradia.domain.usecase.notes.UpdateCategoryUseCase
-import com.example.gradia.notifications.NotificationHelper
 import com.example.gradia.notifications.ReminderScheduler
 import com.example.gradia.presentation.viewmodel.FinalGradeViewModel
 import com.example.gradia.presentation.viewmodel.HomeViewModel
 import com.example.gradia.presentation.viewmodel.NotesViewModel
+import com.example.gradia.presentation.viewmodel.StatsViewModel
 import com.example.gradia.presentation.viewmodel.SubjectDetailViewModel
 import com.example.gradia.presentation.viewmodel.SubjectsViewModel
 import com.example.gradia.presentation.viewmodel.TasksViewModel
@@ -39,11 +39,6 @@ import com.example.gradia.presentation.viewmodel.TasksViewModel
 class GradiaApplication : Application() {
 
     val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-
-    override fun onCreate() {
-        super.onCreate()
-        NotificationHelper(this).createNotificationChannel()
-    }
 
     val database by lazy { AppDatabase.getDatabase(this) }
 
@@ -135,6 +130,10 @@ class GradiaApplication : Application() {
             asignaturaRepository = asignaturaRepository,
             reminderScheduler = reminderScheduler
         )
+    }
+
+    fun provideStatsViewModel(): StatsViewModel {
+        return StatsViewModel(subjectRepository, calculateCurrentAverageUseCase)
     }
 
     fun provideSubjectsViewModel(): SubjectsViewModel {
