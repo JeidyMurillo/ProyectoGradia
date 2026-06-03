@@ -2,6 +2,7 @@ package com.example.gradia.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.gradia.data.repository.UserRepository
 import com.example.gradia.domain.model.GradeItem
 import com.example.gradia.domain.model.Subject
 import com.example.gradia.domain.repository.SubjectRepository
@@ -33,22 +34,31 @@ data class StatsUiState(
 @OptIn(ExperimentalCoroutinesApi::class)
 class StatsViewModel(
     private val subjectRepository: SubjectRepository,
+    private val userRepository: UserRepository,
     private val calculateCurrentAverage: CalculateCurrentAverageUseCase
 ) : ViewModel() {
 
     val uiState: StateFlow<StatsUiState> =
-        subjectRepository.getSubjects()
-            .flatMapLatest { subjects ->
-                if (subjects.isEmpty()) {
-                    flowOf(StatsUiState())
-                } else {
-                    combine(
-                        subjects.map { subject ->
-                            subjectRepository.getGradeItemsBySubject(subject.id)
-                                .map { grades -> subject to grades }
+        userRepository.getCurrentUser()
+            .flatMapLatest { user ->
+                val currentSemester = user?.semestre?.toIntOrNull()
+                subjectRepository.getSubjects()
+                    .flatMapLatest { subjects ->
+                        val filtered = if (currentSemester != null)
+                            subjects.filter { it.semester == currentSemester }
+                        else subjects
+
+                        if (filtered.isEmpty()) {
+                            flowOf(StatsUiState())
+                        } else {
+                            combine(
+                                filtered.map { subject ->
+                                    subjectRepository.getGradeItemsBySubject(subject.id)
+                                        .map { grades -> subject to grades }
+                                }
+                            ) { pairs -> buildState(filtered, pairs.toList()) }
                         }
-                    ) { pairs -> buildState(subjects, pairs.toList()) }
-                }
+                    }
             }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), StatsUiState())
 
