@@ -34,11 +34,13 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.gradia.GradiaApplication
 import com.example.gradia.R
 import com.example.gradia.domain.model.Subject
+import com.example.gradia.domain.validation.SubjectValidation
 import com.example.gradia.presentation.viewmodel.SubjectFilter
 import com.example.gradia.ui.theme.InterFontFamily
 import com.example.gradia.ui.theme.PurpleGradia
@@ -119,7 +121,8 @@ fun SubjectsScreen(onSubjectClick: (Subject) -> Unit = {}) {
             onDismiss = { showAddSheet = false },
             onSave = { newSubject ->
                 viewModel.addSubject(newSubject) { showAddSheet = false }
-            }
+            },
+            existingNames = state.allSubjectNames
         )
     }
 
@@ -237,7 +240,11 @@ private fun SubjectCard(
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF4A4A4A),
                 fontFamily = InterFontFamily,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                lineHeight = 19.sp,
+                modifier = Modifier.fillMaxWidth()
             )
         }
     }
@@ -286,7 +293,8 @@ fun SubjectFormSheet(
     onDismiss: () -> Unit,
     onSave: (Subject) -> Unit,
     initial: Subject? = null,
-    onDelete: (() -> Unit)? = null
+    onDelete: (() -> Unit)? = null,
+    existingNames: List<String> = emptyList()
 ) {
     val isEditing = initial != null
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -304,9 +312,30 @@ fun SubjectFormSheet(
     val effectiveIcon = selectedIconOverride ?: subjectIconType(name)
     val creditsInt = credits.toIntOrNull()
     val semesterInt = semester.toIntOrNull()
-    val isValid = name.isNotBlank() &&
-        creditsInt != null && creditsInt in 1..6 &&
+
+    // Marca si el usuario ya intentó guardar o tocó cada campo, para no mostrar
+    // errores en un formulario aún en blanco (recién abierto).
+    var attemptedSave by remember { mutableStateOf(false) }
+    var nameTouched by remember { mutableStateOf(false) }
+    var creditsTouched by remember { mutableStateOf(false) }
+
+    val trimmedName = name.trim()
+    val isDuplicateName = existingNames.any { it.trim().equals(trimmedName, ignoreCase = true) }
+    val nameError: String? = when {
+        trimmedName.isEmpty() -> "Ingresa el nombre de la asignatura"
+        isDuplicateName -> "Ya existe una asignatura con ese nombre"
+        else -> null
+    }
+    val creditsError: String? = when {
+        credits.isEmpty() -> "Ingresa los créditos (de ${SubjectValidation.MIN_CREDITS} a ${SubjectValidation.MAX_CREDITS})"
+        creditsInt == null || creditsInt !in SubjectValidation.MIN_CREDITS..SubjectValidation.MAX_CREDITS ->
+            "Debe ser un número entre ${SubjectValidation.MIN_CREDITS} y ${SubjectValidation.MAX_CREDITS}"
+        else -> null
+    }
+    val isValid = nameError == null && creditsError == null &&
         semesterInt != null && semesterInt >= 1
+    val showNameError = (attemptedSave || nameTouched) && nameError != null
+    val showCreditsError = (attemptedSave || creditsTouched) && creditsError != null
 
         ModalBottomSheet(
             onDismissRequest = onDismiss,
@@ -413,9 +442,17 @@ fun SubjectFormSheet(
                     Spacer(modifier = Modifier.height(8.dp))
                     PillTextField(
                         value = name,
-                        onValueChange = { name = it },
+                        onValueChange = {
+                            if (it.length <= SubjectValidation.MAX_NAME_LENGTH) {
+                                name = it
+                                nameTouched = true
+                            }
+                        },
                         placeholder = "Ej: Español"
                     )
+                    if (showNameError) {
+                        FieldErrorText(nameError!!)
+                    }
                 }
             }
 
@@ -433,12 +470,16 @@ fun SubjectFormSheet(
                         onValueChange = { input ->
                             if (input.isEmpty() || (input.toIntOrNull() != null && input.length <= 1)) {
                                 credits = input
+                                creditsTouched = true
                             }
                         },
                         placeholder = "min: 1 - max:6",
                         leadingContent = { HashIcon() },
                         keyboardType = KeyboardType.Number
                     )
+                    if (showCreditsError) {
+                        FieldErrorText(creditsError!!)
+                    }
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     FieldLabel("Semestre")
@@ -490,6 +531,8 @@ fun SubjectFormSheet(
 
             Button(
                 onClick = {
+                    attemptedSave = true
+                    if (!isValid) return@Button
                     val finalCredits = creditsInt ?: return@Button
                     val finalSemester = semesterInt ?: return@Button
                     onSave(
@@ -505,7 +548,7 @@ fun SubjectFormSheet(
                         )
                     )
                 },
-                enabled = isValid && !isSaving,
+                enabled = !isSaving,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(54.dp),
@@ -543,6 +586,17 @@ private fun FieldLabel(text: String) {
         fontWeight = FontWeight.Bold,
         color = MaterialTheme.colorScheme.onSurface,
         fontFamily = InterFontFamily
+    )
+}
+
+@Composable
+private fun FieldErrorText(message: String) {
+    Text(
+        text = message,
+        fontSize = 11.sp,
+        color = MaterialTheme.colorScheme.error,
+        fontFamily = InterFontFamily,
+        modifier = Modifier.padding(top = 4.dp, start = 6.dp)
     )
 }
 

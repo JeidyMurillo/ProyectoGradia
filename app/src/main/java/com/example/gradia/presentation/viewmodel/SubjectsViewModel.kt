@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gradia.domain.model.Subject
 import com.example.gradia.domain.repository.SubjectRepository
+import com.example.gradia.domain.validation.SubjectValidation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -15,6 +16,7 @@ enum class SubjectFilter { TODAS, ACTUAL, ANTIGUAS }
 
 data class SubjectsUiState(
     val subjects: List<Subject> = emptyList(),
+    val allSubjectNames: List<String> = emptyList(),
     val filter: SubjectFilter = SubjectFilter.TODAS,
     val currentSemester: Int = 1,
     val isSaving: Boolean = false,
@@ -42,6 +44,7 @@ class SubjectsViewModel(
             }
             SubjectsUiState(
                 subjects = visible,
+                allSubjectNames = subjects.map { it.name },
                 filter = current,
                 currentSemester = currentSemester,
                 isSaving = saving,
@@ -58,6 +61,7 @@ class SubjectsViewModel(
             isSaving.value = true
             error.value = null
             try {
+                SubjectValidation.validate(subject, allSubjects.value)
                 subjectRepository.insertSubject(subject)
                 onSuccess()
             } catch (e: Exception) {
