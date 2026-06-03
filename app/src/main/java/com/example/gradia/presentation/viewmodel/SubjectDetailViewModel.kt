@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.gradia.domain.model.GradeItem
 import com.example.gradia.domain.model.Subject
 import com.example.gradia.domain.repository.SubjectRepository
+import com.example.gradia.domain.validation.GradeValidation
 import com.example.gradia.domain.validation.SubjectValidation
 import com.example.gradia.ui.GradeIconType
 import com.example.gradia.ui.resolveGradeIcon
@@ -24,6 +25,9 @@ data class SubjectDetailUiState(
     val grades: List<GradeItem> = emptyList(),
     val filter: GradeFilter = GradeFilter.TODAS,
     val currentAverage: Double = 0.0,
+    // Suma de porcentajes de TODAS las notas (sin filtrar). El formulario lo usa
+    // para mostrar cuánto queda disponible hasta el 100%.
+    val totalPercentage: Double = 0.0,
     val isSaving: Boolean = false,
     val error: String? = null
 )
@@ -54,6 +58,7 @@ class SubjectDetailViewModel(
                 grades = applyFilter(grades, current),
                 filter = current,
                 currentAverage = computeAverage(grades),
+                totalPercentage = grades.sumOf { it.percentage },
                 isSaving = saving,
                 error = err
             )
@@ -68,7 +73,9 @@ class SubjectDetailViewModel(
             isSaving.value = true
             error.value = null
             try {
-                subjectRepository.insertGradeItem(grade.copy(subjectId = subjectId))
+                val target = grade.copy(subjectId = subjectId)
+                GradeValidation.validate(target, gradesFlow.first())
+                subjectRepository.insertGradeItem(target)
                 onSuccess()
             } catch (e: Exception) {
                 error.value = e.message ?: "Error al guardar la nota"
@@ -83,7 +90,9 @@ class SubjectDetailViewModel(
             isSaving.value = true
             error.value = null
             try {
-                subjectRepository.updateGradeItem(grade.copy(subjectId = subjectId))
+                val target = grade.copy(subjectId = subjectId)
+                GradeValidation.validate(target, gradesFlow.first())
+                subjectRepository.updateGradeItem(target)
                 onSuccess()
             } catch (e: Exception) {
                 error.value = e.message ?: "Error al actualizar la nota"
