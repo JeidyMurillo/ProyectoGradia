@@ -72,6 +72,8 @@ fun HomeScreen(
     val notesState by notesViewModel.uiState.collectAsState()
     val tasksViewModel = remember { app.provideTasksViewModel() }
     val tasksState by tasksViewModel.uiState.collectAsState()
+    val calendarViewModel = remember { app.provideCalendarViewModel() }
+    val calendarState by calendarViewModel.uiState.collectAsState()
     val statsViewModel = remember { app.provideStatsViewModel() }
     val statsState by statsViewModel.uiState.collectAsState()
 
@@ -288,7 +290,7 @@ fun HomeScreen(
                                 selectedTab = 9
                             }
                         )
-                        4 -> CalendarScreen()
+                        4 -> CalendarScreen(viewModel = calendarViewModel)
                         5 -> NotesScreen(viewModel = notesViewModel)
                         6 -> TasksScreen(viewModel = tasksViewModel)
                         7 -> SettingsScreen(

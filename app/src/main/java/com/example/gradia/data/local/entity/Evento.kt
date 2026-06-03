@@ -26,6 +26,7 @@ data class Evento(
     val descripcion: String = "",
     val fecha: Long,
     val tipo: String = "TAREA",
+    val prioridad: String = "MEDIA",
     val completado: Boolean = false,
     val recordatorioMinutosAntes: Int = 30,
     val fechaCreacion: Long = System.currentTimeMillis()
@@ -35,4 +36,10 @@ object TipoEvento {
     const val TAREA = "TAREA"
     const val EVALUACION = "EVALUACION"
     const val ENTREGA = "ENTREGA"
+}
+
+object PrioridadEvento {
+    const val ALTA = "ALTA"
+    const val MEDIA = "MEDIA"
+    const val BAJA = "BAJA"
 }
