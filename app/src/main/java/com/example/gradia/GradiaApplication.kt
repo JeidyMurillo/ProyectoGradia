@@ -152,7 +152,10 @@ class GradiaApplication : Application() {
     }
 
     fun provideSubjectsViewModel(): SubjectsViewModel {
-        return SubjectsViewModel(subjectRepository = subjectRepository)
+        return SubjectsViewModel(
+            subjectRepository = subjectRepository,
+            calculateCurrentAverage = calculateCurrentAverageUseCase
+        )
     }
 
     fun provideSubjectDetailViewModel(subjectId: Long): SubjectDetailViewModel {

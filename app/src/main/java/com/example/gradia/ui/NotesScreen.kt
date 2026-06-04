@@ -90,7 +90,8 @@ fun NotesScreen(viewModel: NotesViewModel? = null) {
                 onTitleChange = vm::onTitleChange,
                 onContentChange = vm::onContentChange,
                 onCategoryToggle = vm::toggleNoteCategory,
-                onSave = vm::saveNote
+                onSave = vm::saveNote,
+                isNoteEmpty = state.currentTitle.isBlank() && state.currentContent.isBlank()
             )
         }
 
@@ -137,6 +138,7 @@ fun NotesScreen(viewModel: NotesViewModel? = null) {
                         NoteGridItem(
                             note = note,
                             isSelected = note.id in state.selectedNoteIds,
+                            isSelectionMode = state.selectedNoteIds.isNotEmpty(),
                             onEdit = vm::loadNoteForEditing,
                             onDelete = vm::deleteNote,
                             onLongClick = { vm.toggleNoteSelection(note.id) },
@@ -416,7 +418,8 @@ fun NoteEditorCard(
     onTitleChange: (String) -> Unit = {},
     onContentChange: (String) -> Unit = {},
     onCategoryToggle: (Long) -> Unit = {},
-    onSave: () -> Unit = {}
+    onSave: () -> Unit = {},
+    isNoteEmpty: Boolean = true
 ) {
     val data = remember(content) { RichTextUtil.deserialize(content) }
     var tfValue by remember(content) { mutableStateOf(TextFieldValue(data.text)) }
@@ -764,6 +767,7 @@ fun NoteEditorCard(
 
                 Button(
                     onClick = { handleSave() },
+                    enabled = !isNoteEmpty,
                     colors = ButtonDefaults.buttonColors(containerColor = PurpleGradia),
                     shape = RoundedCornerShape(20.dp),
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp)
@@ -781,6 +785,7 @@ fun NoteGridItem(
     note: Note,
     modifier: Modifier = Modifier,
     isSelected: Boolean = false,
+    isSelectionMode: Boolean = false,
     onEdit: (Note) -> Unit = {},
     onDelete: (Long) -> Unit = {},
     onLongClick: () -> Unit = {}
@@ -794,7 +799,7 @@ fun NoteGridItem(
         modifier = modifier
             .shadow(4.dp, RoundedCornerShape(12.dp))
             .combinedClickable(
-                onClick = { showFullNote = true },
+                onClick = { if (isSelectionMode) onLongClick() else showFullNote = true },
                 onLongClick = onLongClick
             ),
         shape = RoundedCornerShape(12.dp),

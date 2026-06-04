@@ -34,11 +34,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import kotlin.math.roundToInt
 import com.example.gradia.GradiaApplication
 import com.example.gradia.R
 import com.example.gradia.domain.model.Subject
+import com.example.gradia.presentation.viewmodel.GradeSort
 import com.example.gradia.presentation.viewmodel.NotesViewModel
 import com.example.gradia.presentation.viewmodel.NotificationsViewModel
+import com.example.gradia.presentation.viewmodel.SubjectSort
 import com.example.gradia.presentation.viewmodel.TasksViewModel
 import com.example.gradia.ui.theme.*
 import com.example.gradia.ui.AccountScreen
@@ -80,6 +83,13 @@ fun HomeScreen(
     val statsState by statsViewModel.uiState.collectAsState()
     val notificationsViewModel = remember { app.provideNotificationsViewModel() }
     val notificationsState by notificationsViewModel.uiState.collectAsState()
+    val subjectsViewModel = remember { app.provideSubjectsViewModel() }
+    val subjectsState by subjectsViewModel.uiState.collectAsState()
+    // ViewModel del detalle de asignatura, izado para poder ordenar sus notas
+    // desde el menú de la barra superior (tab 9).
+    val subjectDetailViewModel = remember(selectedSubjectId) {
+        selectedSubjectId?.let { app.provideSubjectDetailViewModel(it) }
+    }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -185,19 +195,6 @@ fun HomeScreen(
                                         onDismissRequest = { showMenu = false },
                                         shape = RoundedCornerShape(16.dp)
                                     ) {
-                                        if (selectedTab == 5 && notesState.selectedNoteIds.isNotEmpty()) {
-                                            DropdownMenuItem(
-                                                text = { Text("Eliminar seleccionadas (${notesState.selectedNoteIds.size})", color = MaterialTheme.colorScheme.error) },
-                                                onClick = {
-                                                    showMenu = false
-                                                    notesViewModel.deleteSelectedNotes()
-                                                },
-                                                leadingIcon = {
-                                                    Icon(Icons.Default.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.error)
-                                                }
-                                            )
-                                            HorizontalDivider()
-                                        }
                                         if (selectedTab == 6 && tasksState.selectedTaskIds.isNotEmpty()) {
                                             DropdownMenuItem(
                                                 text = { Text("Eliminar seleccionadas (${tasksState.selectedTaskIds.size})", color = MaterialTheme.colorScheme.error) },
@@ -220,6 +217,95 @@ fun HomeScreen(
                                                 },
                                                 leadingIcon = {
                                                     Icon(Icons.Default.Edit, contentDescription = null)
+                                                }
+                                            )
+                                        }
+                                        if (selectedTab == 3) {
+                                            Text(
+                                                text = "Ordenar por",
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.SemiBold,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                fontFamily = InterFontFamily,
+                                                modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 4.dp)
+                                            )
+                                            SubjectSortMenuItem(
+                                                label = "Nombre (A–Z)",
+                                                value = SubjectSort.NOMBRE,
+                                                selected = subjectsState.sort,
+                                                onClick = {
+                                                    subjectsViewModel.onSortChange(SubjectSort.NOMBRE)
+                                                    showMenu = false
+                                                }
+                                            )
+                                            SubjectSortMenuItem(
+                                                label = "Semestre",
+                                                value = SubjectSort.SEMESTRE,
+                                                selected = subjectsState.sort,
+                                                onClick = {
+                                                    subjectsViewModel.onSortChange(SubjectSort.SEMESTRE)
+                                                    showMenu = false
+                                                }
+                                            )
+                                            SubjectSortMenuItem(
+                                                label = "Créditos (mayor a menor)",
+                                                value = SubjectSort.CREDITOS,
+                                                selected = subjectsState.sort,
+                                                onClick = {
+                                                    subjectsViewModel.onSortChange(SubjectSort.CREDITOS)
+                                                    showMenu = false
+                                                }
+                                            )
+                                            SubjectSortMenuItem(
+                                                label = "Promedio (mayor a menor)",
+                                                value = SubjectSort.PROMEDIO,
+                                                selected = subjectsState.sort,
+                                                onClick = {
+                                                    subjectsViewModel.onSortChange(SubjectSort.PROMEDIO)
+                                                    showMenu = false
+                                                }
+                                            )
+                                        }
+                                        if (selectedTab == 9 && subjectDetailViewModel != null) {
+                                            val detailState by subjectDetailViewModel.uiState.collectAsState()
+                                            Text(
+                                                text = "Ordenar notas",
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.SemiBold,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                fontFamily = InterFontFamily,
+                                                modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 4.dp)
+                                            )
+                                            SortCheckMenuItem(
+                                                label = "Predeterminado",
+                                                isSelected = detailState.sort == GradeSort.PREDETERMINADO,
+                                                onClick = {
+                                                    subjectDetailViewModel.onGradeSortChange(GradeSort.PREDETERMINADO)
+                                                    showMenu = false
+                                                }
+                                            )
+                                            SortCheckMenuItem(
+                                                label = "Nota (mayor a menor)",
+                                                isSelected = detailState.sort == GradeSort.NOTA,
+                                                onClick = {
+                                                    subjectDetailViewModel.onGradeSortChange(GradeSort.NOTA)
+                                                    showMenu = false
+                                                }
+                                            )
+                                            SortCheckMenuItem(
+                                                label = "Peso (mayor a menor)",
+                                                isSelected = detailState.sort == GradeSort.PESO,
+                                                onClick = {
+                                                    subjectDetailViewModel.onGradeSortChange(GradeSort.PESO)
+                                                    showMenu = false
+                                                }
+                                            )
+                                            SortCheckMenuItem(
+                                                label = "Pendientes primero",
+                                                isSelected = detailState.sort == GradeSort.PENDIENTES,
+                                                onClick = {
+                                                    subjectDetailViewModel.onGradeSortChange(GradeSort.PENDIENTES)
+                                                    showMenu = false
                                                 }
                                             )
                                         }
@@ -292,6 +378,7 @@ fun HomeScreen(
                         )
                         1 -> FinalGradeScreen()
                         3 -> SubjectsScreen(
+                            externalViewModel = subjectsViewModel,
                             onSubjectClick = { subject ->
                                 selectedSubjectId = subject.id
                                 selectedSubjectName = subject.name
@@ -323,7 +410,8 @@ fun HomeScreen(
                         9 -> selectedSubjectId?.let {
                             SubjectDetailScreen(
                                 subjectId = it,
-                                onSubjectDeleted = { selectedTab = previousTab }
+                                onSubjectDeleted = { selectedTab = previousTab },
+                                externalViewModel = subjectDetailViewModel
                             )
                         }
                         10 -> StatsScreen(
@@ -446,6 +534,45 @@ fun HomeScreen(
             }
         }
     }
+}
+
+@Composable
+private fun SubjectSortMenuItem(
+    label: String,
+    value: SubjectSort,
+    selected: SubjectSort,
+    onClick: () -> Unit
+) {
+    SortCheckMenuItem(label = label, isSelected = value == selected, onClick = onClick)
+}
+
+@Composable
+private fun SortCheckMenuItem(
+    label: String,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    DropdownMenuItem(
+        text = {
+            Text(
+                text = label,
+                fontFamily = InterFontFamily,
+                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                color = if (isSelected) PurpleGradia else MaterialTheme.colorScheme.onSurface
+            )
+        },
+        onClick = onClick,
+        trailingIcon = {
+            if (isSelected) {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = null,
+                    tint = PurpleGradia,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+        }
+    )
 }
 
 @Composable
@@ -765,7 +892,11 @@ fun HomeContent(onSubjectClick: (Subject) -> Unit = {}) {
             item { EmptySubjectsCard() }
         } else {
             items(visibleSubjects, key = { it.id }) { subject ->
-                SubjectHomeItem(subject = subject, onClick = { onSubjectClick(subject) })
+                SubjectHomeItem(
+                    subject = subject,
+                    average = homeState.averages[subject.id] ?: 0.0,
+                    onClick = { onSubjectClick(subject) }
+                )
             }
         }
 
@@ -880,11 +1011,14 @@ fun CircularProgressChart(progress: Float, score: String, status: String) {
 }
 
 @Composable
-fun SubjectHomeItem(subject: Subject, onClick: () -> Unit = {}) {
+fun SubjectHomeItem(subject: Subject, average: Double = 0.0, onClick: () -> Unit = {}) {
     val subtitle = subject.professor.ifBlank {
         subject.classroom.ifBlank { "Semestre ${subject.semester}" }
     }
     val iconType = resolveSubjectIcon(subject.icon, subject.name)
+    val hasGrades = average > 0.0
+    val progress = (average / 5.0).toFloat().coerceIn(0f, 1f)
+    val percent = (progress * 100).roundToInt()
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -926,13 +1060,35 @@ fun SubjectHomeItem(subject: Subject, onClick: () -> Unit = {}) {
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                Spacer(modifier = Modifier.height(3.dp))
-                Text(
-                    text = subtitle,
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontFamily = InterFontFamily
-                )
+                Spacer(modifier = Modifier.height(6.dp))
+                if (hasGrades) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        LinearProgressIndicator(
+                            progress = { progress },
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(8.dp)
+                                .clip(RoundedCornerShape(4.dp)),
+                            color = PurpleGradia,
+                            trackColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            text = "$percent%",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontFamily = InterFontFamily
+                        )
+                    }
+                } else {
+                    Text(
+                        text = subtitle,
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontFamily = InterFontFamily
+                    )
+                }
             }
         }
     }

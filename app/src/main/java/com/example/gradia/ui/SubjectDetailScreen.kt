@@ -1,6 +1,8 @@
 package com.example.gradia.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -40,6 +42,7 @@ import com.example.gradia.domain.model.GradeItem
 import com.example.gradia.domain.model.Subject
 import com.example.gradia.domain.validation.GradeValidation
 import com.example.gradia.presentation.viewmodel.GradeFilter
+import com.example.gradia.presentation.viewmodel.SubjectDetailViewModel
 import com.example.gradia.ui.theme.InterFontFamily
 import com.example.gradia.ui.theme.PurpleGradia
 import com.example.gradia.ui.theme.PurpleGradiaDark
@@ -47,10 +50,11 @@ import com.example.gradia.ui.theme.PurpleGradiaDark
 @Composable
 fun SubjectDetailScreen(
     subjectId: Long,
-    onSubjectDeleted: () -> Unit = {}
+    onSubjectDeleted: () -> Unit = {},
+    externalViewModel: SubjectDetailViewModel? = null
 ) {
     val app = LocalContext.current.applicationContext as GradiaApplication
-    val viewModel = remember(subjectId) { app.provideSubjectDetailViewModel(subjectId) }
+    val viewModel = externalViewModel ?: remember(subjectId) { app.provideSubjectDetailViewModel(subjectId) }
     val state by viewModel.uiState.collectAsState()
     val otherSubjectNames by viewModel.otherSubjectNames.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -362,22 +366,18 @@ private fun CurrentAverageCard(
                         fontFamily = InterFontFamily
                     )
                 }
-                if (hasGrades) {
-                    StatusChip(grade = average)
-                } else {
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .background(MaterialTheme.colorScheme.surface, CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.stats_chart),
-                            contentDescription = null,
-                            tint = PurpleGradia,
-                            modifier = Modifier.size(22.dp)
-                        )
-                    }
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(MaterialTheme.colorScheme.surface, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.stats_chart),
+                        contentDescription = null,
+                        tint = PurpleGradia,
+                        modifier = Modifier.size(22.dp)
+                    )
                 }
             }
             Spacer(modifier = Modifier.height(12.dp))
@@ -431,12 +431,15 @@ private fun FilterChipsRow(
     onSelected: (GradeFilter) -> Unit
 ) {
     Row(
+        modifier = Modifier.horizontalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         FilterPill(label = "Todas las notas", value = GradeFilter.TODAS, selected = selected, onSelected = onSelected)
         FilterPill(label = "Parciales", value = GradeFilter.PARCIALES, selected = selected, onSelected = onSelected)
         FilterPill(label = "Talleres", value = GradeFilter.TALLERES, selected = selected, onSelected = onSelected)
+        FilterPill(label = "Finales", value = GradeFilter.FINALES, selected = selected, onSelected = onSelected)
+        FilterPill(label = "Pendientes", value = GradeFilter.PENDIENTES, selected = selected, onSelected = onSelected)
     }
 }
 
