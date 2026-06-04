@@ -28,9 +28,9 @@ android {
             val regex = Regex("^SENDGRID_API_KEY=(.*)$", RegexOption.MULTILINE)
             val match = regex.find(text)
             match?.groupValues?.get(1)?.trim()
-                ?: "SG.ywZuGU95RR6VVlXsxngCFw.RSacTtAWGgSFl2V29WOaXom95gl6-Se8gSLCMtugugk"
+                ?: "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"
         } else {
-            "SG.ywZuGU95RR6VVlXsxngCFw.RSacTtAWGgSFl2V29WOaXom95gl6-Se8gSLCMtugugk"
+            "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"
         }
         buildConfigField("String", "SENDGRID_API_KEY", "\"$sendGridApiKey\"")
     }
@@ -81,6 +81,7 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.room.testing)
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)

@@ -17,6 +17,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
@@ -32,6 +35,7 @@ import com.facebook.FacebookCallback
 import com.facebook.FacebookException
 import com.facebook.login.LoginManager
 import com.facebook.login.LoginResult
+import com.example.gradia.ui.AuthGuard
 import com.example.gradia.ui.ForgotPasswordScreen
 import com.example.gradia.ui.HomeScreen
 import com.example.gradia.ui.LoginScreen
@@ -39,6 +43,7 @@ import com.example.gradia.ui.SingUpScreen
 import com.example.gradia.ui.TermsAndConditionsScreen
 import com.example.gradia.ui.WelcomeScreen
 import com.example.gradia.ui.theme.GradiaTheme
+import com.example.gradia.util.ErrorHandler
 import kotlinx.coroutines.launch
 
 private const val TAG = "GradiaFacebook"
@@ -77,11 +82,16 @@ class MainActivity : ComponentActivity() {
 
             var startDestination by remember { mutableStateOf("welcome") }
             var checkingSession by remember { mutableStateOf(true) }
+            var showCrashDialog by remember { mutableStateOf(false) }
             LaunchedEffect(Unit) {
                 if (app.isRememberMeEnabled && app.authRepository.isUserLoggedIn()) {
                     val userId = app.authRepository.getCurrentUserId()
                     val localUser = if (userId != null) app.authRepository.getLocalUser(userId) else null
                     startDestination = if (localUser != null) "home" else "welcome"
+                }
+                val (crashTrace, crashTime) = app.getLastCrashInfo()
+                if (crashTrace != null) {
+                    showCrashDialog = true
                 }
                 checkingSession = false
             }
@@ -110,6 +120,21 @@ class MainActivity : ComponentActivity() {
 
             GradiaTheme(darkTheme = isDarkMode) {
                 if (checkingSession) return@GradiaTheme
+
+                if (showCrashDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showCrashDialog = false },
+                        title = { Text("Recuperación completada") },
+                        text = {
+                            Text("La aplicación se cerró inesperadamente en la sesión anterior. Todos tus datos han sido recuperados correctamente.")
+                        },
+                        confirmButton = {
+                            TextButton(onClick = { showCrashDialog = false }) {
+                                Text("Entendido")
+                            }
+                        }
+                    )
+                }
 
                 NavHost(
                     navController = navController,
@@ -246,7 +271,10 @@ class MainActivity : ComponentActivity() {
                             },
                             onGoogleSignIn = {
                                 loginError = null
-                                googleLauncher.launch(GoogleSignInUtil.getSignInIntent())
+                                scope.launch {
+                                    GoogleSignInUtil.signOut()
+                                    googleLauncher.launch(GoogleSignInUtil.getSignInIntent())
+                                }
                             },
                             onFacebookSignIn = {
                                 Log.d(TAG, "Login: Facebook button clicked")
@@ -427,36 +455,45 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     composable("home") {
-                        val userId = app.authRepository.getCurrentUserId()
-                        val user by if (userId != null) {
-                            app.userRepository.getUserById(userId).collectAsState(initial = null)
-                        } else {
-                            remember { mutableStateOf(null) }
-                        }
-
-                        HomeScreen(
-                            userName = user?.nombre ?: "Usuario",
-                            userEmail = user?.email ?: "",
-                            isDarkMode = isDarkMode,
-                            onToggleTheme = {
-                                isDarkMode = !isDarkMode
-                                prefs.edit().putBoolean("dark_mode", isDarkMode).apply()
-                            },
-                            onNavigateToTerms = { navController.navigate("terms_and_conditions") },
-                            onLogout = {
-                                app.isRememberMeEnabled = false
-                                app.authRepository.signOut()
-                                navController.navigate("welcome") {
-                                    popUpTo("home") { inclusive = true }
-                                }
-                            },
-                            onDeleteAccount = {
-                                app.isRememberMeEnabled = false
+                        AuthGuard(
+                            authRepository = app.authRepository,
+                            onUnauthenticated = {
                                 navController.navigate("welcome") {
                                     popUpTo("home") { inclusive = true }
                                 }
                             }
-                        )
+                        ) {
+                            val userId = app.authRepository.getCurrentUserId()
+                            val user by if (userId != null) {
+                                app.userRepository.getUserById(userId).collectAsState(initial = null)
+                            } else {
+                                remember { mutableStateOf(null) }
+                            }
+
+                            HomeScreen(
+                                userName = user?.nombre ?: "Usuario",
+                                userEmail = user?.email ?: "",
+                                isDarkMode = isDarkMode,
+                                onToggleTheme = {
+                                    isDarkMode = !isDarkMode
+                                    prefs.edit().putBoolean("dark_mode", isDarkMode).apply()
+                                },
+                                onNavigateToTerms = { navController.navigate("terms_and_conditions") },
+                                onLogout = {
+                                    app.isRememberMeEnabled = false
+                                    app.authRepository.signOut()
+                                    navController.navigate("welcome") {
+                                        popUpTo("home") { inclusive = true }
+                                    }
+                                },
+                                onDeleteAccount = {
+                                    app.isRememberMeEnabled = false
+                                    navController.navigate("welcome") {
+                                        popUpTo("home") { inclusive = true }
+                                    }
+                                }
+                            )
+                        }
                     }
                 }
             }
