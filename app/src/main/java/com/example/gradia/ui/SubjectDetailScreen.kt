@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -41,6 +42,7 @@ import com.example.gradia.domain.validation.GradeValidation
 import com.example.gradia.presentation.viewmodel.GradeFilter
 import com.example.gradia.ui.theme.InterFontFamily
 import com.example.gradia.ui.theme.PurpleGradia
+import com.example.gradia.ui.theme.PurpleGradiaDark
 
 @Composable
 fun SubjectDetailScreen(
@@ -82,7 +84,13 @@ fun SubjectDetailScreen(
                     )
                 }
             }
-            item { CurrentAverageCard(average = state.currentAverage) }
+            item {
+                CurrentAverageCard(
+                    average = state.currentAverage,
+                    evaluatedPercentage = state.evaluatedPercentage,
+                    totalPercentage = state.totalPercentage
+                )
+            }
             item {
                 FilterChipsRow(
                     selected = state.filter,
@@ -317,7 +325,14 @@ private fun ConfirmDeleteDialog(
 }
 
 @Composable
-private fun CurrentAverageCard(average: Double) {
+private fun CurrentAverageCard(
+    average: Double,
+    evaluatedPercentage: Double,
+    totalPercentage: Double
+) {
+    val hasGrades = evaluatedPercentage > 0.0
+    val message = performanceMessage(average, hasGrades)
+
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
@@ -347,39 +362,67 @@ private fun CurrentAverageCard(average: Double) {
                         fontFamily = InterFontFamily
                     )
                 }
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .background(MaterialTheme.colorScheme.surface, CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.stats_chart),
-                        contentDescription = null,
-                        tint = PurpleGradia,
-                        modifier = Modifier.size(22.dp)
-                    )
+                if (hasGrades) {
+                    StatusChip(grade = average)
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(MaterialTheme.colorScheme.surface, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.stats_chart),
+                            contentDescription = null,
+                            tint = PurpleGradia,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
                 }
             }
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             LinearProgressIndicator(
                 progress = { (average / 5.0).toFloat().coerceIn(0f, 1f) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(6.dp)
-                    .clip(RoundedCornerShape(3.dp)),
+                    .height(8.dp)
+                    .clip(RoundedCornerShape(4.dp)),
                 color = PurpleGradia,
-                trackColor = MaterialTheme.colorScheme.surfaceVariant
+                trackColor = MaterialTheme.colorScheme.surface
             )
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             Text(
-                text = "Lorem ipsum dolor sit amet.",
-                fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontFamily = InterFontFamily
+                text = message,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = if (hasGrades) PurpleGradiaDark else MaterialTheme.colorScheme.onSurfaceVariant,
+                fontFamily = InterFontFamily,
+                lineHeight = 17.sp
             )
+            if (hasGrades) {
+                Spacer(modifier = Modifier.height(4.dp))
+                val remaining = (100.0 - evaluatedPercentage).coerceAtLeast(0.0)
+                Text(
+                    text = "Evaluado ${GradeValidation.formatPercentage(evaluatedPercentage)}% · " +
+                        "Falta ${GradeValidation.formatPercentage(remaining)}%",
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontFamily = InterFontFamily,
+                    lineHeight = 15.sp
+                )
+            }
         }
     }
+}
+
+/** Mensaje breve y cercano según cómo va el estudiante. Mismos tramos que el chip
+ *  de cada nota (0–5) para que la tarjeta y las notas hablen igual. */
+private fun performanceMessage(average: Double, hasGrades: Boolean): String = when {
+    !hasGrades -> "Agrega tu primera nota para ver cómo vas."
+    average < 3.0 -> "Vas en riesgo, ¡aún estás a tiempo de subir!"
+    average < 4.0 -> "Vas aprobando, ¡sigue sumando!"
+    average < 4.5 -> "¡Muy bien! Vas por buen camino."
+    else -> "¡Excelente trabajo, sigue así!"
 }
 
 @Composable
@@ -470,7 +513,7 @@ private fun GradeRowContent(item: GradeItem, isPending: Boolean) {
                 .size(44.dp)
                 .background(
                     if (isPending) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface,
-                    RoundedCornerShape(14.dp)
+                    CircleShape
                 ),
             contentAlignment = Alignment.Center
         ) {
@@ -489,17 +532,26 @@ private fun GradeRowContent(item: GradeItem, isPending: Boolean) {
                 color = if (isPending) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
                 fontFamily = InterFontFamily
             )
-            Text(
-                text = "Peso: ${GradeValidation.formatPercentage(item.percentage)}%",
-                fontSize = 11.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontFamily = InterFontFamily
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.Lock,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(12.dp)
+                )
+                Spacer(modifier = Modifier.width(3.dp))
+                Text(
+                    text = "Peso: ${GradeValidation.formatPercentage(item.percentage)}%",
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontFamily = InterFontFamily
+                )
+            }
         }
         Spacer(modifier = Modifier.width(8.dp))
         Column(
             horizontalAlignment = Alignment.End,
-            modifier = Modifier.padding(end = 6.dp)
+            modifier = Modifier.padding(end = 16.dp)
         ) {
             if (item.grade != null) {
                 Text(

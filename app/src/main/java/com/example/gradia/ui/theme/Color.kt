@@ -3,6 +3,7 @@ package com.example.gradia.ui.theme
 import androidx.compose.ui.graphics.Color
 
 val PurpleGradia = Color(0xFF7B39A3)
+val PurpleGradiaDark = Color(0xFF4E2570)
 
 // Light theme
 val White = Color(0xFFFFFFFF)
