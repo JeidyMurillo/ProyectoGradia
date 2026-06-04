@@ -28,6 +28,9 @@ data class SubjectDetailUiState(
     // Suma de porcentajes de TODAS las notas (sin filtrar). El formulario lo usa
     // para mostrar cuánto queda disponible hasta el 100%.
     val totalPercentage: Double = 0.0,
+    // Suma de porcentajes de las notas YA calificadas. Sirve para mostrar cuánto
+    // de la materia se ha evaluado.
+    val evaluatedPercentage: Double = 0.0,
     val isSaving: Boolean = false,
     val error: String? = null
 )
@@ -59,6 +62,7 @@ class SubjectDetailViewModel(
                 filter = current,
                 currentAverage = computeAverage(grades),
                 totalPercentage = grades.sumOf { it.percentage },
+                evaluatedPercentage = grades.filter { it.grade != null }.sumOf { it.percentage },
                 isSaving = saving,
                 error = err
             )
