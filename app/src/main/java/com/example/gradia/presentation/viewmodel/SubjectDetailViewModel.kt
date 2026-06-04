@@ -18,7 +18,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-enum class GradeFilter { TODAS, PARCIALES, TALLERES }
+enum class GradeFilter { TODAS, PARCIALES, TALLERES, FINALES, PENDIENTES }
 
 enum class GradeSort { PREDETERMINADO, NOTA, PESO, PENDIENTES }
 
@@ -174,12 +174,15 @@ class SubjectDetailViewModel(
         when (value) {
             GradeFilter.TODAS -> grades
             GradeFilter.PARCIALES -> grades.filter {
-                val type = resolveGradeIcon(it.icon, it.name)
-                type == GradeIconType.Examen || type == GradeIconType.Final
+                resolveGradeIcon(it.icon, it.name) == GradeIconType.Examen
             }
             GradeFilter.TALLERES -> grades.filter {
                 resolveGradeIcon(it.icon, it.name) == GradeIconType.Actividad
             }
+            GradeFilter.FINALES -> grades.filter {
+                resolveGradeIcon(it.icon, it.name) == GradeIconType.Final
+            }
+            GradeFilter.PENDIENTES -> grades.filter { it.grade == null }
         }
 
     private fun applySort(grades: List<GradeItem>, value: GradeSort): List<GradeItem> =
