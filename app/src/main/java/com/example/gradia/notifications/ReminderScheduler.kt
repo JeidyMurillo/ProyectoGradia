@@ -7,9 +7,13 @@ import android.content.Intent
 
 class ReminderScheduler(private val context: Context) {
 
+    companion object {
+        const val NOTA_OFFSET = 1_000_000L
+    }
+
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-    fun scheduleReminder(eventId: Long, title: String, eventTimeMs: Long, minutesBefore: Int, userId: String) {
+    fun scheduleReminder(eventId: Long, title: String, eventTimeMs: Long, minutesBefore: Int, userId: String, esNota: Boolean = false) {
         val triggerTime = eventTimeMs - minutesBefore * 60_000L
         if (triggerTime <= System.currentTimeMillis()) return
 
@@ -17,6 +21,7 @@ class ReminderScheduler(private val context: Context) {
             putExtra(ReminderReceiver.EXTRA_EVENT_ID, eventId)
             putExtra(ReminderReceiver.EXTRA_TITLE, title)
             putExtra(ReminderReceiver.EXTRA_USER_ID, userId)
+            putExtra(ReminderReceiver.EXTRA_IS_NOTA, esNota)
         }
         val pendingIntent = PendingIntent.getBroadcast(
             context,

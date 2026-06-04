@@ -2,11 +2,13 @@ package com.example.gradia.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.gradia.data.repository.UserRepository
 import com.example.gradia.domain.model.GradeItem
 import com.example.gradia.domain.model.Subject
 import com.example.gradia.domain.repository.SubjectRepository
 import com.example.gradia.domain.validation.GradeValidation
 import com.example.gradia.domain.validation.SubjectValidation
+import com.example.gradia.notifications.ReminderScheduler
 import com.example.gradia.ui.GradeIconType
 import com.example.gradia.ui.resolveGradeIcon
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,7 +42,9 @@ data class SubjectDetailUiState(
 
 class SubjectDetailViewModel(
     private val subjectId: Long,
-    private val subjectRepository: SubjectRepository
+    private val subjectRepository: SubjectRepository,
+    private val reminderScheduler: ReminderScheduler,
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
     private val subjectFlow = subjectRepository.getSubjectById(subjectId)
@@ -92,7 +96,8 @@ class SubjectDetailViewModel(
             try {
                 val target = grade.copy(subjectId = subjectId)
                 GradeValidation.validate(target, gradesFlow.first())
-                subjectRepository.insertGradeItem(target)
+                val newId = subjectRepository.insertGradeItem(target)
+                scheduleGradeReminder(target.copy(id = newId))
                 onSuccess()
             } catch (e: Exception) {
                 error.value = e.message ?: "Error al guardar la nota"
@@ -110,6 +115,8 @@ class SubjectDetailViewModel(
                 val target = grade.copy(subjectId = subjectId)
                 GradeValidation.validate(target, gradesFlow.first())
                 subjectRepository.updateGradeItem(target)
+                reminderScheduler.cancelReminder(target.id + ReminderScheduler.NOTA_OFFSET)
+                scheduleGradeReminder(target)
                 onSuccess()
             } catch (e: Exception) {
                 error.value = e.message ?: "Error al actualizar la nota"
@@ -123,12 +130,28 @@ class SubjectDetailViewModel(
         viewModelScope.launch {
             error.value = null
             try {
+                reminderScheduler.cancelReminder(grade.id + ReminderScheduler.NOTA_OFFSET)
                 subjectRepository.deleteGradeItem(grade)
                 onSuccess()
             } catch (e: Exception) {
                 error.value = e.message ?: "Error al eliminar la nota"
             }
         }
+    }
+
+    private suspend fun scheduleGradeReminder(grade: GradeItem) {
+        val scheduledDate = grade.scheduledDate ?: return
+        val minutesBefore = grade.reminderMinutesBefore
+        if (minutesBefore <= 0) return
+        val user = userRepository.getCurrentUser().first() ?: return
+        reminderScheduler.scheduleReminder(
+            eventId = grade.id + ReminderScheduler.NOTA_OFFSET,
+            title = grade.name,
+            eventTimeMs = scheduledDate,
+            minutesBefore = minutesBefore,
+            userId = user.id,
+            esNota = true
+        )
     }
 
     fun updateSubject(subject: Subject, onSuccess: () -> Unit = {}) {

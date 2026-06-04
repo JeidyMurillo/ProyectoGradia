@@ -73,8 +73,6 @@ class RoomSubjectRepository(
         notaDao.insertNota(gradeItem.toEntity())
 
     override suspend fun updateGradeItem(gradeItem: GradeItem) {
-        // Conserva la fecha de creación original para que la nota editada no se
-        // reordene al principio de la lista (se ordena por fechaCreacion).
         val existing = notaDao.getNotaByIdSync(gradeItem.id)
         val entity = gradeItem.toEntity()
         notaDao.updateNota(

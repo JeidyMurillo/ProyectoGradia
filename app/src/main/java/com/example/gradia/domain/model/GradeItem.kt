@@ -6,5 +6,7 @@ data class GradeItem(
     val name: String,
     val percentage: Double,
     val grade: Double? = null,
-    val icon: String = ""
+    val icon: String = "",
+    val scheduledDate: Long? = null,
+    val reminderMinutesBefore: Int = 0
 )

@@ -130,7 +130,8 @@ class GradiaApplication : Application() {
         return CalendarViewModel(
             userRepository = userRepository,
             eventoRepository = eventoRepository,
-            asignaturaRepository = asignaturaRepository
+            asignaturaRepository = asignaturaRepository,
+            notaRepository = notaRepository
         )
     }
 
@@ -161,7 +162,9 @@ class GradiaApplication : Application() {
     fun provideSubjectDetailViewModel(subjectId: Long): SubjectDetailViewModel {
         return SubjectDetailViewModel(
             subjectId = subjectId,
-            subjectRepository = subjectRepository
+            subjectRepository = subjectRepository,
+            reminderScheduler = reminderScheduler,
+            userRepository = userRepository
         )
     }
 

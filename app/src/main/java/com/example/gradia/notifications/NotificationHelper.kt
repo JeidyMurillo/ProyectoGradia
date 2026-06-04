@@ -31,7 +31,7 @@ class NotificationHelper(private val context: Context) {
         }
     }
 
-    fun showReminder(eventId: Long, title: String, userId: String) {
+    fun showReminder(eventId: Long, title: String, userId: String, esNota: Boolean = false) {
         val openIntent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
@@ -45,6 +45,7 @@ class NotificationHelper(private val context: Context) {
         val completeIntent = Intent(context, CompleteTaskReceiver::class.java).apply {
             putExtra(CompleteTaskReceiver.EXTRA_EVENT_ID, eventId)
             putExtra(CompleteTaskReceiver.EXTRA_USER_ID, userId)
+            putExtra(CompleteTaskReceiver.EXTRA_IS_NOTA, esNota)
         }
         val completePendingIntent = PendingIntent.getBroadcast(
             context,
@@ -55,7 +56,7 @@ class NotificationHelper(private val context: Context) {
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.gradia_white_logo)
-            .setContentTitle("Recordatorio de tarea")
+            .setContentTitle(if (esNota) "Recordatorio de actividad" else "Recordatorio de tarea")
             .setContentText(title)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentIntent(openPendingIntent)

@@ -14,8 +14,11 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -46,6 +49,11 @@ import com.example.gradia.presentation.viewmodel.SubjectDetailViewModel
 import com.example.gradia.ui.theme.InterFontFamily
 import com.example.gradia.ui.theme.PurpleGradia
 import com.example.gradia.ui.theme.PurpleGradiaDark
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun SubjectDetailScreen(
@@ -657,6 +665,27 @@ private fun GradeFormSheet(
     }
     var iconMenuOpen by remember { mutableStateOf(false) }
 
+    val initialScheduledMillis = initial?.scheduledDate
+    var scheduledDate by remember {
+        mutableStateOf(initialScheduledMillis?.let { millis ->
+            Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate()
+        } ?: LocalDate.now())
+    }
+    var scheduledTime by remember {
+        mutableStateOf(initialScheduledMillis?.let { millis ->
+            Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalTime()
+        } ?: LocalTime.of(8, 0))
+    }
+    var hasSchedule by remember { mutableStateOf(initialScheduledMillis != null) }
+    var reminderMinutes by remember {
+        mutableStateOf(initial?.reminderMinutesBefore ?: 30)
+    }
+    var hasReminder by remember { mutableStateOf(initial?.reminderMinutesBefore ?: 0 > 0) }
+
+    // Date/time picker dialogs
+    var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
+
     // Marca si el usuario ya intentó guardar o tocó cada campo, para no mostrar
     // errores en un formulario aún en blanco (recién abierto).
     var attemptedSave by remember { mutableStateOf(false) }
@@ -692,6 +721,53 @@ private fun GradeFormSheet(
     val showNameError = (attemptedSave || nameTouched) && nameError != null
     val showPercentageError = (attemptedSave || percentageTouched) && percentageError != null
     val showGradeError = (attemptedSave || gradeTouched) && gradeError != null
+
+    val dateFormatter = DateTimeFormatter.ofPattern("d 'de' MMMM 'de' yyyy", java.util.Locale.forLanguageTag("es"))
+    val timeFormatter = DateTimeFormatter.ofPattern("hh:mm a", java.util.Locale.forLanguageTag("es"))
+
+    if (showDatePicker) {
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = scheduledDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        )
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let { millis ->
+                        scheduledDate = Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate()
+                    }
+                    showDatePicker = false
+                }) { Text("Aceptar") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) { Text("Cancelar") }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
+    if (showTimePicker) {
+        val timePickerState = rememberTimePickerState(
+            initialHour = scheduledTime.hour,
+            initialMinute = scheduledTime.minute,
+            is24Hour = false
+        )
+        AlertDialog(
+            onDismissRequest = { showTimePicker = false },
+            title = { Text("Seleccionar hora", fontFamily = InterFontFamily) },
+            text = { TimePicker(state = timePickerState) },
+            confirmButton = {
+                TextButton(onClick = {
+                    scheduledTime = LocalTime.of(timePickerState.hour, timePickerState.minute)
+                    showTimePicker = false
+                }) { Text("Aceptar") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showTimePicker = false }) { Text("Cancelar") }
+            }
+        )
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -871,6 +947,170 @@ private fun GradeFormSheet(
                 }
             }
 
+            Spacer(modifier = Modifier.height(16.dp))
+
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 1.dp)
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "Programar actividad",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+                fontFamily = InterFontFamily
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Switch(
+                    checked = hasSchedule,
+                    onCheckedChange = { hasSchedule = it },
+                    colors = SwitchDefaults.colors(checkedTrackColor = PurpleGradia)
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = "Asignar fecha y hora",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontFamily = InterFontFamily
+                )
+            }
+
+            if (hasSchedule) {
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        SheetFieldLabel("Fecha")
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Surface(
+                            modifier = Modifier.fillMaxWidth().clickable { showDatePicker = true },
+                            shape = RoundedCornerShape(50),
+                            color = MaterialTheme.colorScheme.surfaceVariant
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .background(PurpleGradia, CircleShape),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.DateRange,
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text(
+                                    text = scheduledDate.format(dateFormatter),
+                                    fontSize = 14.sp,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    fontFamily = InterFontFamily
+                                )
+                            }
+                        }
+                    }
+                    Column(modifier = Modifier.weight(1f)) {
+                        SheetFieldLabel("Hora")
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Surface(
+                            modifier = Modifier.fillMaxWidth().clickable { showTimePicker = true },
+                            shape = RoundedCornerShape(50),
+                            color = MaterialTheme.colorScheme.surfaceVariant
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .background(PurpleGradia, CircleShape),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.gradia_white_logo),
+                                        contentDescription = "Hora",
+                                        tint = Color.White,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text(
+                                    text = scheduledTime.format(timeFormatter),
+                                    fontSize = 14.sp,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    fontFamily = InterFontFamily
+                                )
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Switch(
+                        checked = hasReminder,
+                        onCheckedChange = { hasReminder = it },
+                        colors = SwitchDefaults.colors(checkedTrackColor = PurpleGradia)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Icon(
+                        imageVector = Icons.Default.Notifications,
+                        contentDescription = null,
+                        tint = PurpleGradia,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Recordatorio $reminderMinutes min antes",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontFamily = InterFontFamily
+                    )
+                }
+
+                if (hasReminder) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        listOf(15, 30, 60, 120).forEach { mins ->
+                            ReminderChip(
+                                label = when (mins) {
+                                    15 -> "15 min"
+                                    30 -> "30 min"
+                                    60 -> "1 hora"
+                                    120 -> "2 horas"
+                                    else -> "$mins min"
+                                },
+                                selected = reminderMinutes == mins,
+                                onClick = { reminderMinutes = mins }
+                            )
+                        }
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.height(28.dp))
 
             Button(
@@ -878,6 +1118,15 @@ private fun GradeFormSheet(
                     attemptedSave = true
                     if (!isValid) return@Button
                     val pct = percentageDouble ?: return@Button
+                    val scheduledMillis = if (hasSchedule) {
+                        scheduledDate.atStartOfDay(ZoneId.systemDefault())
+                            .withHour(scheduledTime.hour)
+                            .withMinute(scheduledTime.minute)
+                            .withSecond(0)
+                            .withNano(0)
+                            .toInstant()
+                            .toEpochMilli()
+                    } else null
                     onSave(
                         GradeItem(
                             id = initial?.id ?: 0L,
@@ -885,7 +1134,9 @@ private fun GradeFormSheet(
                             name = name.trim(),
                             percentage = pct,
                             grade = gradeDouble,
-                            icon = gradeIconStringFor(effectiveIcon)
+                            icon = gradeIconStringFor(effectiveIcon),
+                            scheduledDate = scheduledMillis,
+                            reminderMinutesBefore = if (hasReminder && hasSchedule) reminderMinutes else 0
                         )
                     )
                 },
@@ -915,6 +1166,34 @@ private fun GradeFormSheet(
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun ReminderChip(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    Surface(
+        shape = RoundedCornerShape(50),
+        color = if (selected) PurpleGradia else MaterialTheme.colorScheme.surfaceVariant,
+        modifier = Modifier
+            .height(32.dp)
+            .clickable(onClick = onClick)
+    ) {
+        Box(
+            modifier = Modifier.padding(horizontal = 14.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = label,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = if (selected) Color.White else PurpleGradia,
+                fontFamily = InterFontFamily
+            )
         }
     }
 }

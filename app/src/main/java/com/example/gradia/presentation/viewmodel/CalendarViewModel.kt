@@ -3,8 +3,10 @@ package com.example.gradia.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gradia.data.local.entity.Evento
+import com.example.gradia.data.local.entity.Nota
 import com.example.gradia.data.repository.AsignaturaRepository
 import com.example.gradia.data.repository.EventoRepository
+import com.example.gradia.data.repository.NotaRepository
 import com.example.gradia.data.repository.UserRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
@@ -20,7 +22,8 @@ data class CalendarActivity(
     val asignaturaId: Long?,
     val asignaturaNombre: String?,
     val tipo: String,
-    val prioridad: String
+    val prioridad: String,
+    val esActividad: Boolean = false
 )
 
 enum class Proximidad { CERCANO, PROXIMO, LEJANO }
@@ -36,7 +39,8 @@ data class CalendarUiState(
 class CalendarViewModel(
     private val userRepository: UserRepository,
     private val eventoRepository: EventoRepository,
-    private val asignaturaRepository: AsignaturaRepository
+    private val asignaturaRepository: AsignaturaRepository,
+    private val notaRepository: NotaRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CalendarUiState())
@@ -80,16 +84,21 @@ class CalendarViewModel(
                     .atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
                 val endMillis = month.plusMonths(1).atDay(1)
                     .atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli() + 7 * 24 * 60 * 60 * 1000
-                eventoRepository.getEventosByUserAndDateRange(userId, startMillis, endMillis)
+                combine(
+                    eventoRepository.getEventosByUserAndDateRange(userId, startMillis, endMillis),
+                    notaRepository.getNotasByUserAndDateRange(userId, startMillis, endMillis)
+                ) { eventos, notas -> eventos to notas }
             }
-            .onEach { eventos ->
-                val mapped = eventos.filter { !it.completado }.map { it.toCalendarActivity() }
-                val byDate = mapped.groupBy { it.fecha.toCalendarLocalDate() }
+            .onEach { (eventos, notas) ->
+                val eventosMapped = eventos.filter { !it.completado }.map { it.toCalendarActivity() }
+                val notasMapped = notas.mapNotNull { it.toCalendarActivity() }
+                val allActivities = eventosMapped + notasMapped
+                val byDate = allActivities.groupBy { it.fecha.toCalendarLocalDate() }
                 val selectedDateActivities = byDate[_uiState.value.selectedDate].orEmpty()
 
                 val today = LocalDate.now()
                 val sevenDaysLater = today.plusDays(7)
-                val next7Days = mapped
+                val next7Days = allActivities
                     .filter { act ->
                         val date = act.fecha.toCalendarLocalDate()
                         (date.isEqual(today) || date.isAfter(today)) && date <= sevenDaysLater
@@ -125,8 +134,23 @@ class CalendarViewModel(
         asignaturaId = asignaturaId,
         asignaturaNombre = asignaturaId?.let { asignaturaMap[it] },
         tipo = tipo,
-        prioridad = prioridad
+        prioridad = prioridad,
+        esActividad = false
     )
+
+    private fun Nota.toCalendarActivity(): CalendarActivity? {
+        val fechaVal = fecha ?: return null
+        return CalendarActivity(
+            id = id,
+            title = nombre,
+            fecha = fechaVal,
+            asignaturaId = asignaturaId,
+            asignaturaNombre = asignaturaMap[asignaturaId],
+            tipo = "ACTIVIDAD",
+            prioridad = if (valor == null) "PENDIENTE" else "CALIFICADA",
+            esActividad = true
+        )
+    }
 
 }
 
