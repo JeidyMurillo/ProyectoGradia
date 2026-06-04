@@ -1,7 +1,11 @@
 package com.example.gradia.ui
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -30,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
@@ -293,7 +298,7 @@ private fun AddSubjectCard(onClick: () -> Unit) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun SubjectFormSheet(
     isSaving: Boolean,
@@ -351,6 +356,12 @@ fun SubjectFormSheet(
             shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
             dragHandle = { BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.onSurfaceVariant) }
         ) {
+            // Si el teclado está abierto, "atrás" solo lo cierra (no la hoja), para
+            // no interrumpir la creación/edición.
+            val focusManager = LocalFocusManager.current
+            BackHandler(enabled = WindowInsets.isImeVisible) {
+                focusManager.clearFocus()
+            }
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
