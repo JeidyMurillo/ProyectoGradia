@@ -28,6 +28,7 @@ import androidx.navigation.navArgument
 import com.example.gradia.data.firebase.FacebookSignInUtil
 import com.example.gradia.data.firebase.GoogleSignInUtil
 import com.example.gradia.data.firebase.getFirebaseErrorMessage
+import com.example.gradia.notifications.NotificationHelper
 import com.facebook.FacebookCallback
 import com.facebook.FacebookException
 import com.facebook.login.LoginManager
@@ -66,6 +67,8 @@ class MainActivity : ComponentActivity() {
                 startActivity(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM))
             }
         }
+
+        NotificationHelper(this).createNotificationChannel()
 
         val webClientId = getString(R.string.default_web_client_id)
         GoogleSignInUtil.init(this, webClientId)
