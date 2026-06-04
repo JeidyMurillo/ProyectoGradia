@@ -184,19 +184,6 @@ fun HomeScreen(
                                         onDismissRequest = { showMenu = false },
                                         shape = RoundedCornerShape(16.dp)
                                     ) {
-                                        if (selectedTab == 5 && notesState.selectedNoteIds.isNotEmpty()) {
-                                            DropdownMenuItem(
-                                                text = { Text("Eliminar seleccionadas (${notesState.selectedNoteIds.size})", color = MaterialTheme.colorScheme.error) },
-                                                onClick = {
-                                                    showMenu = false
-                                                    notesViewModel.deleteSelectedNotes()
-                                                },
-                                                leadingIcon = {
-                                                    Icon(Icons.Default.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.error)
-                                                }
-                                            )
-                                            HorizontalDivider()
-                                        }
                                         if (selectedTab == 6 && tasksState.selectedTaskIds.isNotEmpty()) {
                                             DropdownMenuItem(
                                                 text = { Text("Eliminar seleccionadas (${tasksState.selectedTaskIds.size})", color = MaterialTheme.colorScheme.error) },
