@@ -5,6 +5,8 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -42,6 +44,7 @@ import com.example.gradia.R
 import com.example.gradia.domain.model.Subject
 import com.example.gradia.domain.validation.SubjectValidation
 import com.example.gradia.presentation.viewmodel.SubjectFilter
+import com.example.gradia.presentation.viewmodel.SubjectsViewModel
 import com.example.gradia.ui.theme.InterFontFamily
 import com.example.gradia.ui.theme.PurpleGradia
 import androidx.compose.material3.SnackbarHost
@@ -49,9 +52,12 @@ import androidx.compose.material3.SnackbarHostState
 
 
 @Composable
-fun SubjectsScreen(onSubjectClick: (Subject) -> Unit = {}) {
+fun SubjectsScreen(
+    onSubjectClick: (Subject) -> Unit = {},
+    externalViewModel: SubjectsViewModel? = null
+) {
     val app = LocalContext.current.applicationContext as GradiaApplication
-    val viewModel = remember { app.provideSubjectsViewModel() }
+    val viewModel = externalViewModel ?: remember { app.provideSubjectsViewModel() }
     val state by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -167,6 +173,7 @@ private fun SubjectsFilterRow(
     onSelected: (SubjectFilter) -> Unit
 ) {
     Row(
+        modifier = Modifier.horizontalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
