@@ -1,6 +1,8 @@
 package com.example.gradia.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -429,12 +431,15 @@ private fun FilterChipsRow(
     onSelected: (GradeFilter) -> Unit
 ) {
     Row(
+        modifier = Modifier.horizontalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         FilterPill(label = "Todas las notas", value = GradeFilter.TODAS, selected = selected, onSelected = onSelected)
         FilterPill(label = "Parciales", value = GradeFilter.PARCIALES, selected = selected, onSelected = onSelected)
         FilterPill(label = "Talleres", value = GradeFilter.TALLERES, selected = selected, onSelected = onSelected)
+        FilterPill(label = "Finales", value = GradeFilter.FINALES, selected = selected, onSelected = onSelected)
+        FilterPill(label = "Pendientes", value = GradeFilter.PENDIENTES, selected = selected, onSelected = onSelected)
     }
 }
 
