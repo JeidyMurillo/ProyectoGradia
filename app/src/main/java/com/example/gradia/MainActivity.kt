@@ -185,8 +185,7 @@ class MainActivity : ComponentActivity() {
                                     )
                                 }
                             } else {
-                                val exception = accountResult.exception
-                                loginError = "Error con Google: ${exception?.localizedMessage ?: "Error desconocido"}"
+                                loginError = getFirebaseErrorMessage(accountResult.exception ?: Exception("Error desconocido al iniciar sesión con Google"))
                             }
                         }
 
@@ -261,7 +260,7 @@ class MainActivity : ComponentActivity() {
                                     }
                                     override fun onError(error: FacebookException) {
                                         Log.e(TAG, "Login: Facebook onError", error)
-                                        loginError = error.message ?: "Error al iniciar sesión con Facebook"
+                                        loginError = getFirebaseErrorMessage(error)
                                     }
                                 })
                                 Log.d(TAG, "Login: Calling loginWithAccountPicker")
@@ -341,8 +340,7 @@ class MainActivity : ComponentActivity() {
                                     )
                                 }
                             } else {
-                                val exception = accountResult.exception
-                                registerError = "Error con Google: ${exception?.localizedMessage ?: "Error desconocido"}"
+                                registerError = getFirebaseErrorMessage(accountResult.exception ?: Exception("Error desconocido al registrarse con Google"))
                             }
                         }
 
@@ -412,7 +410,7 @@ class MainActivity : ComponentActivity() {
                                     }
                                     override fun onError(error: FacebookException) {
                                         Log.e(TAG, "Register: Facebook onError", error)
-                                        registerError = error.message ?: "Error al registrarse con Facebook"
+                                        registerError = getFirebaseErrorMessage(error)
                                     }
                                 })
                                 Log.d(TAG, "Register: Calling loginWithAccountPicker")
