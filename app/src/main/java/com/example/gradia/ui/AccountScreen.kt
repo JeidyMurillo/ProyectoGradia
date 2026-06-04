@@ -36,6 +36,7 @@ import com.facebook.login.LoginManager
 import com.facebook.login.LoginResult
 import com.example.gradia.data.local.entity.Asignatura
 import com.example.gradia.data.local.entity.Evento
+import com.example.gradia.data.local.entity.Nota
 import com.example.gradia.ui.theme.InterFontFamily
 import com.example.gradia.ui.theme.PurpleGradia
 import kotlinx.coroutines.Dispatchers
@@ -573,6 +574,22 @@ private suspend fun generateExportJson(app: GradiaApplication, userId: String): 
             }
         })
 
+        put("gradeItems", JSONArray().apply {
+            asignaturas.forEach { asig ->
+                val gradeItems = app.notaRepository.getNotasByAsignatura(asig.id).first()
+                gradeItems.forEach { gi ->
+                    put(JSONObject().apply {
+                        put("originalId", gi.id)
+                        put("asignaturaOriginalId", asig.id)
+                        put("nombre", gi.nombre)
+                        put("valor", gi.valor)
+                        put("porcentaje", gi.porcentaje)
+                        put("icono", gi.icono)
+                    })
+                }
+            }
+        })
+
         put("notas", JSONArray().apply {
             notasContenido.forEach { nota ->
                 put(JSONObject().apply {
@@ -649,6 +666,27 @@ private suspend fun importData(app: GradiaApplication, json: String, userId: Str
                     completado = obj.optBoolean("completado", false)
                 )
             )
+        }
+    }
+
+    // Import grade items (notas de materias)
+    val gradeItemsArray = root.optJSONArray("gradeItems")
+    if (gradeItemsArray != null) {
+        for (i in 0 until gradeItemsArray.length()) {
+            val obj = gradeItemsArray.getJSONObject(i)
+            val oldAsigId = obj.getLong("asignaturaOriginalId")
+            val newAsigId = oldToNewId[oldAsigId]
+            if (newAsigId != null) {
+                app.notaRepository.insertNota(
+                    Nota(
+                        asignaturaId = newAsigId,
+                        nombre = obj.getString("nombre"),
+                        valor = if (obj.has("valor") && !obj.isNull("valor")) obj.getDouble("valor").toFloat() else null,
+                        porcentaje = obj.getDouble("porcentaje").toFloat(),
+                        icono = obj.optString("icono", "")
+                    )
+                )
+            }
         }
     }
 

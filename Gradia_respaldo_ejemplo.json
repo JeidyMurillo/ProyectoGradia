@@ -1,0 +1,229 @@
+{
+  "app": "Gradia",
+  "exportDate": "2026-06-03 12:00:00",
+  "version": 1,
+  "usuario": {
+    "id": "placeholder",
+    "nombre": "Estudiante Ejemplo",
+    "email": "estudiante@ejemplo.com",
+    "metaPromedio": 4.0
+  },
+  "asignaturas": [
+    {
+      "originalId": 101,
+      "nombre": "Cálculo Diferencial",
+      "icono": "📐",
+      "profesor": "Dr. Gómez",
+      "salon": "A-301",
+      "creditos": 4,
+      "semestre": 1,
+      "notaAprobacion": 3.0
+    },
+    {
+      "originalId": 102,
+      "nombre": "Programación Orientada a Objetos",
+      "icono": "💻",
+      "profesor": "Mtra. López",
+      "salon": "Lab-105",
+      "creditos": 5,
+      "semestre": 1,
+      "notaAprobacion": 3.0
+    },
+    {
+      "originalId": 103,
+      "nombre": "Desarrollo para Dispositivos Móviles",
+      "icono": "📱",
+      "profesor": "Ing. Martínez",
+      "salon": "Lab-203",
+      "creditos": 4,
+      "semestre": 2,
+      "notaAprobacion": 3.0
+    }
+  ],
+  "gradeItems": [
+    {
+      "originalId": 201,
+      "asignaturaOriginalId": 101,
+      "nombre": "Parcial 1",
+      "valor": 4.5,
+      "porcentaje": 25.0,
+      "icono": "📝"
+    },
+    {
+      "originalId": 202,
+      "asignaturaOriginalId": 101,
+      "nombre": "Parcial 2",
+      "valor": 3.8,
+      "porcentaje": 25.0,
+      "icono": "📝"
+    },
+    {
+      "originalId": 203,
+      "asignaturaOriginalId": 101,
+      "nombre": "Tareas",
+      "valor": 5.0,
+      "porcentaje": 20.0,
+      "icono": "📄"
+    },
+    {
+      "originalId": 204,
+      "asignaturaOriginalId": 101,
+      "nombre": "Examen Final",
+      "valor": null,
+      "porcentaje": 30.0,
+      "icono": "📝"
+    },
+    {
+      "originalId": 205,
+      "asignaturaOriginalId": 102,
+      "nombre": "Proyecto 1",
+      "valor": 4.2,
+      "porcentaje": 30.0,
+      "icono": "💻"
+    },
+    {
+      "originalId": 206,
+      "asignaturaOriginalId": 102,
+      "nombre": "Parcial 1",
+      "valor": 3.5,
+      "porcentaje": 20.0,
+      "icono": "📝"
+    },
+    {
+      "originalId": 207,
+      "asignaturaOriginalId": 102,
+      "nombre": "Talleres",
+      "valor": 5.0,
+      "porcentaje": 15.0,
+      "icono": "🔧"
+    },
+    {
+      "originalId": 208,
+      "asignaturaOriginalId": 102,
+      "nombre": "Examen Final",
+      "valor": null,
+      "porcentaje": 35.0,
+      "icono": "📝"
+    },
+    {
+      "originalId": 209,
+      "asignaturaOriginalId": 103,
+      "nombre": "Parcial 1",
+      "valor": 4.0,
+      "porcentaje": 20.0,
+      "icono": "📝"
+    },
+    {
+      "originalId": 210,
+      "asignaturaOriginalId": 103,
+      "nombre": "Parcial 2",
+      "valor": null,
+      "porcentaje": 20.0,
+      "icono": "📝"
+    },
+    {
+      "originalId": 211,
+      "asignaturaOriginalId": 103,
+      "nombre": "Proyecto Final",
+      "valor": null,
+      "porcentaje": 40.0,
+      "icono": "📱"
+    },
+    {
+      "originalId": 212,
+      "asignaturaOriginalId": 103,
+      "nombre": "Participación",
+      "valor": 5.0,
+      "porcentaje": 20.0,
+      "icono": "💬"
+    }
+  ],
+  "eventos": [
+    {
+      "originalId": 301,
+      "asignaturaId": 101,
+      "titulo": "Parcial 1 - Cálculo",
+      "descripcion": "Derivadas y límites",
+      "fecha": 1762636800000,
+      "tipo": "EVALUACION",
+      "completado": true
+    },
+    {
+      "originalId": 302,
+      "asignaturaId": 101,
+      "titulo": "Entrega de tareas unidad 2",
+      "descripcion": "Tarea de optimización",
+      "fecha": 1764028800000,
+      "tipo": "ENTREGA",
+      "completado": false
+    },
+    {
+      "originalId": 303,
+      "asignaturaId": 101,
+      "titulo": "Examen Final",
+      "descripcion": "Todo el temario",
+      "fecha": 1766448000000,
+      "tipo": "EVALUACION",
+      "completado": false
+    },
+    {
+      "originalId": 304,
+      "asignaturaId": 102,
+      "titulo": "Entrega Proyecto 1",
+      "descripcion": "Sistema de gestión de biblioteca en Java",
+      "fecha": 1762646400000,
+      "tipo": "ENTREGA",
+      "completado": true
+    },
+    {
+      "originalId": 305,
+      "asignaturaId": 102,
+      "titulo": "Parcial 1 - POO",
+      "descripcion": "Herencia, polimorfismo y encapsulamiento",
+      "fecha": 1763424000000,
+      "tipo": "EVALUACION",
+      "completado": false
+    },
+    {
+      "originalId": 306,
+      "asignaturaId": 0,
+      "titulo": "Cita médica",
+      "descripcion": "Control general",
+      "fecha": 1764115200000,
+      "tipo": "TAREA",
+      "completado": false
+    },
+    {
+      "originalId": 307,
+      "asignaturaId": 103,
+      "titulo": "Entrega avance 1 del proyecto",
+      "descripcion": "Propuesta y diseño de la app",
+      "fecha": 1765324800000,
+      "tipo": "ENTREGA",
+      "completado": false
+    },
+    {
+      "originalId": 308,
+      "asignaturaId": 103,
+      "titulo": "Presentación final",
+      "descripcion": "Demo del proyecto móvil",
+      "fecha": 1766275200000,
+      "tipo": "EVALUACION",
+      "completado": false
+    }
+  ],
+  "notas": [
+    {
+      "originalId": 401,
+      "titulo": "Fórmulas importantes Cálculo",
+      "contenido": "Derivada de x^n = n*x^(n-1)\nIntegral de x^n = x^(n+1)/(n+1) + C\nRegla de la cadena: d/dx f(g(x)) = f'(g(x))*g'(x)",
+      "color": -16726241
+    },
+    {
+      "originalId": 402,
+      "titulo": "Tips para el proyecto móvil",
+      "contenido": "Recordar:\n- Usar Jetpack Compose para UI\n- Room para base de datos local\n- Firebase Auth para autenticación\n- MVVM como patrón de arquitectura",
+      "color": -11782657
+    }
+  ]
+}
