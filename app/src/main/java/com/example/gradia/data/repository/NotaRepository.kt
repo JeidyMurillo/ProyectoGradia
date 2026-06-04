@@ -35,4 +35,10 @@ class NotaRepository(private val notaDao: NotaDao) {
 
     suspend fun getPorcentajeTotal(asignaturaId: Long): Float =
         notaDao.getPorcentajeTotal(asignaturaId) ?: 0f
+
+    fun getNotasByUserAndDateRange(userId: String, fechaInicio: Long, fechaFin: Long): Flow<List<Nota>> =
+        notaDao.getNotasByUserAndDateRange(userId, fechaInicio, fechaFin)
+
+    suspend fun getAllNotasConRecordatorioPendientesSync(now: Long): List<Nota> =
+        notaDao.getAllNotasConRecordatorioPendientesSync(now)
 }

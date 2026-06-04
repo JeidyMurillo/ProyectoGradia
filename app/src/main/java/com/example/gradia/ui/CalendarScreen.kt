@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.gradia.R
@@ -360,6 +361,10 @@ private fun ActivityCard(activity: CalendarActivity) {
             if (isDark) DarkEventosBg else EventosBg,
             if (isDark) Color(0xFFA5D6A7) else Color(0xFF43A047), R.drawable.calendar
         )
+        "ACTIVIDAD" -> Triple(
+            if (isDark) DarkEventTareasBg else EventTareasBg,
+            if (isDark) Color(0xFFCE93D8) else Color(0xFF7B1FA2), R.drawable.calendar
+        )
         else -> Triple(
             if (isDark) DarkEventParcialBg else EventParcialBg,
             Color(0xFF2C2C2C), R.drawable.document
@@ -370,6 +375,7 @@ private fun ActivityCard(activity: CalendarActivity) {
         "EVALUACION" -> if (isDark) DarkOnSurface else Color(0xFFC62828)
         "TAREA" -> if (isDark) DarkOnSurface else Color(0xFF1565C0)
         "ENTREGA" -> if (isDark) DarkOnSurface else Color(0xFF2E7D32)
+        "ACTIVIDAD" -> if (isDark) DarkOnSurface else Color(0xFF7B1FA2)
         else -> MaterialTheme.colorScheme.onSurface
     }
 
@@ -432,7 +438,9 @@ private fun ActivityCard(activity: CalendarActivity) {
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontFamily = InterFontFamily,
                             fontSize = 11.sp
-                        )
+                        ),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
 
@@ -447,10 +455,16 @@ private fun ActivityCard(activity: CalendarActivity) {
                     "EVALUACION" -> "Parcial"
                     "TAREA" -> "Tarea"
                     "ENTREGA" -> "Evento"
+                    "ACTIVIDAD" -> "Actividad"
                     else -> activity.tipo
                 }
+                val prioridadTexto = if (activity.esActividad) {
+                    if (activity.prioridad == "PENDIENTE") "Sin calificar" else "Calificada"
+                } else {
+                    "Prioridad: $prioridadLabel"
+                }
                 Text(
-                    text = "$tipoLabel — Prioridad: $prioridadLabel",
+                    text = "$tipoLabel — $prioridadTexto",
                     style = MaterialTheme.typography.bodySmall.copy(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontFamily = InterFontFamily,
@@ -541,6 +555,10 @@ private fun UpcomingActivityCard(activity: CalendarActivity) {
             if (isDark) DarkEventosBg else EventosBg,
             if (isDark) Color(0xFFA5D6A7) else Color(0xFF43A047), R.drawable.calendar
         )
+        "ACTIVIDAD" -> Triple(
+            if (isDark) DarkEventTareasBg else EventTareasBg,
+            if (isDark) Color(0xFFCE93D8) else Color(0xFF7B1FA2), R.drawable.calendar
+        )
         else -> Triple(
             if (isDark) DarkEventParcialBg else EventParcialBg,
             Color(0xFF2C2C2C), R.drawable.document
@@ -551,6 +569,7 @@ private fun UpcomingActivityCard(activity: CalendarActivity) {
         "EVALUACION" -> if (isDark) DarkOnSurface else Color(0xFFC62828)
         "TAREA" -> if (isDark) DarkOnSurface else Color(0xFF1565C0)
         "ENTREGA" -> if (isDark) DarkOnSurface else Color(0xFF2E7D32)
+        "ACTIVIDAD" -> if (isDark) DarkOnSurface else Color(0xFF7B1FA2)
         else -> MaterialTheme.colorScheme.onSurface
     }
 
@@ -606,6 +625,7 @@ private fun UpcomingActivityCard(activity: CalendarActivity) {
                     "EVALUACION" -> "Parcial"
                     "TAREA" -> "Tarea"
                     "ENTREGA" -> "Evento"
+                    "ACTIVIDAD" -> "Actividad"
                     else -> activity.tipo
                 }
                 Text(
@@ -617,7 +637,7 @@ private fun UpcomingActivityCard(activity: CalendarActivity) {
                         fontSize = 11.sp
                     ),
                     maxLines = 2,
-                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis
                 )
             }
         }

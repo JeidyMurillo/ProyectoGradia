@@ -34,7 +34,9 @@ fun Nota.toDomain(): GradeItem = GradeItem(
     name = nombre,
     percentage = porcentaje.toDouble(),
     grade = valor?.toDouble(),
-    icon = icono
+    icon = icono,
+    scheduledDate = fecha,
+    reminderMinutesBefore = recordatorioMinutosAntes
 )
 
 fun GradeItem.toEntity(): Nota = Nota(
@@ -43,5 +45,7 @@ fun GradeItem.toEntity(): Nota = Nota(
     nombre = name,
     valor = grade?.toFloat(),
     porcentaje = percentage.toFloat(),
-    icono = icon
+    icono = icon,
+    fecha = scheduledDate,
+    recordatorioMinutosAntes = reminderMinutesBefore
 )

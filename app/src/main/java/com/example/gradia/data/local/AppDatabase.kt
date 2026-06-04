@@ -20,7 +20,7 @@ import com.example.gradia.data.local.entity.User
 @Database(
     entities = [User::class, Asignatura::class, Nota::class, Evento::class,
         NotaContenidoEntity::class, CategoriaEntity::class, NotaCategoriaCrossRef::class],
-    version = 8,
+    version = 9,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

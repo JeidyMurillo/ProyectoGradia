@@ -40,4 +40,23 @@ interface NotaDao {
 
     @Query("SELECT SUM(porcentaje) FROM notas WHERE asignaturaId = :asignaturaId")
     suspend fun getPorcentajeTotal(asignaturaId: Long): Float?
+
+    @Query("""
+        SELECT n.* FROM notas n
+        INNER JOIN asignaturas a ON n.asignaturaId = a.id
+        WHERE a.userId = :userId AND n.fecha IS NOT NULL AND n.fecha >= :fechaInicio AND n.fecha <= :fechaFin
+        ORDER BY n.fecha ASC
+    """)
+    fun getNotasByUserAndDateRange(userId: String, fechaInicio: Long, fechaFin: Long): Flow<List<Nota>>
+
+    @Query("""
+        SELECT n.* FROM notas n
+        INNER JOIN asignaturas a ON n.asignaturaId = a.id
+        WHERE a.userId = :userId AND n.fecha IS NOT NULL AND n.fecha > :now AND n.recordatorioMinutosAntes > 0
+        ORDER BY n.fecha ASC
+    """)
+    suspend fun getNotasConRecordatorioPendientesSync(userId: String, now: Long): List<Nota>
+
+    @Query("SELECT * FROM notas WHERE fecha IS NOT NULL AND fecha > :now AND recordatorioMinutosAntes > 0 ORDER BY fecha ASC")
+    suspend fun getAllNotasConRecordatorioPendientesSync(now: Long): List<Nota>
 }

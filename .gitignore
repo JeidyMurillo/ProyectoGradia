@@ -56,4 +56,5 @@ fastlane/readme.md
 .gradle/
 
 # IntelliJ
-*.iml
+*.iml 
+gradle_output.txt 
