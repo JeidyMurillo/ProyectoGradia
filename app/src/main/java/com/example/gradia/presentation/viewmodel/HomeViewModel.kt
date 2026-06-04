@@ -18,6 +18,9 @@ import kotlinx.coroutines.flow.stateIn
 
 data class HomeUiState(
     val subjects: List<Subject> = emptyList(),
+    // Promedio actual por asignatura (id -> promedio), para mostrar su barra de
+    // progreso en la tarjeta de Home.
+    val averages: Map<Long, Double> = emptyMap(),
     val generalAverage: Double = 0.0,
     val hasGrades: Boolean = false
 )
@@ -59,13 +62,16 @@ class HomeViewModel(
         subjects: List<Subject>,
         perSubject: List<Pair<Subject, List<GradeItem>>>
     ): HomeUiState {
+        val averages = perSubject.associate { (subject, grades) ->
+            subject.id to calculateCurrentAverage(grades)
+        }
         val contributions = perSubject.mapNotNull { (subject, grades) ->
-            val average = calculateCurrentAverage(grades)
+            val average = averages[subject.id] ?: 0.0
             if (average > 0.0) subject to average else null
         }
 
         if (contributions.isEmpty()) {
-            return HomeUiState(subjects = subjects, generalAverage = 0.0, hasGrades = false)
+            return HomeUiState(subjects = subjects, averages = averages, generalAverage = 0.0, hasGrades = false)
         }
 
         val totalCredits = contributions.sumOf { it.first.creditHours }
@@ -77,6 +83,7 @@ class HomeViewModel(
 
         return HomeUiState(
             subjects = subjects,
+            averages = averages,
             generalAverage = kotlin.math.round(general * 10) / 10,
             hasGrades = true
         )

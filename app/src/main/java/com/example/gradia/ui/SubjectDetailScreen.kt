@@ -40,6 +40,7 @@ import com.example.gradia.domain.model.GradeItem
 import com.example.gradia.domain.model.Subject
 import com.example.gradia.domain.validation.GradeValidation
 import com.example.gradia.presentation.viewmodel.GradeFilter
+import com.example.gradia.presentation.viewmodel.SubjectDetailViewModel
 import com.example.gradia.ui.theme.InterFontFamily
 import com.example.gradia.ui.theme.PurpleGradia
 import com.example.gradia.ui.theme.PurpleGradiaDark
@@ -47,10 +48,11 @@ import com.example.gradia.ui.theme.PurpleGradiaDark
 @Composable
 fun SubjectDetailScreen(
     subjectId: Long,
-    onSubjectDeleted: () -> Unit = {}
+    onSubjectDeleted: () -> Unit = {},
+    externalViewModel: SubjectDetailViewModel? = null
 ) {
     val app = LocalContext.current.applicationContext as GradiaApplication
-    val viewModel = remember(subjectId) { app.provideSubjectDetailViewModel(subjectId) }
+    val viewModel = externalViewModel ?: remember(subjectId) { app.provideSubjectDetailViewModel(subjectId) }
     val state by viewModel.uiState.collectAsState()
     val otherSubjectNames by viewModel.otherSubjectNames.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -362,22 +364,18 @@ private fun CurrentAverageCard(
                         fontFamily = InterFontFamily
                     )
                 }
-                if (hasGrades) {
-                    StatusChip(grade = average)
-                } else {
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .background(MaterialTheme.colorScheme.surface, CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.stats_chart),
-                            contentDescription = null,
-                            tint = PurpleGradia,
-                            modifier = Modifier.size(22.dp)
-                        )
-                    }
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(MaterialTheme.colorScheme.surface, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.stats_chart),
+                        contentDescription = null,
+                        tint = PurpleGradia,
+                        modifier = Modifier.size(22.dp)
+                    )
                 }
             }
             Spacer(modifier = Modifier.height(12.dp))
