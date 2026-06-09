@@ -9,7 +9,7 @@ val PurpleGradiaDark = Color(0xFF4E2570)
 val White = Color(0xFFFFFFFF)
 val GrayTextField = Color(0xFFF7F7F7)
 val GrayBorder = Color(0xFFE0E0E0)
-val GrayText = Color(0xFF9E9E9E)
+val GrayText = Color(0xFF6B6B6B)
 val SocialIconBg = Color(0xFFF3F0F5)
 
 // Dark theme

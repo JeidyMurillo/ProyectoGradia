@@ -234,7 +234,7 @@ fun SingUpScreen(
             val annotatedTermsText = remember(termsPrefix, termsLink) {
                 buildAnnotatedString {
                     withStyle(SpanStyle(
-                        color = Color.Gray,
+                        color = GrayText,
                         fontFamily = InterFontFamily,
                         fontSize = 14.sp
                     )) {
@@ -341,7 +341,7 @@ fun SingUpScreen(
                 Text(
                     text = stringResource(R.string.signup_or),
                     modifier = Modifier.padding(horizontal = 12.dp),
-                    color = Color.Gray,
+                    color = GrayText,
                     style = MaterialTheme.typography.bodyLarge
                 )
                 HorizontalDivider(modifier = Modifier.weight(1f), color = GrayBorder)
@@ -351,7 +351,7 @@ fun SingUpScreen(
 
             Text(
                 text = stringResource(R.string.signup_with),
-                color = Color.Gray,
+                color = GrayText,
                 style = MaterialTheme.typography.bodyLarge
             )
 
@@ -374,7 +374,7 @@ fun SingUpScreen(
 
             Text(
                 text = stringResource(R.string.signup_already_registered),
-                color = Color.Gray,
+                color = GrayText,
                 style = MaterialTheme.typography.bodyLarge
             )
 

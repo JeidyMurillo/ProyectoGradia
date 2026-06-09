@@ -147,7 +147,7 @@ fun LoginScreen(
                 Text(
                     text = stringResource(R.string.login_remember_me),
                     style = MaterialTheme.typography.bodyLarge,
-                    color = Color.Gray,
+                    color = GrayText,
                     modifier = Modifier.clickable { rememberMe = !rememberMe }
                 )
             }
@@ -205,7 +205,7 @@ fun LoginScreen(
                 Text(
                     text = stringResource(R.string.login_or),
                     modifier = Modifier.padding(horizontal = 12.dp),
-                    color = Color.Gray,
+                    color = GrayText,
                     style = MaterialTheme.typography.bodyLarge
                 )
                 HorizontalDivider(modifier = Modifier.weight(1f), color = GrayBorder)
@@ -215,7 +215,7 @@ fun LoginScreen(
 
             Text(
                 text = stringResource(R.string.login_with),
-                color = Color.Gray,
+                color = GrayText,
                 style = MaterialTheme.typography.bodyLarge
             )
 
@@ -238,7 +238,7 @@ fun LoginScreen(
 
             Text(
                 text = stringResource(R.string.login_not_registered),
-                color = Color.Gray,
+                color = GrayText,
                 style = MaterialTheme.typography.bodyLarge
             )
 

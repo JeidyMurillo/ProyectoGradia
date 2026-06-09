@@ -55,6 +55,7 @@ import com.example.gradia.presentation.viewmodel.SubjectDetailViewModel
 import com.example.gradia.ui.theme.InterFontFamily
 import com.example.gradia.ui.theme.PurpleGradia
 import com.example.gradia.ui.theme.PurpleGradiaDark
+import java.util.Locale
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
@@ -373,7 +374,7 @@ private fun CurrentAverageCard(
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
-                        text = "%.1f".format(average),
+                        text = String.format(Locale.US, "%.1f", average),
                         fontSize = 38.sp,
                         fontWeight = FontWeight.ExtraBold,
                         color = PurpleGradia,
@@ -570,7 +571,7 @@ private fun GradeRowContent(item: GradeItem, isPending: Boolean) {
         ) {
             if (item.grade != null) {
                 Text(
-                    text = "%.1f".format(item.grade),
+                    text = String.format(Locale.US, "%.1f", item.grade),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface,
@@ -980,7 +981,11 @@ private fun GradeFormSheet(
                 Switch(
                     checked = hasSchedule,
                     onCheckedChange = { hasSchedule = it },
-                    colors = SwitchDefaults.colors(checkedTrackColor = PurpleGradia)
+                    colors = SwitchDefaults.colors(
+                        checkedTrackColor = PurpleGradia,
+                        checkedThumbColor = Color.White,
+                        uncheckedThumbColor = Color(0xFF6B6B6B)
+                    )
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(

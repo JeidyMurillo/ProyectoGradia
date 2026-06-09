@@ -30,6 +30,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.util.Locale
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gradia.GradiaApplication
 import com.example.gradia.R
@@ -63,7 +64,7 @@ fun FinalGradeScreen(viewModel: FinalGradeViewModel = viewModel(
 
     LaunchedEffect(uiState.targetGrade) {
         if (metaInput.isEmpty() && uiState.targetGrade > 0) {
-            metaInput = "%.1f".format(uiState.targetGrade)
+            metaInput = String.format(Locale.US, "%.1f", uiState.targetGrade)
         }
     }
 
@@ -191,10 +192,10 @@ fun FinalGradeScreen(viewModel: FinalGradeViewModel = viewModel(
                             metaInput = ""
                         } else {
                             val lastChar = input.last()
-                            if (lastChar.isDigit() && !input.contains(".") && input.length >= 2) {
+                            if (lastChar.isDigit() && !input.contains(".") && !input.contains(",") && input.length >= 2) {
                                 val intVal = input.toIntOrNull()
                                 if (intVal != null && intVal > 5) {
-                                    metaInput = "%.1f".format(intVal / 10.0)
+                                    metaInput = String.format(Locale.US, "%.1f", intVal / 10.0)
                                 } else {
                                     metaInput = input
                                 }
@@ -259,7 +260,7 @@ fun FinalGradeScreen(viewModel: FinalGradeViewModel = viewModel(
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
-                            text = "%.1f".format(uiState.currentAverage),
+                            text = String.format(Locale.US, "%.1f", uiState.currentAverage),
                             style = TextStyle(fontSize = 15.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface),
                             fontFamily = InterFontFamily
                         )
@@ -385,12 +386,12 @@ fun FinalGradeScreen(viewModel: FinalGradeViewModel = viewModel(
                 if (metaInput.isBlank()) {
                     viewModel.setError(context.getString(R.string.final_invalid_meta))
                 } else {
-                    val metaValue = metaInput.toDoubleOrNull()
+                    val metaValue = metaInput.replace(",", ".").toDoubleOrNull()
                     if (metaValue == null) {
                         viewModel.setError(context.getString(R.string.final_invalid_meta))
                     } else {
                         if (!metaInput.contains(".")) {
-                            metaInput = "%.1f".format(metaValue)
+                            metaInput = String.format(Locale.US, "%.1f", metaValue)
                         }
                         viewModel.updateTargetGrade(metaValue)
                         viewModel.calculateRequiredGrade(currentActivity?.id)
@@ -486,31 +487,40 @@ private fun ResultCard(
     val resultText = when (result) {
         is RequiredGradeResult.Success -> buildAnnotatedString {
             append(needStr)
+            append(" ")
             withStyle(style = SpanStyle(fontWeight = FontWeight.ExtraBold, color = PurpleGradia, fontSize = 20.sp)) {
-                append("%.1f".format(result.grade))
+                append(String.format(Locale.US, "%.1f", result.grade))
             }
             if (hasSelectedActivity && pendingCount > 1) {
+                append(" ")
                 append(inStr)
+                append(" ")
                 withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = onSurface)) {
                     append(activityName)
                 }
                 append(" (asumiendo 5.0 en las otras ${pendingCount - 1})")
             } else if (hasSelectedActivity) {
+                append(" ")
                 append(inStr)
+                append(" ")
                 withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = onSurface)) {
                     append(activityName)
                 }
             } else if (pendingCount > 1) {
                 append(" en las ${pendingCount} actividades restantes")
             } else {
+                append(" ")
                 append(inStr)
+                append(" ")
                 withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = onSurface)) {
                     append(activityName)
                 }
             }
+            append(" ")
             append(toReachStr)
+            append(" ")
             withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = onSurface)) {
-                append("%.1f".format(targetGrade))
+                append(String.format(Locale.US, "%.1f", targetGrade))
             }
         }
         RequiredGradeResult.AlreadyAchieved -> buildAnnotatedString {
@@ -525,7 +535,7 @@ private fun ResultCard(
                 }
                 append(" para llegar a ")
                 withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = onSurface)) {
-                    append("%.1f".format(targetGrade))
+                    append(String.format(Locale.US, "%.1f", targetGrade))
                 }
             } else {
                 withStyle(style = SpanStyle(fontWeight = FontWeight.ExtraBold, color = PurpleGradia, fontSize = 18.sp)) {
@@ -533,7 +543,7 @@ private fun ResultCard(
                 }
                 append("\nTu promedio actual ya supera ")
                 withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = onSurface)) {
-                    append("%.1f".format(targetGrade))
+                    append(String.format(Locale.US, "%.1f", targetGrade))
                 }
             }
         }
@@ -541,8 +551,9 @@ private fun ResultCard(
             withStyle(style = SpanStyle(fontWeight = FontWeight.ExtraBold, color = Color.Red, fontSize = 18.sp)) {
                 append(impossibleStr)
             }
+            append(" ")
             withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = onSurface)) {
-                append("%.1f".format(targetGrade))
+                append(String.format(Locale.US, "%.1f", targetGrade))
             }
             if (hasSelectedActivity && pendingCount > 1) {
                 append("\nNi con 5.0 en ")
@@ -556,9 +567,11 @@ private fun ResultCard(
         }
         RequiredGradeResult.NoRemainingPercentage -> buildAnnotatedString {
             append(noRemainingStr)
+            append(" ")
             withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = onSurface)) {
                 append(remainingPercentageStr)
             }
+            append(" ")
             append(toEvaluateStr)
         }
     }

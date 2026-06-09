@@ -32,6 +32,7 @@ import com.example.gradia.presentation.viewmodel.StatsUiState
 import com.example.gradia.presentation.viewmodel.StatsViewModel
 import com.example.gradia.ui.theme.InterFontFamily
 import com.example.gradia.ui.theme.PurpleGradia
+import java.util.Locale
 
 @Composable
 fun StatsScreen(
@@ -111,7 +112,7 @@ private fun AverageCard(
     trend: Double,
     modifier: Modifier = Modifier
 ) {
-    val trendText = if (trend >= 0) "+%.1f".format(trend) else "%.1f".format(trend)
+    val trendText = if (trend >= 0) String.format(Locale.US, "+%.1f", trend) else String.format(Locale.US, "%.1f", trend)
     val trendColor = if (trend >= 0) Color(0xFF34C759) else MaterialTheme.colorScheme.error
 
     Card(
@@ -140,7 +141,7 @@ private fun AverageCard(
                 verticalAlignment = Alignment.Bottom
             ) {
                 Text(
-                    "%.1f".format(average),
+                    String.format(Locale.US, "%.1f", average),
                     style = MaterialTheme.typography.headlineLarge.copy(
                         fontWeight = FontWeight.Bold,
                         color = PurpleGradia,
@@ -427,7 +428,7 @@ private fun RecentMilestonesCard(
                     Spacer(modifier = Modifier.height(4.dp))
                     if (bestGradeName.isNotEmpty()) {
                         Text(
-                            stringResource(R.string.stats_best_grade, "%.1f".format(bestGradeValue), bestGradeName),
+                            stringResource(R.string.stats_best_grade, String.format(Locale.US, "%.1f", bestGradeValue), bestGradeName),
                             style = MaterialTheme.typography.bodySmall.copy(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontFamily = InterFontFamily

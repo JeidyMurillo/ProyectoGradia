@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.gradia.BuildConfig
 import com.example.gradia.R
+import com.example.gradia.ui.theme.GrayText
 import com.example.gradia.ui.theme.PurpleGradia
 import com.example.gradia.ui.theme.InterFontFamily
 import com.example.gradia.util.LocaleHelper
@@ -159,16 +160,16 @@ fun SettingsScreen(
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         stringResource(R.string.about_description),
-                        color = Color.Gray
+                        color = GrayText
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(stringResource(R.string.about_team), fontWeight = FontWeight.Medium)
-                    Text("- Karol T. Burbano N.", color = Color.Gray)
-                    Text("- Sebastian Castro R.", color = Color.Gray)
-                    Text("- Verónica L. Mujica G.", color = Color.Gray)
-                    Text("- Sofía C. Quenoran", color = Color.Gray)
-                    Text("- Andrés F. Salcedo B.", color = Color.Gray)
-                    Text("- Jeidy N. Murillo M.", color = Color.Gray)
+                    Text("- Karol T. Burbano N.", color = GrayText)
+                    Text("- Sebastian Castro R.", color = GrayText)
+                    Text("- Verónica L. Mujica G.", color = GrayText)
+                    Text("- Sofía C. Quenoran", color = GrayText)
+                    Text("- Andrés F. Salcedo B.", color = GrayText)
+                    Text("- Jeidy N. Murillo M.", color = GrayText)
                 }
             },
             confirmButton = {
@@ -225,7 +226,7 @@ fun SettingsScreen(
             text = {
                 Text(
                     stringResource(R.string.privacy_body),
-                    color = Color.Gray
+                    color = GrayText
                 )
             },
             confirmButton = {
@@ -250,7 +251,7 @@ private fun FAQItem(question: String, answer: String) {
         Text(
             text = answer,
             fontSize = 13.sp,
-            color = Color.Gray
+            color = GrayText
         )
         HorizontalDivider(modifier = Modifier.padding(top = 8.dp), color = Color.LightGray.copy(alpha = 0.3f))
     }
@@ -338,7 +339,7 @@ fun SettingsItem(
                 text = value,
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontFamily = InterFontFamily,
-                    color = Color.LightGray
+                    color = GrayText
                 ),
                 modifier = Modifier.padding(end = 8.dp)
             )
