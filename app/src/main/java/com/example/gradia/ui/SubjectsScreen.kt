@@ -199,7 +199,7 @@ private fun FilterPill(
     val isSelected = selected == value
     Surface(
         shape = RoundedCornerShape(50),
-        color = if (isSelected) PurpleGradia else Color(0xFFF3EDF7),
+        color = if (isSelected) PurpleGradia else MaterialTheme.colorScheme.surfaceVariant,
         modifier = Modifier
             .height(32.dp)
             .clickable { onSelected(value) }
@@ -235,8 +235,8 @@ private fun SubjectCard(
                 onLongClick = onLongClick
             ),
         shape = RoundedCornerShape(22.dp),
-        color = Color.White,
-        border = BorderStroke(1.5.dp, Color(0xFFD9C7E8))
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Column(
             modifier = Modifier
@@ -251,7 +251,7 @@ private fun SubjectCard(
                 text = subject.name,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF4A4A4A),
+                color = MaterialTheme.colorScheme.onSurface,
                 fontFamily = InterFontFamily,
                 textAlign = TextAlign.Center,
                 maxLines = 2,
@@ -270,7 +270,7 @@ private fun AddSubjectCard(onClick: () -> Unit) {
             .aspectRatio(1f)
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(22.dp),
-        color = Color(0xFFEAE0F2)
+        color = MaterialTheme.colorScheme.surfaceVariant
     ) {
         Column(
             modifier = Modifier
@@ -282,7 +282,7 @@ private fun AddSubjectCard(onClick: () -> Unit) {
             Icon(
                 imageVector = Icons.Default.Add,
                 contentDescription = "Añadir asignatura",
-                tint = Color(0xFF9C8AAB),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(48.dp)
             )
             Spacer(modifier = Modifier.height(10.dp))
@@ -290,7 +290,7 @@ private fun AddSubjectCard(onClick: () -> Unit) {
                 text = stringResource(R.string.add_subject_card),
                 fontSize = 15.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = Color(0xFF9C8AAB),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontFamily = InterFontFamily,
                 textAlign = TextAlign.Center,
                 lineHeight = 19.sp

@@ -73,7 +73,7 @@ fun SubjectPerformanceScreen(
                 style = MaterialTheme.typography.headlineSmall.copy(
                     fontWeight = FontWeight.ExtraBold,
                     fontFamily = InterFontFamily,
-                    color = Color(0xFF1A1A1A)
+                    color = MaterialTheme.colorScheme.onSurface
                 ),
                 modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
             )
@@ -146,14 +146,14 @@ private fun SemesterFilter(
                     text = label,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = PurpleGradia,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontFamily = InterFontFamily
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Icon(
                     imageVector = Icons.Default.ArrowDropDown,
                     contentDescription = "Filtrar por semestre",
-                    tint = PurpleGradia,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(22.dp)
                 )
             }
@@ -170,7 +170,7 @@ private fun SemesterFilter(
                         fontFamily = InterFontFamily,
                         fontSize = 14.sp,
                         fontWeight = if (selectedSemester == 0) FontWeight.Bold else FontWeight.Normal,
-                        color = if (selectedSemester == 0) PurpleGradia else MaterialTheme.colorScheme.onBackground
+                        color = if (selectedSemester == 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground
                     )
                 },
                 onClick = { onSelect(0) }
@@ -183,7 +183,7 @@ private fun SemesterFilter(
                             fontFamily = InterFontFamily,
                             fontSize = 14.sp,
                             fontWeight = if (selectedSemester == sem) FontWeight.Bold else FontWeight.Normal,
-                            color = if (selectedSemester == sem) PurpleGradia else MaterialTheme.colorScheme.onBackground
+                            color = if (selectedSemester == sem) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground
                         )
                     },
                     onClick = { onSelect(sem) }
@@ -234,7 +234,7 @@ private fun SubjectPerformanceCard(subject: SubjectPerformanceData) {
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold,
                         fontFamily = InterFontFamily,
-                        color = PurpleGradia,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 17.sp
                     ),
                     maxLines = 1,
@@ -275,7 +275,7 @@ private fun SubjectPerformanceCard(subject: SubjectPerformanceData) {
                     text = String.format(Locale.US, "%.1f", subject.currentAverage),
                     style = MaterialTheme.typography.headlineSmall.copy(
                         fontWeight = FontWeight.ExtraBold,
-                        color = Color(0xFF1A1A1A),
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontFamily = InterFontFamily,
                         fontSize = 28.sp
                     )

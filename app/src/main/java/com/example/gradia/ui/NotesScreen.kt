@@ -856,7 +856,7 @@ fun NoteGridItem(
                 Text(
                     text = note.title.ifEmpty { stringResource(R.string.fallback_untitled) },
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             },
             text = {
@@ -883,7 +883,7 @@ fun NoteGridItem(
 
                     Text(
                         text = annotatedText,
-                        style = MaterialTheme.typography.bodyLarge.copy(color = Color.Black)
+                        style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface)
                     )
 
                     if (fullData.imagePaths.isNotEmpty()) {

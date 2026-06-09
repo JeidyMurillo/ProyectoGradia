@@ -136,12 +136,12 @@ fun HomeScreen(
                     TopAppBar(
                         title = {
                             Text(
-                                when (selectedTab) {
-                                    0 -> stringResource(R.string.tab_home)
-                                    1 -> stringResource(R.string.tab_final_grade)
-                                    2 -> stringResource(R.string.tab_add)
-                                    3 -> stringResource(R.string.tab_subjects)
-                                    4 -> stringResource(R.string.tab_calendar)
+                                 when (selectedTab) {
+                                     0 -> stringResource(R.string.tab_home)
+                                     1 -> stringResource(R.string.tab_subjects)
+                                     2 -> stringResource(R.string.tab_add)
+                                     3 -> stringResource(R.string.tab_final_grade)
+                                     4 -> stringResource(R.string.tab_calendar)
                                     5 -> stringResource(R.string.tab_notes)
                                     6 -> stringResource(R.string.tab_tasks)
                                     7 -> stringResource(R.string.tab_settings)
@@ -161,7 +161,7 @@ fun HomeScreen(
                             )
                         },
                         navigationIcon = {
-                            if (selectedTab in 3..7 || selectedTab == 9 || selectedTab == 12 || selectedTab == 13) {
+                            if (selectedTab in 5..7 || selectedTab == 9 || selectedTab == 12 || selectedTab == 13) {
                                 IconButton(onClick = { selectedTab = previousTab }) {
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -182,7 +182,7 @@ fun HomeScreen(
                             }
                         },
                         actions = {
-                            if (selectedTab in 3..7 || selectedTab == 9) {
+                            if (selectedTab in setOf(1, 4, 5, 6, 7, 9)) {
                                 Box {
                                     IconButton(onClick = { showMenu = true }) {
                                         Icon(
@@ -222,7 +222,7 @@ fun HomeScreen(
                                                 }
                                             )
                                         }
-                                        if (selectedTab == 3) {
+                                        if (selectedTab == 1) {
                                             Text(
                                                 text = stringResource(R.string.menu_sort_by),
                                                 fontSize = 12.sp,
@@ -321,7 +321,7 @@ fun HomeScreen(
                                             selectedTab = 13
                                         },
                                         modifier = Modifier
-                                            .background(SocialIconBg, CircleShape)
+.background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
                                             .size(40.dp)
                                     ) {
                                         Icon(
@@ -378,8 +378,7 @@ fun HomeScreen(
                                 selectedTab = 9
                             }
                         )
-                        1 -> FinalGradeScreen()
-                        3 -> SubjectsScreen(
+                        1 -> SubjectsScreen(
                             externalViewModel = subjectsViewModel,
                             onSubjectClick = { subject ->
                                 selectedSubjectId = subject.id
@@ -388,6 +387,7 @@ fun HomeScreen(
                                 selectedTab = 9
                             }
                         )
+                        3 -> FinalGradeScreen()
                         4 -> CalendarScreen(viewModel = calendarViewModel)
                         5 -> NotesScreen(viewModel = notesViewModel)
                         6 -> TasksScreen(viewModel = tasksViewModel)
@@ -581,7 +581,7 @@ private fun SortCheckMenuItem(
 fun QuickAddMenuItem(label: String, iconRes: Int, onClick: () -> Unit) {
     Surface(
         shape = RoundedCornerShape(24.dp),
-        color = Color.White,
+        color = PurpleGradia,
         modifier = Modifier
             .width(220.dp)
             .height(55.dp)
@@ -596,13 +596,13 @@ fun QuickAddMenuItem(label: String, iconRes: Int, onClick: () -> Unit) {
             Icon(
                 painter = painterResource(id = iconRes),
                 contentDescription = null,
-                tint = Color.Unspecified,
+                tint = Color.White,
                 modifier = Modifier.size(26.dp)
             )
             Spacer(modifier = Modifier.width(16.dp))
             Text(
                 text = label,
-                color = PurpleGradia,
+                color = Color.White,
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp,
                 fontFamily = InterFontFamily
@@ -1006,7 +1006,7 @@ fun CircularProgressChart(progress: Float, score: String, status: String) {
                 text = status,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = PurpleGradia
+                color = MaterialTheme.colorScheme.primary
             )
         }
     }
@@ -1039,10 +1039,10 @@ fun SubjectHomeItem(subject: Subject, average: Double = 0.0, onClick: () -> Unit
             Box(
                 modifier = Modifier
                     .size(54.dp)
-                    .background(SocialIconBg, CircleShape),
+                    .background(PurpleGradia, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                SubjectIconRender(type = iconType, tint = PurpleGradia, size = 28.dp)
+                SubjectIconRender(type = iconType, tint = Color.White, size = 28.dp)
             }
 
             Spacer(modifier = Modifier.width(14.dp))
@@ -1122,9 +1122,9 @@ fun GradiaBottomBar(selectedTab: Int, onTabSelected: (Int) -> Unit, isQuickAddOp
             BottomBarItem(
                 isSelected = selectedTab == 1 && !isQuickAddOpen,
                 onClick = { onTabSelected(1) },
-                whiteIconId = R.drawable.calculator_white,
-                purpleIconId = R.drawable.calculator_purple,
-                contentDescription = "Calculator"
+                whiteIconId = R.drawable.books_add_white,
+                purpleIconId = R.drawable.books_add_purple,
+                contentDescription = "Books"
             )
 
             // Special Plus Button (The "Add" icon selected when in Notes or Tasks from Quick Add)
@@ -1154,9 +1154,9 @@ fun GradiaBottomBar(selectedTab: Int, onTabSelected: (Int) -> Unit, isQuickAddOp
             BottomBarItem(
                 isSelected = selectedTab == 3 && !isQuickAddOpen,
                 onClick = { onTabSelected(3) },
-                whiteIconId = R.drawable.books_add_white,
-                purpleIconId = R.drawable.books_add_purple,
-                contentDescription = "Books"
+                whiteIconId = R.drawable.calculator_white,
+                purpleIconId = R.drawable.calculator_purple,
+                contentDescription = "Calculator"
             )
             BottomBarItem(
                 isSelected = selectedTab == 4 && !isQuickAddOpen,
