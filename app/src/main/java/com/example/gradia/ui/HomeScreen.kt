@@ -321,7 +321,7 @@ fun HomeScreen(
                                             selectedTab = 13
                                         },
                                         modifier = Modifier
-                                            .background(SocialIconBg, CircleShape)
+.background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
                                             .size(40.dp)
                                     ) {
                                         Icon(
@@ -581,7 +581,7 @@ private fun SortCheckMenuItem(
 fun QuickAddMenuItem(label: String, iconRes: Int, onClick: () -> Unit) {
     Surface(
         shape = RoundedCornerShape(24.dp),
-        color = Color.White,
+        color = PurpleGradia,
         modifier = Modifier
             .width(220.dp)
             .height(55.dp)
@@ -596,13 +596,13 @@ fun QuickAddMenuItem(label: String, iconRes: Int, onClick: () -> Unit) {
             Icon(
                 painter = painterResource(id = iconRes),
                 contentDescription = null,
-                tint = Color.Unspecified,
+                tint = Color.White,
                 modifier = Modifier.size(26.dp)
             )
             Spacer(modifier = Modifier.width(16.dp))
             Text(
                 text = label,
-                color = PurpleGradia,
+                color = Color.White,
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp,
                 fontFamily = InterFontFamily
@@ -1006,7 +1006,7 @@ fun CircularProgressChart(progress: Float, score: String, status: String) {
                 text = status,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = PurpleGradia
+                color = MaterialTheme.colorScheme.primary
             )
         }
     }
@@ -1039,10 +1039,10 @@ fun SubjectHomeItem(subject: Subject, average: Double = 0.0, onClick: () -> Unit
             Box(
                 modifier = Modifier
                     .size(54.dp)
-                    .background(SocialIconBg, CircleShape),
+                    .background(PurpleGradia, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                SubjectIconRender(type = iconType, tint = PurpleGradia, size = 28.dp)
+                SubjectIconRender(type = iconType, tint = Color.White, size = 28.dp)
             }
 
             Spacer(modifier = Modifier.width(14.dp))

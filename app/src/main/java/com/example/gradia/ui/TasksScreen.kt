@@ -105,7 +105,7 @@ fun TasksScreen(
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold,
                         fontFamily = InterFontFamily,
-                        color = Color(0xFF4A4A4A)
+                        color = MaterialTheme.colorScheme.onSurface
                     ),
                     modifier = Modifier.padding(top = 8.dp)
                 )
@@ -269,8 +269,8 @@ fun CreateTaskCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFF3F0F8)),
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color.LightGray.copy(alpha = 0.5f))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(

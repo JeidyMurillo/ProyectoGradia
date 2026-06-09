@@ -73,7 +73,7 @@ fun SubjectPerformanceScreen(
                 style = MaterialTheme.typography.headlineSmall.copy(
                     fontWeight = FontWeight.ExtraBold,
                     fontFamily = InterFontFamily,
-                    color = Color(0xFF1A1A1A)
+                    color = MaterialTheme.colorScheme.onSurface
                 ),
                 modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
             )
@@ -275,7 +275,7 @@ private fun SubjectPerformanceCard(subject: SubjectPerformanceData) {
                     text = String.format(Locale.US, "%.1f", subject.currentAverage),
                     style = MaterialTheme.typography.headlineSmall.copy(
                         fontWeight = FontWeight.ExtraBold,
-                        color = Color(0xFF1A1A1A),
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontFamily = InterFontFamily,
                         fontSize = 28.sp
                     )
