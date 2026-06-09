@@ -377,7 +377,7 @@ private fun CurrentAverageCard(
                         text = String.format(Locale.US, "%.1f", average),
                         fontSize = 38.sp,
                         fontWeight = FontWeight.ExtraBold,
-                        color = PurpleGradia,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontFamily = InterFontFamily
                     )
                 }
@@ -390,7 +390,7 @@ private fun CurrentAverageCard(
                     Icon(
                         painter = painterResource(id = R.drawable.stats_chart),
                         contentDescription = null,
-                        tint = PurpleGradia,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(22.dp)
                     )
                 }
@@ -402,7 +402,7 @@ private fun CurrentAverageCard(
                     .fillMaxWidth()
                     .height(8.dp)
                     .clip(RoundedCornerShape(4.dp)),
-                color = PurpleGradia,
+                color = MaterialTheme.colorScheme.primary,
                 trackColor = MaterialTheme.colorScheme.surface
             )
             Spacer(modifier = Modifier.height(12.dp))
@@ -410,7 +410,7 @@ private fun CurrentAverageCard(
                 text = message,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = if (hasGrades) PurpleGradiaDark else MaterialTheme.colorScheme.onSurfaceVariant,
+                color = if (hasGrades) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
                 fontFamily = InterFontFamily,
                 lineHeight = 17.sp
             )
@@ -528,14 +528,14 @@ private fun GradeRowContent(item: GradeItem, isPending: Boolean) {
             modifier = Modifier
                 .size(44.dp)
                 .background(
-                    if (isPending) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface,
+                    if (isPending) MaterialTheme.colorScheme.surfaceVariant else PurpleGradia,
                     CircleShape
                 ),
             contentAlignment = Alignment.Center
         ) {
             GradeIconRender(
                 type = resolveGradeIcon(item.icon, item.name),
-                tint = if (isPending) MaterialTheme.colorScheme.onSurfaceVariant else PurpleGradia,
+                tint = if (isPending) MaterialTheme.colorScheme.onSurfaceVariant else Color.White,
                 size = 22.dp
             )
         }
