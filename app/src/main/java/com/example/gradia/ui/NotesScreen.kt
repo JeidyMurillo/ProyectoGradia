@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -793,8 +794,13 @@ fun NoteGridItem(
 ) {
     var showFullNote by remember { mutableStateOf(false) }
     val previewText = RichTextUtil.extractPlainText(note.content)
-    val palette = listOf(0xFFFFE0E0L, 0xFFC6E6FFL, 0xFFC59FE3L)
-    val bgColor = remember(note.id) { Color(palette[note.id.toInt().mod(3).coerceIn(0, 2)]) }
+    val isDark = isSystemInDarkTheme()
+    val palette = if (isDark) {
+        listOf(Color(0xFF5C3A3A), Color(0xFF3A4A5C), Color(0xFF4A3A5C))
+    } else {
+        listOf(Color(0xFFFFE0E0), Color(0xFFC6E6FF), Color(0xFFC59FE3))
+    }
+    val bgColor = remember(note.id, isDark) { palette[note.id.toInt().mod(3).coerceIn(0, 2)] }
 
     Card(
         modifier = modifier
