@@ -38,6 +38,7 @@ import com.facebook.login.LoginResult
 import com.example.gradia.data.local.entity.Asignatura
 import com.example.gradia.data.local.entity.Evento
 import com.example.gradia.data.local.entity.Nota
+import com.example.gradia.ui.theme.GrayText
 import com.example.gradia.ui.theme.InterFontFamily
 import com.example.gradia.ui.theme.PurpleGradia
 import kotlinx.coroutines.Dispatchers
@@ -246,7 +247,7 @@ fun AccountScreen(
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text(stringResource(R.string.status_importing), color = Color.Gray)
+                            Text(stringResource(R.string.status_importing), color = GrayText)
                         }
                     }
                     else -> Text(stringResource(R.string.dialog_import_body))
@@ -281,7 +282,7 @@ fun AccountScreen(
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text(stringResource(R.string.status_deleting_data), color = Color.Gray)
+                            Text(stringResource(R.string.status_deleting_data), color = GrayText)
                         }
                     }
                     else -> {
@@ -361,21 +362,21 @@ fun AccountScreen(
                     Text(stringResource(R.string.dialog_methods_header), fontWeight = FontWeight.Medium)
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(if (hasPassword) "✔" else "○", color = if (hasPassword) Color(0xFF4CAF50) else Color.Gray)
+                        Text(if (hasPassword) "✔" else "○", color = if (hasPassword) Color(0xFF4CAF50) else GrayText)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(stringResource(R.string.provider_email), color = if (hasPassword) Color(0xFF4CAF50) else Color.Gray)
+                        Text(stringResource(R.string.provider_email), color = if (hasPassword) Color(0xFF4CAF50) else GrayText)
                     }
                     Spacer(modifier = Modifier.height(4.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(if (hasGoogle) "✔" else "○", color = if (hasGoogle) Color(0xFF4CAF50) else Color.Gray)
+                        Text(if (hasGoogle) "✔" else "○", color = if (hasGoogle) Color(0xFF4CAF50) else GrayText)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(stringResource(R.string.provider_google), color = if (hasGoogle) Color(0xFF4CAF50) else Color.Gray)
+                        Text(stringResource(R.string.provider_google), color = if (hasGoogle) Color(0xFF4CAF50) else GrayText)
                     }
                     Spacer(modifier = Modifier.height(4.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(if (hasFacebook) "✔" else "○", color = if (hasFacebook) Color(0xFF4CAF50) else Color.Gray)
+                        Text(if (hasFacebook) "✔" else "○", color = if (hasFacebook) Color(0xFF4CAF50) else GrayText)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(stringResource(R.string.provider_facebook), color = if (hasFacebook) Color(0xFF4CAF50) else Color.Gray)
+                        Text(stringResource(R.string.provider_facebook), color = if (hasFacebook) Color(0xFF4CAF50) else GrayText)
                     }
                     Spacer(modifier = Modifier.height(16.dp))
                     if (!hasPassword) {
@@ -445,7 +446,7 @@ fun AccountScreen(
                     }
                     if (providers.size > 1) {
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(stringResource(R.string.info_multiple_methods), color = Color.Gray, fontSize = 12.sp)
+                        Text(stringResource(R.string.info_multiple_methods), color = GrayText, fontSize = 12.sp)
                     }
                 }
             },
@@ -748,7 +749,7 @@ fun AccountSettingsItem(
                     text = subtitle,
                     style = MaterialTheme.typography.bodySmall.copy(
                         fontFamily = InterFontFamily,
-                        color = Color.Gray,
+                        color = GrayText,
                         fontSize = 12.sp
                     )
                 )

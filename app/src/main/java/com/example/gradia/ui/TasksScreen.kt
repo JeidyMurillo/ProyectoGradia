@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import com.example.gradia.R
 import com.example.gradia.presentation.viewmodel.TasksViewModel
 import com.example.gradia.presentation.viewmodel.Urgencia
+import com.example.gradia.ui.theme.GrayText
 import com.example.gradia.ui.theme.InterFontFamily
 import com.example.gradia.ui.theme.PurpleGradia
 import java.text.SimpleDateFormat
@@ -199,7 +200,7 @@ fun TasksScreen(
 
         if (state.tareasProximas.isNotEmpty()) {
             item {
-                SectionHeader(title = stringResource(R.string.section_upcoming), color = Color.Gray)
+                SectionHeader(title = stringResource(R.string.section_upcoming), color = GrayText)
             }
             items(state.tareasProximas, key = { it.id }) { tarea ->
                 TaskCard(
@@ -292,7 +293,7 @@ fun CreateTaskCard(
                         placeholder = {
                             Text(
                                 stringResource(R.string.placeholder_event_name),
-                                color = Color.LightGray,
+                                color = GrayText,
                                 fontSize = 14.sp
                             )
                         },
@@ -322,7 +323,7 @@ fun CreateTaskCard(
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             formatFechaCorta(fecha),
-                            color = if (fecha > 0) Color(0xFF453284) else Color.LightGray,
+                            color = if (fecha > 0) Color(0xFF453284) else GrayText,
                             fontSize = 13.sp,
                             modifier = Modifier.clickable { onFechaClick() }
                         )
@@ -351,7 +352,7 @@ fun CreateTaskCard(
                         Box {
                             Text(
                                 selectedAsignatura?.nombre ?: stringResource(R.string.placeholder_subject_task),
-                                color = if (selectedAsignatura != null) Color(0xFF453284) else Color.LightGray,
+                                color = if (selectedAsignatura != null) Color(0xFF453284) else GrayText,
                                 fontSize = 13.sp,
                                 modifier = Modifier.clickable { onSubjectDropdownChange(true) }
                             )
@@ -369,7 +370,7 @@ fun CreateTaskCard(
                                     )
                                 }
                                 DropdownMenuItem(
-                                    text = { Text(stringResource(R.string.dropdown_none), color = Color.Gray) },
+                                    text = { Text(stringResource(R.string.dropdown_none), color = GrayText) },
                                     onClick = {
                                         onAsignaturaSelected(null)
                                         onSubjectDropdownChange(false)
@@ -389,7 +390,7 @@ fun CreateTaskCard(
                 stringResource(R.string.label_reminder),
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Medium,
-                color = Color.Gray
+                color = GrayText
             )
             Spacer(modifier = Modifier.height(6.dp))
             val opcionesRecordatorio = listOf(
@@ -450,7 +451,7 @@ fun SectionHeader(title: String, count: String? = null, color: Color, isComplete
         )
         if (count != null) {
             Spacer(modifier = Modifier.weight(1f))
-            Text(count, color = Color.LightGray, fontSize = 14.sp)
+            Text(count, color = GrayText, fontSize = 14.sp)
         }
     }
 }
@@ -542,7 +543,7 @@ fun TaskCard(
                         title,
                         style = MaterialTheme.typography.bodyLarge.copy(
                             fontWeight = FontWeight.SemiBold,
-                            color = if (isCompleted) Color.Gray else Color(0xFF4A4A4A)
+                            color = if (isCompleted) GrayText else Color(0xFF4A4A4A)
                         )
                     )
                     if (time != null || subject != null) {
@@ -556,7 +557,7 @@ fun TaskCard(
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text(time, color = Color.Gray, fontSize = 13.sp)
+                                Text(time, color = GrayText, fontSize = 13.sp)
                             }
                             if (subject != null) {
                                 Spacer(modifier = Modifier.width(16.dp))
@@ -567,7 +568,7 @@ fun TaskCard(
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text(subject, color = Color.Gray, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                Text(subject, color = GrayText, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                             }
                         }
                     }

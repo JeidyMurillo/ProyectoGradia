@@ -454,15 +454,15 @@
     <string name="final_percentage_label">Percentage (%)</string>
     <string name="final_invalid_meta">Enter a valid number in the Goal field</string>
     <string name="final_calculate">Calculate Result</string>
-    <string name="final_need">You need a </string>
-    <string name="final_in"> in </string>
-    <string name="final_to_reach"> to reach </string>
+    <string name="final_need">You need a</string>
+    <string name="final_in">in</string>
+    <string name="final_to_reach">to reach</string>
     <string name="final_goal_achievable">Goal achievable!</string>
     <string name="final_already_reached">You already reached your goal!</string>
-    <string name="final_impossible">It is not possible to reach </string>
-    <string name="final_no_remaining">No </string>
+    <string name="final_impossible">It is not possible to reach</string>
+    <string name="final_no_remaining">No</string>
     <string name="final_remaining_percentage">remaining percentage</string>
-    <string name="final_to_evaluate"> left to evaluate</string>
+    <string name="final_to_evaluate">left to evaluate</string>
     <string name="final_disclaimer">Based on the subject\'s standard evaluation system.</string>
 
     <!-- Firebase Errors -->

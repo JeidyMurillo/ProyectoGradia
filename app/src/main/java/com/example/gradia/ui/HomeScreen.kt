@@ -45,6 +45,7 @@ import com.example.gradia.presentation.viewmodel.NotificationsViewModel
 import com.example.gradia.presentation.viewmodel.SubjectSort
 import com.example.gradia.presentation.viewmodel.TasksViewModel
 import com.example.gradia.ui.theme.*
+import java.util.Locale
 import com.example.gradia.ui.AccountScreen
 import com.example.gradia.ui.ProfileScreen
 import kotlinx.coroutines.launch
@@ -847,7 +848,7 @@ fun HomeContent(onSubjectClick: (Subject) -> Unit = {}) {
                     Box(contentAlignment = Alignment.Center) {
                         CircularProgressChart(
                             progress = if (hasGrades) (average / 5.0).toFloat().coerceIn(0f, 1f) else 0f,
-                            score = if (hasGrades) "%.1f".format(average) else "—",
+                            score = if (hasGrades) String.format(Locale.US, "%.1f", average) else "—",
                             status = stringResource(performance.statusResId)
                         )
                     }
@@ -937,7 +938,7 @@ fun EmptySubjectsCard() {
             Text(
                 text = stringResource(R.string.home_empty_body),
                 fontSize = 12.sp,
-                color = Color.Gray,
+                color = GrayText,
                 textAlign = TextAlign.Center,
                 fontFamily = InterFontFamily
             )

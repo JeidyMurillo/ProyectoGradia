@@ -480,15 +480,15 @@
     <string name="final_percentage_label">Porcentaje (%)</string>
     <string name="final_invalid_meta">Ingrese un número válido en el campo Meta</string>
     <string name="final_calculate">Calcular Resultado</string>
-    <string name="final_need">Necesitas un </string>
-    <string name="final_in"> en </string>
-    <string name="final_to_reach"> para alcanzar </string>
+    <string name="final_need">Necesitas un</string>
+    <string name="final_in">en</string>
+    <string name="final_to_reach">para alcanzar</string>
     <string name="final_goal_achievable">¡Meta alcanzable!</string>
     <string name="final_already_reached">¡Ya alcanzaste tu meta!</string>
-    <string name="final_impossible">No es posible alcanzar </string>
-    <string name="final_no_remaining">No hay </string>
+    <string name="final_impossible">No es posible alcanzar</string>
+    <string name="final_no_remaining">No hay</string>
     <string name="final_remaining_percentage">porcentaje restante</string>
-    <string name="final_to_evaluate"> por evaluar</string>
+    <string name="final_to_evaluate">por evaluar</string>
     <string name="final_disclaimer">Basado en el sistema de evaluación estándar de la asignatura.</string>
 
     <!-- Firebase Errors -->

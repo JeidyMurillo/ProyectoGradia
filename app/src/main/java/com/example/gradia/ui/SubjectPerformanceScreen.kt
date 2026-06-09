@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.gradia.ui.theme.InterFontFamily
 import com.example.gradia.ui.theme.PurpleGradia
+import java.util.Locale
 
 // ─── Data model ────────────────────────────────────────────────────────────────
 
@@ -271,7 +272,7 @@ private fun SubjectPerformanceCard(subject: SubjectPerformanceData) {
                     )
                 )
                 Text(
-                    text = "%.1f".format(subject.currentAverage),
+                    text = String.format(Locale.US, "%.1f", subject.currentAverage),
                     style = MaterialTheme.typography.headlineSmall.copy(
                         fontWeight = FontWeight.ExtraBold,
                         color = Color(0xFF1A1A1A),

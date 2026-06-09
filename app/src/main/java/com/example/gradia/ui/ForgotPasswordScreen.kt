@@ -99,7 +99,7 @@ fun ForgotPasswordScreen(
             Text(
                 text = stringResource(R.string.forgot_instruction),
                 style = MaterialTheme.typography.bodyLarge,
-                color = Color.Gray,
+                color = GrayText,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(bottom = 32.dp)
             )
@@ -162,7 +162,7 @@ fun ForgotPasswordScreen(
             Text(
                 text = stringResource(R.string.forgot_hint),
                 style = MaterialTheme.typography.bodyMedium,
-                color = Color.LightGray,
+                color = GrayText,
                 textAlign = TextAlign.Center
             )
 
