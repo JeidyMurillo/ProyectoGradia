@@ -37,6 +37,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -115,8 +116,8 @@ fun SubjectDetailScreen(
                 )
             }
             item {
-                Text(
-                    text = "Calificaciones detalladas",
+                    Text(
+                        text = stringResource(R.string.detail_grades_title),
                     fontSize = 17.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface,
@@ -195,8 +196,8 @@ fun SubjectDetailScreen(
     // ── Confirmar eliminación de asignatura ──
     if (showDeleteSubjectDialog) {
         ConfirmDeleteDialog(
-            title = "Eliminar asignatura",
-            message = "¿Seguro que quieres eliminar \"${state.subject?.name ?: ""}\"? También se eliminarán todas sus calificaciones. Esta acción no se puede deshacer.",
+            title = stringResource(R.string.dialog_delete_subject_title),
+            message = stringResource(R.string.dialog_delete_subject_body, state.subject?.name ?: ""),
             onConfirm = {
                 showDeleteSubjectDialog = false
                 viewModel.deleteSubject { onSubjectDeleted() }
@@ -208,7 +209,7 @@ fun SubjectDetailScreen(
     // ── Confirmar eliminación de nota ──
     gradeToDelete?.let { grade ->
         ConfirmDeleteDialog(
-            title = "Eliminar nota",
+            title = stringResource(R.string.cd_delete_note),
             message = "¿Seguro que quieres eliminar \"${grade.name}\"?",
             onConfirm = {
                 viewModel.deleteGrade(grade)
@@ -253,7 +254,7 @@ private fun SubjectInfoCard(subject: Subject, onEdit: () -> Unit) {
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
-                        text = "Semestre ${subject.semester} · ${subject.creditHours} créditos",
+                        text = stringResource(R.string.detail_subject_info, subject.semester, subject.creditHours),
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontFamily = InterFontFamily
@@ -270,13 +271,13 @@ private fun SubjectInfoCard(subject: Subject, onEdit: () -> Unit) {
                     ) {
                         Icon(
                             imageVector = Icons.Default.Edit,
-                            contentDescription = "Editar asignatura",
+                            contentDescription = stringResource(R.string.detail_edit),
                             tint = PurpleGradia,
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = "Editar",
+                            text = stringResource(R.string.detail_edit),
                             fontSize = 13.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = PurpleGradia,
@@ -333,10 +334,10 @@ private fun ConfirmDeleteDialog(
             Button(
                 onClick = onConfirm,
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-            ) { Text("Eliminar", color = Color.White) }
+            ) { Text(stringResource(R.string.action_delete), color = Color.White) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancelar", color = PurpleGradia) }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel), color = PurpleGradia) }
         }
     )
 }
@@ -363,7 +364,7 @@ private fun CurrentAverageCard(
             ) {
                 Column {
                     Text(
-                        text = "PROMEDIO ACTUAL",
+                        text = stringResource(R.string.detail_current_average),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -416,8 +417,7 @@ private fun CurrentAverageCard(
                 Spacer(modifier = Modifier.height(4.dp))
                 val remaining = (100.0 - evaluatedPercentage).coerceAtLeast(0.0)
                 Text(
-                    text = "Evaluado ${GradeValidation.formatPercentage(evaluatedPercentage)}% · " +
-                        "Falta ${GradeValidation.formatPercentage(remaining)}%",
+                    text = stringResource(R.string.detail_evaluated, GradeValidation.formatPercentage(evaluatedPercentage), GradeValidation.formatPercentage(remaining)),
                     fontSize = 11.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontFamily = InterFontFamily,
@@ -428,14 +428,13 @@ private fun CurrentAverageCard(
     }
 }
 
-/** Mensaje breve y cercano según cómo va el estudiante. Mismos tramos que el chip
- *  de cada nota (0–5) para que la tarjeta y las notas hablen igual. */
+@Composable
 private fun performanceMessage(average: Double, hasGrades: Boolean): String = when {
-    !hasGrades -> "Agrega tu primera nota para ver cómo vas."
-    average < 3.0 -> "Vas en riesgo, ¡aún estás a tiempo de subir!"
-    average < 4.0 -> "Vas aprobando, ¡sigue sumando!"
-    average < 4.5 -> "¡Muy bien! Vas por buen camino."
-    else -> "¡Excelente trabajo, sigue así!"
+    !hasGrades -> stringResource(R.string.detail_empty_hint)
+    average < 3.0 -> stringResource(R.string.detail_risk_message)
+    average < 4.0 -> stringResource(R.string.detail_passing_message)
+    average < 4.5 -> stringResource(R.string.detail_good_message)
+    else -> stringResource(R.string.detail_excellent_message)
 }
 
 @Composable
@@ -448,11 +447,11 @@ private fun FilterChipsRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        FilterPill(label = "Todas las notas", value = GradeFilter.TODAS, selected = selected, onSelected = onSelected)
-        FilterPill(label = "Parciales", value = GradeFilter.PARCIALES, selected = selected, onSelected = onSelected)
-        FilterPill(label = "Talleres", value = GradeFilter.TALLERES, selected = selected, onSelected = onSelected)
-        FilterPill(label = "Finales", value = GradeFilter.FINALES, selected = selected, onSelected = onSelected)
-        FilterPill(label = "Pendientes", value = GradeFilter.PENDIENTES, selected = selected, onSelected = onSelected)
+        FilterPill(label = stringResource(R.string.filter_all_grades), value = GradeFilter.TODAS, selected = selected, onSelected = onSelected)
+        FilterPill(label = stringResource(R.string.filter_midterms), value = GradeFilter.PARCIALES, selected = selected, onSelected = onSelected)
+        FilterPill(label = stringResource(R.string.filter_workshops), value = GradeFilter.TALLERES, selected = selected, onSelected = onSelected)
+        FilterPill(label = stringResource(R.string.filter_finals), value = GradeFilter.FINALES, selected = selected, onSelected = onSelected)
+        FilterPill(label = stringResource(R.string.filter_pending), value = GradeFilter.PENDIENTES, selected = selected, onSelected = onSelected)
     }
 }
 
@@ -557,7 +556,7 @@ private fun GradeRowContent(item: GradeItem, isPending: Boolean) {
                 )
                 Spacer(modifier = Modifier.width(3.dp))
                 Text(
-                    text = "Peso: ${GradeValidation.formatPercentage(item.percentage)}%",
+                    text = stringResource(R.string.grade_weight, GradeValidation.formatPercentage(item.percentage)),
                     fontSize = 11.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontFamily = InterFontFamily
@@ -589,10 +588,10 @@ private fun GradeRowContent(item: GradeItem, isPending: Boolean) {
 @Composable
 private fun StatusChip(grade: Double) {
     val (label, bg, fg) = when {
-        grade < 3.0 -> Triple("REPROBADO", Color(0xFFFFE0E0), MaterialTheme.colorScheme.error)
-        grade < 4.0 -> Triple("REGULAR", Color(0xFFFFF3B0), Color(0xFF8A6D00))
-        grade < 4.5 -> Triple("APROBADO", Color(0xFFCDEFCD), Color(0xFF2E7D32))
-        else -> Triple("EXCELENTE", Color(0xFFBCEFC4), Color(0xFF1B5E20))
+        grade < 3.0 -> Triple(stringResource(R.string.grade_failed), Color(0xFFFFE0E0), MaterialTheme.colorScheme.error)
+        grade < 4.0 -> Triple(stringResource(R.string.grade_regular), Color(0xFFFFF3B0), Color(0xFF8A6D00))
+        grade < 4.5 -> Triple(stringResource(R.string.grade_approved), Color(0xFFCDEFCD), Color(0xFF2E7D32))
+        else -> Triple(stringResource(R.string.grade_excellent), Color(0xFFBCEFC4), Color(0xFF1B5E20))
     }
     Surface(
         shape = RoundedCornerShape(50),
@@ -619,7 +618,7 @@ private fun PendingLabel() {
         )
         Spacer(modifier = Modifier.width(6.dp))
         Text(
-            text = "Pendiente",
+            text = stringResource(R.string.grade_pending),
             fontSize = 12.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontWeight = FontWeight.SemiBold,
@@ -640,7 +639,7 @@ private fun AddGradeButton(onClick: () -> Unit) {
     ) {
         Icon(
             imageVector = Icons.Default.Add,
-            contentDescription = "Agregar nota",
+            contentDescription = stringResource(R.string.quick_add_note),
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.size(28.dp)
         )
@@ -707,18 +706,18 @@ private fun GradeFormSheet(
     val usedByOthers = (totalUsedPercentage - (initial?.percentage ?: 0.0)).coerceAtLeast(0.0)
     val available = (GradeValidation.MAX_TOTAL_PERCENTAGE - usedByOthers).coerceAtLeast(0.0)
 
-    val nameError: String? = if (name.trim().isEmpty()) "Ingresa el nombre de la actividad" else null
+    val nameError: String? = if (name.trim().isEmpty()) stringResource(R.string.error_name_required) else null
     val percentageError: String? = when {
-        percentage.isEmpty() -> "Ingresa el porcentaje"
-        percentageDouble == null || percentageDouble <= 0.0 -> "Debe ser mayor que 0"
-        percentageDouble > GradeValidation.MAX_TOTAL_PERCENTAGE -> "No puede superar el 100%"
+        percentage.isEmpty() -> stringResource(R.string.error_percentage_required)
+        percentageDouble == null || percentageDouble <= 0.0 -> stringResource(R.string.error_percentage_zero)
+        percentageDouble > GradeValidation.MAX_TOTAL_PERCENTAGE -> stringResource(R.string.error_percentage_exceed)
         percentageDouble > available + 0.001 ->
-            "Supera el total. Disponible: ${GradeValidation.formatPercentage(available)}%"
+            stringResource(R.string.error_percentage_available, GradeValidation.formatPercentage(available))
         else -> null
     }
     val gradeError: String? = when {
         grade.isEmpty() -> null
-        gradeDouble == null || gradeDouble !in 0.0..5.0 -> "La nota debe estar entre 0.0 y 5.0"
+        gradeDouble == null || gradeDouble !in 0.0..5.0 -> stringResource(R.string.error_grade_range)
         else -> null
     }
 
@@ -742,10 +741,10 @@ private fun GradeFormSheet(
                         scheduledDate = Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate()
                     }
                     showDatePicker = false
-                }) { Text("Aceptar") }
+                }) { Text(stringResource(R.string.action_accept)) }
             },
             dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) { Text("Cancelar") }
+                TextButton(onClick = { showDatePicker = false }) { Text(stringResource(R.string.action_cancel)) }
             }
         ) {
             DatePicker(state = datePickerState)
@@ -760,16 +759,16 @@ private fun GradeFormSheet(
         )
         AlertDialog(
             onDismissRequest = { showTimePicker = false },
-            title = { Text("Seleccionar hora", fontFamily = InterFontFamily) },
+            title = { Text(stringResource(R.string.select_time), fontFamily = InterFontFamily) },
             text = { TimePicker(state = timePickerState) },
             confirmButton = {
                 TextButton(onClick = {
                     scheduledTime = LocalTime.of(timePickerState.hour, timePickerState.minute)
                     showTimePicker = false
-                }) { Text("Aceptar") }
+                }) { Text(stringResource(R.string.action_accept)) }
             },
             dismissButton = {
-                TextButton(onClick = { showTimePicker = false }) { Text("Cancelar") }
+                TextButton(onClick = { showTimePicker = false }) { Text(stringResource(R.string.action_cancel)) }
             }
         )
     }
@@ -799,7 +798,7 @@ private fun GradeFormSheet(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = if (isEditing) "Editar nota" else "Agregar nota",
+                    text = if (isEditing) "Editar nota" else stringResource(R.string.quick_add_note),
                     fontSize = 22.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = MaterialTheme.colorScheme.onSurface,
@@ -810,7 +809,7 @@ private fun GradeFormSheet(
                         IconButton(onClick = onDelete) {
                             Icon(
                                 painter = painterResource(id = R.drawable.delete),
-                                contentDescription = "Eliminar nota",
+                                contentDescription = stringResource(R.string.cd_delete_note),
                                 tint = MaterialTheme.colorScheme.error,
                                 modifier = Modifier.size(22.dp)
                             )
@@ -819,7 +818,7 @@ private fun GradeFormSheet(
                     IconButton(onClick = onDismiss) {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = "Cerrar",
+                            contentDescription = stringResource(R.string.action_close),
                             tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
@@ -881,7 +880,7 @@ private fun GradeFormSheet(
                     }
                 }
                 Column(modifier = Modifier.weight(1f)) {
-                    SheetFieldLabel("Nombre de la actividad")
+                    SheetFieldLabel(stringResource(R.string.activity_name_label))
                     Spacer(modifier = Modifier.height(8.dp))
                     SheetPillTextField(
                         value = name,
@@ -891,7 +890,7 @@ private fun GradeFormSheet(
                                 nameTouched = true
                             }
                         },
-                        placeholder = "Ej: Parcial"
+                        placeholder = stringResource(R.string.activity_name_placeholder)
                     )
                     if (showNameError) {
                         SheetFieldHint(message = nameError!!, isError = true)
@@ -906,7 +905,7 @@ private fun GradeFormSheet(
                 horizontalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    SheetFieldLabel("Nota (0.0 - 5.0)")
+                    SheetFieldLabel(stringResource(R.string.grade_label))
                     Spacer(modifier = Modifier.height(8.dp))
                     SheetPillTextField(
                         value = grade,
@@ -924,7 +923,7 @@ private fun GradeFormSheet(
                     }
                 }
                 Column(modifier = Modifier.weight(1f)) {
-                    SheetFieldLabel("Porcentaje (%)")
+                    SheetFieldLabel(stringResource(R.string.percentage_label))
                     Spacer(modifier = Modifier.height(8.dp))
                     SheetPillTextField(
                         value = percentage,
@@ -935,7 +934,7 @@ private fun GradeFormSheet(
                                 percentageTouched = true
                             }
                         },
-                        placeholder = "Ej: 12.4",
+                        placeholder = stringResource(R.string.percentage_placeholder),
                         keyboardType = KeyboardType.Decimal,
                         trailingContent = {
                             Text(
@@ -951,7 +950,7 @@ private fun GradeFormSheet(
                         SheetFieldHint(message = percentageError!!, isError = true)
                     } else {
                         SheetFieldHint(
-                            message = "Disponible: ${GradeValidation.formatPercentage(available)}%",
+                            message = stringResource(R.string.available_hint, GradeValidation.formatPercentage(available)),
                             isError = false
                         )
                     }
@@ -965,7 +964,7 @@ private fun GradeFormSheet(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Programar actividad",
+                text = stringResource(R.string.schedule_activity),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -985,7 +984,7 @@ private fun GradeFormSheet(
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
-                    text = "Asignar fecha y hora",
+                    text = stringResource(R.string.assign_datetime),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface,
@@ -1001,7 +1000,7 @@ private fun GradeFormSheet(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        SheetFieldLabel("Fecha")
+                        SheetFieldLabel(stringResource(R.string.date_label))
                         Spacer(modifier = Modifier.height(8.dp))
                         Surface(
                             modifier = Modifier.fillMaxWidth().clickable { showDatePicker = true },
@@ -1036,7 +1035,7 @@ private fun GradeFormSheet(
                         }
                     }
                     Column(modifier = Modifier.weight(1f)) {
-                        SheetFieldLabel("Hora")
+                        SheetFieldLabel(stringResource(R.string.time_label))
                         Spacer(modifier = Modifier.height(8.dp))
                         Surface(
                             modifier = Modifier.fillMaxWidth().clickable { showTimePicker = true },
@@ -1055,7 +1054,7 @@ private fun GradeFormSheet(
                                 ) {
                                     Icon(
                                         painter = painterResource(id = R.drawable.gradia_white_logo),
-                                        contentDescription = "Hora",
+                                        contentDescription = stringResource(R.string.time_label),
                                         tint = Color.White,
                                         modifier = Modifier.size(18.dp)
                                     )
@@ -1092,7 +1091,7 @@ private fun GradeFormSheet(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Recordatorio $reminderMinutes min antes",
+                        text = stringResource(R.string.reminder_format, reminderMinutes),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -1108,10 +1107,10 @@ private fun GradeFormSheet(
                         listOf(15, 30, 60, 120).forEach { mins ->
                             ReminderChip(
                                 label = when (mins) {
-                                    15 -> "15 min"
-                                    30 -> "30 min"
-                                    60 -> "1 hora"
-                                    120 -> "2 horas"
+                                    15 -> stringResource(R.string.reminder_15min)
+                                    30 -> stringResource(R.string.reminder_30min)
+                                    60 -> stringResource(R.string.reminder_1hour)
+                                    120 -> stringResource(R.string.reminder_2hours)
                                     else -> "$mins min"
                                 },
                                 selected = reminderMinutes == mins,
@@ -1169,7 +1168,7 @@ private fun GradeFormSheet(
                     )
                 } else {
                     Text(
-                        text = if (isEditing) "Guardar cambios" else "Guardar nota",
+                        text = if (isEditing) stringResource(R.string.action_save_changes) else stringResource(R.string.action_save_note),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White,

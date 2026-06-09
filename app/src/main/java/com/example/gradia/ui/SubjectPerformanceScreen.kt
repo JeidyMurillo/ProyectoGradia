@@ -1,7 +1,7 @@
 package com.example.gradia.ui
 
-
-
+import androidx.compose.ui.res.stringResource
+import com.example.gradia.R
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
@@ -126,7 +126,7 @@ private fun SemesterFilter(
     onSelect: (Int) -> Unit
 ) {
     val label = if (selectedSemester == 0) "Todos los semestres"
-    else "Semestre $selectedSemester"
+    else stringResource(R.string.dropdown_semester, selectedSemester.toString())
 
     Box(modifier = Modifier.padding(bottom = 8.dp)) {
         Surface(
@@ -178,7 +178,7 @@ private fun SemesterFilter(
                 DropdownMenuItem(
                     text = {
                         Text(
-                            "Semestre $sem",
+                            stringResource(R.string.dropdown_semester, sem.toString()),
                             fontFamily = InterFontFamily,
                             fontSize = 14.sp,
                             fontWeight = if (selectedSemester == sem) FontWeight.Bold else FontWeight.Normal,

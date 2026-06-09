@@ -2,7 +2,6 @@ package com.example.gradia.data.firebase
 
 import android.app.Activity
 import com.facebook.CallbackManager
-import com.facebook.login.LoginBehavior
 import com.facebook.login.LoginManager
 
 object FacebookSignInUtil {
@@ -14,7 +13,6 @@ object FacebookSignInUtil {
 
     fun loginWithAccountPicker(activity: Activity, permissions: List<String>) {
         LoginManager.getInstance().logOut()
-        LoginManager.getInstance().setLoginBehavior(LoginBehavior.WEB_ONLY)
         LoginManager.getInstance().logInWithReadPermissions(activity, permissions)
     }
 }

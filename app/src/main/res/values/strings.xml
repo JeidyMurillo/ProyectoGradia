@@ -63,4 +63,488 @@
         puede contactarnos a través de la sección de soporte dentro de la
         aplicación o escribirnos a soporte@gradia.app.</string>
 
+    <!-- Settings -->
+    <string name="settings_language">Idioma</string>
+    <string name="settings_spanish">Español</string>
+    <string name="settings_english">Inglés</string>
+    <string name="settings_account">Cuenta</string>
+    <string name="settings_help">Ayuda y Soporte</string>
+    <string name="settings_faq">FAQ (Preguntas Frecuentes)</string>
+    <string name="settings_contact">Contacto</string>
+    <string name="settings_rate">Valorar App</string>
+    <string name="settings_share">Compartir App</string>
+    <string name="settings_privacy">Políticas de Privacidad</string>
+    <string name="settings_terms">Términos y Condiciones</string>
+    <string name="settings_about">Acerca de</string>
+
+    <!-- Dialog titles -->
+    <string name="about_title">Acerca de Gradia</string>
+    <string name="about_version">Versión</string>
+    <string name="about_description">Gradia es una aplicación móvil diseñada para que estudiantes universitarios puedan llevar el control de sus notas, materias, metas académicas y progreso personal.</string>
+    <string name="about_team">Integrantes:</string>
+    <string name="close">Cerrar</string>
+
+    <string name="faq_title">Preguntas Frecuentes</string>
+    <string name="faq_q1">¿Cómo agrego una materia?</string>
+    <string name="faq_a1">Ve a la pestaña Materias y presiona el botón + para añadir una nueva materia.</string>
+    <string name="faq_q2">¿Cómo calculo mi nota final?</string>
+    <string name="faq_a2">Usa la calculadora de Nota Final desde el menú principal.</string>
+    <string name="faq_q3">¿Los datos se guardan en la nube?</string>
+    <string name="faq_a3">Tus datos se sincronizan con Firebase cuando inicias sesión.</string>
+    <string name="faq_q4">¿Puedo usar Gradia sin internet?</string>
+    <string name="faq_a4">Sí, los datos se almacenan localmente y se sincronizan cuando tengas conexión.</string>
+    <string name="faq_q5">¿Cómo elimino mi cuenta?</string>
+    <string name="faq_a5">Ve a Perfil y selecciona la opción de eliminar cuenta.</string>
+
+    <string name="privacy_title">Políticas de Privacidad</string>
+    <string name="privacy_body">En Gradia, valoramos tu privacidad. Los datos académicos que ingresas (notas, materias, metas) se almacenan localmente en tu dispositivo y, si utilizas sincronización, en servidores protegidos de Firebase.\n\nNo vendemos ni compartimos tu información académica personal con terceros. Podemos recopilar datos de uso anónimos para mejorar la experiencia de la aplicación.\n\nPuedes solicitar la eliminación de tus datos en cualquier momento contactando a soporte@gradia.app.</string>
+
+    <string name="select_language">Seleccionar idioma</string>
+    <string name="language_dialog_title">Idioma</string>
+
+    <!-- Share -->
+    <string name="share_subject">Compartir Gradia</string>
+    <string name="share_text">Descarga Gradia y controla tus notas: https://play.google.com/store/apps/details?id=com.example.gradia</string>
+
+    <!-- Email subject -->
+    <string name="email_subject_help">Ayuda y Soporte - Gradia</string>
+    <string name="email_subject_contact">Contacto - Gradia</string>
+
+    <!-- Welcome -->
+    <string name="welcome_slogan">Controla tus notas,\ndomina tu semestre.</string>
+    <string name="welcome_login">Iniciar Sesión</string>
+    <string name="welcome_register">Registrarse</string>
+
+    <!-- Login -->
+    <string name="login_title">Iniciar Sesión</string>
+    <string name="login_email_placeholder">Correo Electrónico</string>
+    <string name="login_password_placeholder">Contraseña</string>
+    <string name="login_remember_me">Recuérdame</string>
+    <string name="login_forgot_password">¿Olvidaste tu contraseña?</string>
+    <string name="login_button">Inicia Sesión</string>
+    <string name="login_or"> o </string>
+    <string name="login_with">Inicia sesión con:</string>
+    <string name="login_not_registered">¿Aún no estás registrado?</string>
+    <string name="login_go_register">Regístrate</string>
+
+    <!-- Sign Up -->
+    <string name="signup_title">Registrarse</string>
+    <string name="signup_name_placeholder">Nombre</string>
+    <string name="signup_email_placeholder">Correo Electrónico</string>
+    <string name="signup_password_placeholder">Contraseña</string>
+    <string name="signup_password_weak">Débil</string>
+    <string name="signup_password_medium">Media</string>
+    <string name="signup_password_strong">Fuerte</string>
+    <string name="signup_password_strength">Seguridad: %s</string>
+    <string name="signup_terms_prefix">He leído y acepto los </string>
+    <string name="signup_terms_link">Términos y Condiciones.</string>
+    <string name="signup_terms_snackbar">Primero lee los Términos y Condiciones</string>
+    <string name="signup_button">Registrarse</string>
+    <string name="signup_or"> o </string>
+    <string name="signup_with">Registrarse con:</string>
+    <string name="signup_already_registered">¿Ya estás registrado?</string>
+    <string name="signup_go_login">Iniciar Sesión</string>
+
+    <!-- Forgot Password -->
+    <string name="forgot_title">Recuperar Contraseña</string>
+    <string name="forgot_instruction">Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.</string>
+    <string name="forgot_email_placeholder">Correo Electrónico</string>
+    <string name="forgot_button">Enviar enlace</string>
+    <string name="forgot_hint">Revisa tu bandeja de entrada y sigue las instrucciones del enlace.</string>
+
+    <!-- Validation Errors -->
+    <string name="error_email_blank">Ingresa tu correo electrónico</string>
+    <string name="error_email_invalid">El correo electrónico no es válido</string>
+    <string name="error_password_blank">Ingresa tu contraseña</string>
+    <string name="error_password_short">La contraseña debe tener al menos 6 caracteres</string>
+    <string name="error_name_blank">Ingresa tu nombre</string>
+    <string name="error_password_strength">La contraseña debe tener mayúsculas, minúsculas, número, carácter especial y al menos 8 caracteres</string>
+    <string name="error_terms_required">Debes aceptar los términos y condiciones</string>
+
+    <!-- Profile -->
+    <string name="profile_name">Nombre</string>
+    <string name="profile_email">Correo</string>
+    <string name="profile_career">Carrera</string>
+    <string name="profile_current_semester">Semestre actual - Número:</string>
+    <string name="profile_password">Contraseña</string>
+    <string name="profile_save">Guardar</string>
+    <string name="profile_edit">Editar</string>
+    <string name="profile_cancel">Cancelar</string>
+    <string name="profile_change_password">Cambiar contraseña</string>
+    <string name="profile_current_password">Contraseña actual</string>
+    <string name="profile_new_password">Nueva contraseña</string>
+    <string name="profile_confirm_password">Confirmar nueva contraseña</string>
+    <string name="profile_changing">Cambiando...</string>
+    <string name="profile_error_current_password">Ingresa tu contraseña actual</string>
+    <string name="profile_error_new_password_short">La nueva contraseña debe tener al menos 6 caracteres</string>
+    <string name="profile_error_passwords_mismatch">Las nuevas contraseñas no coinciden</string>
+    <string name="profile_error_wrong_password">Contraseña actual incorrecta</string>
+
+    <!-- Home -->
+    <string name="home_default_username">Usuario</string>
+    <string name="tab_home">Home</string>
+    <string name="tab_final_grade">Nota Final</string>
+    <string name="tab_add">Añadir</string>
+    <string name="tab_subjects">Materias</string>
+    <string name="tab_calendar">Calendario</string>
+    <string name="tab_notes">Notas</string>
+    <string name="tab_tasks">Tareas</string>
+    <string name="tab_settings">Ajustes</string>
+    <string name="tab_profile">Perfil</string>
+    <string name="tab_subject">Materia</string>
+    <string name="tab_statistics">Estadísticas</string>
+    <string name="tab_performance">Rendimiento</string>
+    <string name="tab_notifications">Notificaciones</string>
+    <string name="menu_delete_selected">Eliminar seleccionadas (%d)</string>
+    <string name="menu_manage_categories">Gestionar categorías</string>
+    <string name="menu_sort_by">Ordenar por</string>
+    <string name="sort_name_az">Nombre (A–Z)</string>
+    <string name="sort_semester">Semestre</string>
+    <string name="sort_credits_desc">Créditos (mayor a menor)</string>
+    <string name="sort_average_desc">Promedio (mayor a menor)</string>
+    <string name="sort_grades_header">Ordenar notas</string>
+    <string name="sort_default">Predeterminado</string>
+    <string name="sort_grade_desc">Nota (mayor a menor)</string>
+    <string name="sort_weight_desc">Peso (mayor a menor)</string>
+    <string name="sort_pending_first">Pendientes primero</string>
+    <string name="coming_soon">Próximamente</string>
+    <string name="dialog_manage_categories">Gestionar categorías</string>
+    <string name="dialog_no_categories">No hay categorías creadas.</string>
+    <string name="action_delete">Eliminar</string>
+    <string name="action_close">Cerrar</string>
+    <string name="action_cancel">Cancelar</string>
+    <string name="quick_add_note">Agregar nota</string>
+    <string name="quick_add_todo">To-do List</string>
+
+    <!-- Drawer -->
+    <string name="drawer_profile">Perfil</string>
+    <string name="drawer_statistics">Estadísticas</string>
+    <string name="drawer_settings">Ajustes</string>
+    <string name="drawer_light_theme">Tema Claro</string>
+    <string name="drawer_dark_theme">Tema Oscuro</string>
+    <string name="drawer_logout">Cerrar Sesión</string>
+
+    <!-- Home Content -->
+    <string name="home_my_semester">Mi Semestre</string>
+    <string name="home_overall_average">Promedio General</string>
+    <string name="home_subjects">Materias</string>
+    <string name="home_see_less">Ver menos</string>
+    <string name="home_see_all">Ver todas</string>
+    <string name="home_empty_title">Aún no tienes asignaturas</string>
+    <string name="home_empty_body">Ve a \"Materias\" en la barra inferior para crear tu primera asignatura.</string>
+    <string name="status_no_grades">Sin notas</string>
+    <string name="status_low">Bajo</string>
+    <string name="status_average">Regular</string>
+    <string name="status_good">Bien</string>
+    <string name="status_excellent">Excelente</string>
+    <string name="message_no_grades">Aún no has registrado calificaciones.</string>
+    <string name="message_low">Vas por debajo de lo necesario. ¡Aún puedes mejorar!</string>
+    <string name="message_average">Vas aprobando, sigue esforzándote.</string>
+    <string name="message_good">¡Buen rendimiento este ciclo!</string>
+    <string name="message_excellent">¡Excelente rendimiento este ciclo!</string>
+
+    <!-- Account -->
+    <string name="account_profile">Perfil</string>
+    <string name="account_export">Exportar datos</string>
+    <string name="account_export_subtitle">Guarda tus datos en formato JSON</string>
+    <string name="account_import">Importar datos</string>
+    <string name="account_import_subtitle">Restaura datos desde un archivo JSON</string>
+    <string name="account_delete">Eliminar cuenta</string>
+    <string name="account_delete_subtitle">Borra todos tus datos y cierra sesión</string>
+    <string name="account_change_method">Cambiar método de inicio</string>
+    <string name="account_change_method_subtitle">Vincular Google o correo</string>
+    <string name="dialog_export_title">Exportar datos</string>
+    <string name="dialog_export_body">Se exportarán tus materias, notas, eventos y notas personales en formato JSON.</string>
+    <string name="action_export">Exportar</string>
+    <string name="dialog_import_title">Importar datos</string>
+    <string name="dialog_import_body">Selecciona un archivo JSON exportado previamente para restaurar tus datos.</string>
+    <string name="status_importing">Importando datos...</string>
+    <string name="action_select_file">Seleccionar archivo</string>
+    <string name="dialog_delete_title">Eliminar cuenta</string>
+    <string name="dialog_delete_body">¿Estás seguro de que quieres eliminar tu cuenta? Esta acción es irreversible y se borrarán todos tus datos.</string>
+    <string name="dialog_delete_items_header">Se eliminarán:</string>
+    <string name="dialog_delete_subjects">• Materias y notas</string>
+    <string name="dialog_delete_events">• Eventos y tareas</string>
+    <string name="dialog_delete_notes">• Notas personales</string>
+    <string name="dialog_delete_account">• Tu cuenta de Firebase</string>
+    <string name="action_delete_all">Eliminar todo</string>
+    <string name="dialog_methods_title">Métodos de inicio</string>
+    <string name="dialog_methods_header">Métodos vinculados actualmente:</string>
+    <string name="provider_email">Correo electrónico</string>
+    <string name="provider_google">Google</string>
+    <string name="provider_facebook">Facebook</string>
+    <string name="action_link_email">Vincular correo electrónico</string>
+    <string name="action_link_google">Vincular Google</string>
+    <string name="action_link_facebook">Vincular Facebook</string>
+    <string name="info_multiple_methods">Tienes múltiples métodos. Para desvincular uno, elimina la cuenta y vuelve a registrarte.</string>
+    <string name="dialog_link_email_title">Vincular correo</string>
+    <string name="field_email">Correo</string>
+    <string name="field_password">Contraseña</string>
+    <string name="error_fill_fields">Completa todos los campos</string>
+    <string name="action_link">Vincular</string>
+    <string name="success_import">Datos importados correctamente</string>
+    <string name="success_google_linked">Cuenta de Google vinculada correctamente</string>
+    <string name="success_facebook_linked">Cuenta de Facebook vinculada correctamente</string>
+    <string name="success_email_linked">Correo vinculado correctamente</string>
+    <string name="error_no_session">No hay sesión activa</string>
+    <string name="error_cannot_read_file">No se pudo leer el archivo</string>
+    <string name="error_import">Error al importar</string>
+    <string name="error_google_link">Error al vincular Google</string>
+    <string name="error_facebook_link">Error al vincular Facebook</string>
+    <string name="error_link">Error al vincular</string>
+    <string name="error_delete">Error al eliminar cuenta</string>
+    <string name="error_unexpected">Error inesperado</string>
+    <string name="error_unknown">Error desconocido</string>
+
+    <!-- Subjects -->
+    <string name="subjects_hint">Mantén pulsada una asignatura para eliminarla</string>
+    <string name="dialog_delete_subject_title">Eliminar asignatura</string>
+    <string name="dialog_delete_subject_body">¿Seguro que quieres eliminar \"%s\"? También se eliminarán todas sus calificaciones. Esta acción no se puede deshacer.</string>
+    <string name="filter_all_subjects">Todas las asignaturas</string>
+    <string name="filter_current_semester">Semestre Actual</string>
+    <string name="filter_old_subjects">Antiguas</string>
+    <string name="add_subject_card">Añadir\nAsignatura</string>
+    <string name="error_subject_name_required">Ingresa el nombre de la asignatura</string>
+    <string name="error_duplicate_name">Ya existe una asignatura con ese nombre</string>
+    <string name="error_credits_required">Ingresa los créditos (de %1$d a %2$d)</string>
+    <string name="error_credits_range">Debe ser un número entre %1$d y %2$d</string>
+    <string name="sheet_title_edit_subject">Editar Asignatura</string>
+    <string name="sheet_title_add_subject">Agregar Asignatura</string>
+    <string name="field_subject_name">Nombre de la Asignatura</string>
+    <string name="placeholder_subject_name">Ej: Español</string>
+    <string name="field_credits">N° de Créditos</string>
+    <string name="placeholder_credits">min: 1 - max: 6</string>
+    <string name="field_semester">Semestre</string>
+    <string name="field_professor">Nombre del profesor</string>
+    <string name="placeholder_professor">Ej: Mauricio</string>
+    <string name="field_classroom">Salón de Clases</string>
+    <string name="placeholder_classroom">Ej: Sala de sistemas 1</string>
+    <string name="action_save_changes">Guardar cambios</string>
+    <string name="action_save_subject">Guardar Asignatura</string>
+    <string name="dropdown_semester">Semestre %s</string>
+
+    <!-- Subject Detail -->
+    <string name="detail_grades_title">Calificaciones detalladas</string>
+    <string name="detail_subject_info">Semestre %1$d · %2$d créditos</string>
+    <string name="detail_edit">Editar</string>
+    <string name="detail_current_average">PROMEDIO ACTUAL</string>
+    <string name="detail_evaluated">Evaluado %1$s%% · Falta %2$s%%</string>
+    <string name="detail_empty_hint">Agrega tu primera nota para ver cómo vas.</string>
+    <string name="detail_risk_message">Vas en riesgo, ¡aún estás a tiempo de subir!</string>
+    <string name="detail_passing_message">Vas aprobando, ¡sigue sumando!</string>
+    <string name="detail_good_message">¡Muy bien! Vas por buen camino.</string>
+    <string name="detail_excellent_message">¡Excelente trabajo, sigue así!</string>
+    <string name="filter_all_grades">Todas las notas</string>
+    <string name="filter_midterms">Parciales</string>
+    <string name="filter_workshops">Talleres</string>
+    <string name="filter_finals">Finales</string>
+    <string name="filter_pending">Pendientes</string>
+    <string name="grade_weight">Peso: %s%%</string>
+    <string name="grade_failed">REPROBADO</string>
+    <string name="grade_regular">REGULAR</string>
+    <string name="grade_approved">APROBADO</string>
+    <string name="grade_excellent">EXCELENTE</string>
+    <string name="grade_pending">Pendiente</string>
+    <string name="error_name_required">Ingresa el nombre de la actividad</string>
+    <string name="error_percentage_required">Ingresa el porcentaje</string>
+    <string name="error_percentage_zero">Debe ser mayor que 0</string>
+    <string name="error_percentage_exceed">No puede superar el 100%</string>
+    <string name="error_percentage_available">Supera el total. Disponible: %s%%</string>
+    <string name="error_grade_range">La nota debe estar entre 0.0 y 5.0</string>
+    <string name="activity_name_label">Nombre de la actividad</string>
+    <string name="activity_name_placeholder">Ej: Parcial</string>
+    <string name="grade_label">Nota (0.0 - 5.0)</string>
+    <string name="percentage_label">Porcentaje (%)</string>
+    <string name="percentage_placeholder">Ej: 12.4</string>
+    <string name="available_hint">Disponible: %s%%</string>
+    <string name="schedule_activity">Programar actividad</string>
+    <string name="assign_datetime">Asignar fecha y hora</string>
+    <string name="date_label">Fecha</string>
+    <string name="time_label">Hora</string>
+    <string name="reminder_format">Recordatorio %d min antes</string>
+    <string name="action_accept">Aceptar</string>
+    <string name="select_time">Seleccionar hora</string>
+
+    <!-- Calendar -->
+    <string name="filter_exam">Parcial</string>
+    <string name="filter_assignment">Tarea</string>
+    <string name="filter_event">Evento</string>
+    <string name="priority_high">Alta</string>
+    <string name="priority_medium">Media</string>
+    <string name="priority_low">Baja</string>
+    <string name="day_sun">Do</string>
+    <string name="day_mon">Lu</string>
+    <string name="day_tue">Ma</string>
+    <string name="day_wed">Mi</string>
+    <string name="day_thu">Ju</string>
+    <string name="day_fri">Vi</string>
+    <string name="day_sat">Sa</string>
+    <string name="no_activities_day">No hay actividades programadas para este día</string>
+    <string name="label_subject">Materia: %s</string>
+    <string name="type_exam">Parcial</string>
+    <string name="type_assignment">Tarea</string>
+    <string name="type_event">Evento</string>
+    <string name="type_activity">Actividad</string>
+    <string name="status_unrated">Sin calificar</string>
+    <string name="status_rated">Calificada</string>
+    <string name="priority_label">Prioridad: %s</string>
+    <string name="section_next_7_days">Próximos 7 días</string>
+    <string name="no_activities_next_7">No hay actividades programadas para los próximos 7 días</string>
+    <string name="label_today">Hoy</string>
+    <string name="label_tomorrow">Mañana</string>
+    <string name="label_in_days">En %d días</string>
+
+    <!-- Tasks -->
+    <string name="reminder_15min">15 min</string>
+    <string name="reminder_30min">30 min</string>
+    <string name="reminder_1hour">1 hora</string>
+    <string name="reminder_2hours">2 horas</string>
+    <string name="reminder_1day">1 día</string>
+    <string name="task_edit_title">Editar Tarea:</string>
+    <string name="task_create_title">Crear Tarea:</string>
+    <string name="action_ok">OK</string>
+    <string name="section_today">Hoy</string>
+    <string name="section_upcoming">Próximamente</string>
+    <string name="section_completed">Completadas</string>
+    <string name="label_urgency">URGENCIA</string>
+    <string name="placeholder_event_name">Nombre del evento</string>
+    <string name="placeholder_subject_task">Asignatura</string>
+    <string name="dropdown_none">Ninguna</string>
+    <string name="label_reminder">Recordatorio</string>
+    <string name="task_singular">Tarea</string>
+    <string name="task_plural">Tareas</string>
+
+    <!-- Notes -->
+    <string name="notes_selected">%d seleccionada(s)</string>
+    <string name="dialog_delete_category_title">Eliminar categoría</string>
+    <string name="dialog_delete_category_body">¿Eliminar la categoría \"%s\"? Las notas no se eliminarán, solo se desvincularán.</string>
+    <string name="color_blue">Azul</string>
+    <string name="color_red">Rojo</string>
+    <string name="color_purple">Morado</string>
+    <string name="color_green">Verde</string>
+    <string name="color_yellow">Amarillo</string>
+    <string name="dialog_create_category_title">Nueva categoría</string>
+    <string name="field_name">Nombre</string>
+    <string name="label_color">Color:</string>
+    <string name="action_create">Crear</string>
+    <string name="dialog_edit_category_title">Editar categoría</string>
+    <string name="action_delete_category">Eliminar esta categoría</string>
+    <string name="action_save">Guardar</string>
+    <string name="placeholder_add_text">Añade un texto aquí</string>
+    <string name="action_save_note">Guardar nota</string>
+    <string name="fallback_untitled">Sin título</string>
+    <string name="fallback_no_content">Sin contenido</string>
+    <string name="label_categories">Categorías:</string>
+    <string name="cd_delete_note">Eliminar nota</string>
+    <string name="cd_edit_note">Editar nota</string>
+
+    <!-- Stats -->
+    <string name="stats_no_subjects">Aún no tienes asignaturas registradas</string>
+    <string name="stats_add_grades_hint">Registra notas en tus asignaturas para ver estadísticas</string>
+    <string name="stats_general_average">Promedio General</string>
+    <string name="stats_credits">Créditos</string>
+    <string name="stats_grade_distribution">Distribución de notas</string>
+    <string name="stats_excellent">Excelente (%d)</string>
+    <string name="stats_approved">Aprobado (%d)</string>
+    <string name="stats_regular">Regular (%d)</string>
+    <string name="stats_failed">Reprobado (%d)</string>
+    <string name="stats_grades">Calificaciones</string>
+    <string name="stats_milestones">Hitos recientes</string>
+    <string name="stats_best_average">Mejor promedio: %s</string>
+    <string name="stats_best_grade">Has alcanzado un %1$s en %2$s</string>
+    <string name="stats_view_performance">Ver rendimiento por asignatura</string>
+
+    <!-- Notifications -->
+    <string name="notif_empty_title">Sin notificaciones</string>
+    <string name="notif_empty_body">Todo está al día</string>
+    <string name="notif_reminders_section">Recordatorios</string>
+    <string name="notif_warnings_section">Advertencias académicas</string>
+    <string name="notif_warning_body">Tu promedio parcial es %s. Debes esforzarte más para poder aprobar esta materia.</string>
+    <string name="notif_incomplete_section">Evaluaciones incompletas</string>
+    <string name="notif_incomplete_body">Falta configurar el %d%% restante del plan de evaluación.</string>
+    <string name="notif_achievements_section">Logros</string>
+    <string name="notif_congratulations">¡Felicitaciones!</string>
+    <string name="notif_passing_body">Has aprobado %1$s con un promedio parcial de %2$s. ¡Sigue así!</string>
+    <string name="notif_reminder_body">En %1$s (%2$s)</string>
+    <string name="notif_now">ahora</string>
+
+    <!-- Final Grade -->
+    <string name="final_grade_title">¿Qué necesito sacar?</string>
+    <string name="final_grade_description">Calcula la nota mínima para alcanzar tu meta académica</string>
+    <string name="final_subject_label">Asignatura:</string>
+    <string name="final_select_placeholder">Seleccionar...</string>
+    <string name="final_target_grade">Nota objetivo (Meta):</string>
+    <string name="final_target_placeholder">Ej: 4.5</string>
+    <string name="final_current_average">Promedio actual:</string>
+    <string name="final_pending_activity">Actividad pendiente:</string>
+    <string name="final_percentage_label">Porcentaje (%)</string>
+    <string name="final_invalid_meta">Ingrese un número válido en el campo Meta</string>
+    <string name="final_calculate">Calcular Resultado</string>
+    <string name="final_need">Necesitas un </string>
+    <string name="final_in"> en </string>
+    <string name="final_to_reach"> para alcanzar </string>
+    <string name="final_goal_achievable">¡Meta alcanzable!</string>
+    <string name="final_already_reached">¡Ya alcanzaste tu meta!</string>
+    <string name="final_impossible">No es posible alcanzar </string>
+    <string name="final_no_remaining">No hay </string>
+    <string name="final_remaining_percentage">porcentaje restante</string>
+    <string name="final_to_evaluate"> por evaluar</string>
+    <string name="final_disclaimer">Basado en el sistema de evaluación estándar de la asignatura.</string>
+
+    <!-- Firebase Errors -->
+    <string name="firebase_invalid_email">El correo electrónico no es válido</string>
+    <string name="firebase_wrong_password">Contraseña incorrecta</string>
+    <string name="firebase_user_not_found">No existe una cuenta con este correo</string>
+    <string name="firebase_user_disabled">La cuenta ha sido deshabilitada</string>
+    <string name="firebase_too_many_requests">Demasiados intentos, intenta más tarde</string>
+    <string name="firebase_email_in_use">Este correo electrónico ya está registrado</string>
+    <string name="firebase_weak_password">La contraseña debe tener al menos 6 caracteres</string>
+    <string name="firebase_account_exists">Ya existe una cuenta con este correo usando otro método de inicio de sesión. Inicia sesión con el método que usaste originalmente.</string>
+    <string name="firebase_credential_in_use">Esta credencial ya está vinculada a otra cuenta. Cierra sesión e inicia con esa cuenta.</string>
+    <string name="firebase_provider_linked">Este proveedor ya está vinculado a tu cuenta.</string>
+    <string name="firebase_requires_recent_login">Esta operación requiere que hayas iniciado sesión recientemente. Vuelve a iniciar sesión e inténtalo de nuevo.</string>
+    <string name="firebase_operation_not_allowed">Esta operación no está permitida. Contacta al soporte.</string>
+    <string name="firebase_invalid_credential">La credencial no es válida o ha expirado. Intenta de nuevo.</string>
+    <string name="firebase_network_error">Error de conexión, revisa tu internet</string>
+    <string name="firebase_token_expired">Tu sesión ha expirado. Vuelve a iniciar sesión.</string>
+    <string name="firebase_login_cancelled">Inicio de sesión cancelado</string>
+    <string name="firebase_generic_error">Ocurrió un error, intenta de nuevo</string>
+
+    <!-- Error Handler -->
+    <string name="handler_unexpected_error">Ha ocurrido un error inesperado.</string>
+    <string name="handler_auth_required">Debes iniciar sesión para realizar esta operación.</string>
+    <string name="handler_connection_error">Error de conexión con el servidor. Verifica tu conexión a internet.</string>
+    <string name="handler_network_error">Error de red. Verifica tu conexión a internet.</string>
+    <string name="handler_permission_error">No tienes permiso para realizar esta acción.</string>
+    <string name="handler_already_exists">Este elemento ya existe.</string>
+    <string name="handler_not_found">El elemento solicitado no fue encontrado.</string>
+    <string name="handler_unexpected_retry">Ha ocurrido un error inesperado. Intenta de nuevo.</string>
+
+    <!-- Notification Channel -->
+    <string name="notif_channel_name">Recordatorios</string>
+    <string name="notif_channel_description">Recordatorios de tareas y eventos</string>
+    <string name="notif_reminder_title">Recordatorio de actividad</string>
+    <string name="notif_reminder_task_title">Recordatorio de tarea</string>
+    <string name="notif_mark_complete">Marcar como completada</string>
+
+    <!-- Action strings -->
+    <string name="action_back">Volver</string>
+
+    <!-- Firebase fallback errors -->
+    <string name="firebase_create_user_error">Error al crear usuario</string>
+    <string name="firebase_facebook_login_error">Error al iniciar sesión con Facebook</string>
+    <string name="firebase_google_login_error">Error al iniciar sesión con Google</string>
+    <string name="unknown_google_login_error">Error desconocido al iniciar sesión con Google</string>
+    <string name="unknown_google_register_error">Error desconocido al registrarse con Google</string>
+
+    <!-- Status -->
+    <string name="status_deleting_data">Eliminando datos…</string>
+    <string name="google_register_prompt">No tienes una cuenta con Gradia. Regístrate con Google para continuar.</string>
+    <string name="reset_email_sent">Se ha enviado un enlace de recuperación a tu correo.</string>
+
+    <!-- Recovery Dialog -->
+    <string name="recovery_title">Recuperación completada</string>
+    <string name="recovery_body">La aplicación se cerró inesperadamente en la sesión anterior. Todos tus datos han sido recuperados correctamente.</string>
+    <string name="recovery_dismiss">Entendido</string>
+
 </resources>

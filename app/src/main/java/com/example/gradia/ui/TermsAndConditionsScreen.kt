@@ -26,18 +26,18 @@ fun TermsAndConditionsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Text(
-                        text = "Términos y Condiciones",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = PurpleGradia
-                    )
-                },
+                    title = {
+                        Text(
+                            text = stringResource(R.string.settings_terms),
+                            style = MaterialTheme.typography.titleLarge,
+                            color = PurpleGradia
+                        )
+                    },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Volver",
+                            contentDescription = stringResource(R.string.action_back),
                             tint = PurpleGradia
                         )
                     }

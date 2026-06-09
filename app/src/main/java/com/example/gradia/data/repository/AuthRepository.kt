@@ -4,6 +4,7 @@ import android.util.Log
 import com.example.gradia.data.email.EmailService
 import com.example.gradia.data.firebase.FirebaseAuthService
 import com.example.gradia.data.local.entity.User
+import com.example.gradia.util.ErrorHandler
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -27,10 +28,14 @@ class AuthRepository(
                     val user = saveUserToLocalDb(firebaseUser)
                     Result.success(user)
                 },
-                onFailure = { Result.failure(it) }
+                onFailure = {
+                    val message = ErrorHandler.handle("AuthRepository.signInWithEmail", it)
+                    Result.failure(Exception(message))
+                }
             )
         } catch (e: Exception) {
-            Result.failure(e)
+            val message = ErrorHandler.handle("AuthRepository.signInWithEmail", e)
+            Result.failure(Exception(message))
         }
     }
 
@@ -52,10 +57,14 @@ class AuthRepository(
                     }
                     Result.success(user)
                 },
-                onFailure = { Result.failure(it) }
+                onFailure = {
+                    val message = ErrorHandler.handle("AuthRepository.signUpWithEmail", it)
+                    Result.failure(Exception(message))
+                }
             )
         } catch (e: Exception) {
-            Result.failure(e)
+            val message = ErrorHandler.handle("AuthRepository.signUpWithEmail", e)
+            Result.failure(Exception(message))
         }
     }
 

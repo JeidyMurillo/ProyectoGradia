@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -151,7 +152,7 @@ fun ProfileScreen(
         Spacer(modifier = Modifier.height(32.dp))
 
         ProfileField(
-            label = "Nombre",
+            label = stringResource(R.string.profile_name),
             value = name,
             isEditing = isEditing,
             onValueChange = { name = it }
@@ -160,16 +161,16 @@ fun ProfileScreen(
         Spacer(modifier = Modifier.height(20.dp))
 
         ProfileField(
-            label = "Correo",
+            label = stringResource(R.string.profile_email),
             value = email,
-            isEditing = false,
+            isEditing = isEditing,
             onValueChange = { email = it }
         )
 
         Spacer(modifier = Modifier.height(20.dp))
 
         ProfileField(
-            label = "Carrera",
+            label = stringResource(R.string.profile_career),
             value = career,
             isEditing = isEditing,
             onValueChange = { career = it }
@@ -183,7 +184,7 @@ fun ProfileScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Semestre actual - Número:",
+                text = stringResource(R.string.profile_current_semester),
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontFamily = InterFontFamily,
                     fontWeight = FontWeight.SemiBold,
@@ -256,7 +257,7 @@ Box(
         Spacer(modifier = Modifier.height(20.dp))
 
         PasswordField(
-            label = "Contraseña",
+            label = stringResource(R.string.profile_password),
             value = "",
             isEditing = isEditing,
             onEditClick = { showChangePasswordDialog = true }
@@ -312,7 +313,7 @@ Box(
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = if (isEditing) "Guardar" else "Editar",
+                    text = if (isEditing) stringResource(R.string.profile_save) else stringResource(R.string.profile_edit),
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontWeight = FontWeight.SemiBold,
                         fontFamily = InterFontFamily,
@@ -351,7 +352,7 @@ Box(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "Cancelar",
+                        text = stringResource(R.string.profile_cancel),
                         style = MaterialTheme.typography.bodyMedium.copy(
                             fontWeight = FontWeight.SemiBold,
                             fontFamily = InterFontFamily,
@@ -523,7 +524,7 @@ fun PasswordField(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Edit,
-                            contentDescription = "Cambiar contraseña",
+                            contentDescription = stringResource(R.string.profile_change_password),
                             tint = PurpleGradia,
                             modifier = Modifier.size(18.dp)
                         )
@@ -550,13 +551,14 @@ fun ChangePasswordDialog(
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     AlertDialog(
         onDismissRequest = { if (!isLoading) onDismiss() },
         shape = RoundedCornerShape(24.dp),
         title = {
             Text(
-                "Cambiar contraseña",
+                stringResource(R.string.profile_change_password),
                 fontWeight = FontWeight.Bold,
                 fontFamily = InterFontFamily,
                 color = MaterialTheme.colorScheme.onSurface
@@ -574,7 +576,7 @@ fun ChangePasswordDialog(
                 }
 
                 DialogPasswordField(
-                    label = "Contraseña actual",
+                    label = stringResource(R.string.profile_current_password),
                     value = currentPassword,
                     onValueChange = { currentPassword = it },
                     visible = showCurrentPassword,
@@ -582,7 +584,7 @@ fun ChangePasswordDialog(
                 )
 
                 DialogPasswordField(
-                    label = "Nueva contraseña",
+                    label = stringResource(R.string.profile_new_password),
                     value = newPassword,
                     onValueChange = { newPassword = it },
                     visible = showNewPassword,
@@ -590,7 +592,7 @@ fun ChangePasswordDialog(
                 )
 
                 DialogPasswordField(
-                    label = "Confirmar nueva contraseña",
+                    label = stringResource(R.string.profile_confirm_password),
                     value = confirmPassword,
                     onValueChange = { confirmPassword = it },
                     visible = showConfirmPassword,
@@ -603,9 +605,9 @@ fun ChangePasswordDialog(
                 onClick = {
                     errorMessage = null
                     when {
-                        currentPassword.isBlank() -> errorMessage = "Ingresa tu contraseña actual"
-                        newPassword.length < 6 -> errorMessage = "La nueva contraseña debe tener al menos 6 caracteres"
-                        newPassword != confirmPassword -> errorMessage = "Las nuevas contraseñas no coinciden"
+                        currentPassword.isBlank() -> errorMessage = context.getString(R.string.profile_error_current_password)
+                        newPassword.length < 6 -> errorMessage = context.getString(R.string.profile_error_new_password_short)
+                        newPassword != confirmPassword -> errorMessage = context.getString(R.string.profile_error_passwords_mismatch)
                         else -> {
                             isLoading = true
                             scope.launch {
@@ -615,7 +617,7 @@ fun ChangePasswordDialog(
                                         onPasswordChanged(newPassword)
                                     },
                                     onFailure = { e ->
-                                        errorMessage = e.message ?: "Contraseña actual incorrecta"
+                                        errorMessage = e.message ?: context.getString(R.string.profile_error_wrong_password)
                                     }
                                 )
                                 isLoading = false
@@ -628,7 +630,7 @@ fun ChangePasswordDialog(
                 colors = ButtonDefaults.buttonColors(containerColor = PurpleGradia)
             ) {
                 Text(
-                    if (isLoading) "Cambiando..." else "Cambiar contraseña",
+                    if (isLoading) stringResource(R.string.profile_changing) else stringResource(R.string.profile_change_password),
                     fontFamily = InterFontFamily,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -639,7 +641,7 @@ fun ChangePasswordDialog(
                 onClick = onDismiss,
                 enabled = !isLoading
             ) {
-                Text("Cancelar", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(R.string.profile_cancel), color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     )

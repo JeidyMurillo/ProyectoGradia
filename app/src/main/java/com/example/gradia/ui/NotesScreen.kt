@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.buildAnnotatedString
@@ -106,13 +107,13 @@ fun NotesScreen(viewModel: NotesViewModel? = null) {
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        "${state.selectedNoteIds.size} seleccionada(s)",
+                        stringResource(R.string.notes_selected, state.selectedNoteIds.size),
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp
                     )
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         TextButton(onClick = vm::clearNoteSelection) {
-                            Text("Cancelar", fontSize = 13.sp)
+                            Text(stringResource(R.string.action_cancel), fontSize = 13.sp)
                         }
                         Button(
                             onClick = vm::deleteSelectedNotes,
@@ -120,7 +121,7 @@ fun NotesScreen(viewModel: NotesViewModel? = null) {
                             shape = RoundedCornerShape(8.dp),
                             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
                         ) {
-                            Text("Eliminar", color = Color.White, fontSize = 13.sp)
+                            Text(stringResource(R.string.action_delete), color = Color.White, fontSize = 13.sp)
                         }
                     }
                 }
@@ -225,8 +226,8 @@ fun CategoryRow(
     categoryToDelete?.let { cat ->
         AlertDialog(
             onDismissRequest = { categoryToDelete = null },
-            title = { Text("Eliminar categoría", fontWeight = FontWeight.Bold) },
-            text = { Text("¿Eliminar la categoría \"${cat.name}\"? Las notas no se eliminarán, solo se desvincularán.") },
+            title = { Text(stringResource(R.string.dialog_delete_category_title), fontWeight = FontWeight.Bold) },
+            text = { Text(stringResource(R.string.dialog_delete_category_body, cat.name)) },
             confirmButton = {
                 Button(
                     onClick = {
@@ -234,10 +235,10 @@ fun CategoryRow(
                         categoryToDelete = null
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Red.copy(alpha = 0.8f))
-                ) { Text("Eliminar") }
+                ) { Text(stringResource(R.string.action_delete)) }
             },
             dismissButton = {
-                TextButton(onClick = { categoryToDelete = null }) { Text("Cancelar") }
+                TextButton(onClick = { categoryToDelete = null }) { Text(stringResource(R.string.action_cancel)) }
             }
         )
     }
@@ -278,27 +279,27 @@ fun CreateCategoryDialog(
     var name by remember { mutableStateOf("") }
     var selectedColor by remember { mutableStateOf(0xFFD0EFFF) }
     val colorOptions = listOf(
-        0xFFD0EFFF to "Azul",
-        0xFFFFE0E0 to "Rojo",
-        0xFFD1AFF5 to "Morado",
-        0xFFE0FFD0 to "Verde",
-        0xFFFFF5CC to "Amarillo"
+        0xFFD0EFFF to stringResource(R.string.color_blue),
+        0xFFFFE0E0 to stringResource(R.string.color_red),
+        0xFFD1AFF5 to stringResource(R.string.color_purple),
+        0xFFE0FFD0 to stringResource(R.string.color_green),
+        0xFFFFF5CC to stringResource(R.string.color_yellow)
     )
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Nueva categoría", fontWeight = FontWeight.Bold) },
+        title = { Text(stringResource(R.string.dialog_create_category_title), fontWeight = FontWeight.Bold) },
         text = {
             Column {
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Nombre") },
+                    label = { Text(stringResource(R.string.field_name)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(12.dp))
-                Text("Color:", style = MaterialTheme.typography.bodySmall)
+                Text(stringResource(R.string.label_color), style = MaterialTheme.typography.bodySmall)
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     colorOptions.forEach { (color, _) ->
@@ -324,11 +325,11 @@ fun CreateCategoryDialog(
                 enabled = name.isNotBlank(),
                 colors = ButtonDefaults.buttonColors(containerColor = PurpleGradia)
             ) {
-                Text("Crear")
+                Text(stringResource(R.string.action_create))
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancelar") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
         }
     )
 }
@@ -343,27 +344,27 @@ fun EditCategoryDialog(
     var name by remember { mutableStateOf(category.name) }
     var selectedColor by remember { mutableStateOf(category.color) }
     val colorOptions = listOf(
-        0xFFD0EFFF to "Azul",
-        0xFFFFE0E0 to "Rojo",
-        0xFFD1AFF5 to "Morado",
-        0xFFE0FFD0 to "Verde",
-        0xFFFFF5CC to "Amarillo"
+        0xFFD0EFFF to stringResource(R.string.color_blue),
+        0xFFFFE0E0 to stringResource(R.string.color_red),
+        0xFFD1AFF5 to stringResource(R.string.color_purple),
+        0xFFE0FFD0 to stringResource(R.string.color_green),
+        0xFFFFF5CC to stringResource(R.string.color_yellow)
     )
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Editar categoría", fontWeight = FontWeight.Bold) },
+        title = { Text(stringResource(R.string.dialog_edit_category_title), fontWeight = FontWeight.Bold) },
         text = {
             Column {
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Nombre") },
+                    label = { Text(stringResource(R.string.field_name)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(12.dp))
-                Text("Color:", style = MaterialTheme.typography.bodySmall)
+                Text(stringResource(R.string.label_color), style = MaterialTheme.typography.bodySmall)
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     colorOptions.forEach { (color, _) ->
@@ -390,7 +391,7 @@ fun EditCategoryDialog(
                 ) {
                     Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Eliminar esta categoría")
+                    Text(stringResource(R.string.action_delete_category))
                 }
             }
         },
@@ -400,11 +401,11 @@ fun EditCategoryDialog(
                 enabled = name.isNotBlank(),
                 colors = ButtonDefaults.buttonColors(containerColor = PurpleGradia)
             ) {
-                Text("Guardar")
+                Text(stringResource(R.string.action_save))
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancelar") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
         }
     )
 }
@@ -587,7 +588,7 @@ fun NoteEditorCard(
                     decorationBox = { innerTextField ->
                         if (tfValue.text.isEmpty()) {
                             Text(
-                                "Añade un texto aquí",
+                                stringResource(R.string.placeholder_add_text),
                                 fontSize = 16.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -772,7 +773,7 @@ fun NoteEditorCard(
                     shape = RoundedCornerShape(20.dp),
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp)
                 ) {
-                    Text("Guardar nota", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                    Text(stringResource(R.string.action_save_note), fontWeight = FontWeight.Bold, fontSize = 13.sp)
                 }
             }
         }
@@ -810,7 +811,7 @@ fun NoteGridItem(
                 modifier = Modifier.padding(16.dp)
             ) {
                 Text(
-                    text = note.title.ifEmpty { "Sin título" },
+                    text = note.title.ifEmpty { stringResource(R.string.fallback_untitled) },
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = Color.Black),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -819,7 +820,7 @@ fun NoteGridItem(
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = previewText.ifEmpty { "Sin contenido" },
+                    text = previewText.ifEmpty { stringResource(R.string.fallback_no_content) },
                     style = MaterialTheme.typography.bodySmall.copy(color = Color.Black),
                     maxLines = 4,
                     overflow = TextOverflow.Ellipsis
@@ -853,7 +854,7 @@ fun NoteGridItem(
             onDismissRequest = { showFullNote = false },
             title = {
                 Text(
-                    text = note.title.ifEmpty { "Sin título" },
+                    text = note.title.ifEmpty { stringResource(R.string.fallback_untitled) },
                     fontWeight = FontWeight.Bold,
                     color = Color.Black
                 )
@@ -910,7 +911,7 @@ fun NoteGridItem(
                         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            "Categorías:",
+                            stringResource(R.string.label_categories),
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -945,7 +946,7 @@ fun NoteGridItem(
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.delete),
-                            contentDescription = "Eliminar nota",
+                            contentDescription = stringResource(R.string.cd_delete_note),
                             tint = MaterialTheme.colorScheme.error,
                             modifier = Modifier.size(22.dp)
                         )
@@ -958,7 +959,7 @@ fun NoteGridItem(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Edit,
-                            contentDescription = "Editar nota",
+                            contentDescription = stringResource(R.string.cd_edit_note),
                             tint = PurpleGradia,
                             modifier = Modifier.size(22.dp)
                         )
@@ -966,7 +967,7 @@ fun NoteGridItem(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showFullNote = false }) { Text("Cerrar") }
+                TextButton(onClick = { showFullNote = false }) { Text(stringResource(R.string.action_close)) }
             }
         )
     }

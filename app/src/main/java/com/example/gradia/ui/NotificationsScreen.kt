@@ -18,7 +18,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import com.example.gradia.R
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -49,13 +51,13 @@ fun NotificationsScreen(viewModel: NotificationsViewModel) {
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "Sin notificaciones",
+                    text = stringResource(R.string.notif_empty_title),
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Todo está al día",
+                    text = stringResource(R.string.notif_empty_body),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
                     fontFamily = InterFontFamily
@@ -74,7 +76,7 @@ fun NotificationsScreen(viewModel: NotificationsViewModel) {
     ) {
         if (state.reminders.isNotEmpty()) {
             item {
-                NotificationSectionHeader(title = "Recordatorios")
+                NotificationSectionHeader(title = stringResource(R.string.notif_reminders_section))
             }
             items(state.reminders, key = { "rem_${it.evento.id}" }) { item ->
                 ReminderCard(item)
@@ -83,7 +85,7 @@ fun NotificationsScreen(viewModel: NotificationsViewModel) {
 
         if (state.lowAverages.isNotEmpty()) {
             item {
-                NotificationSectionHeader(title = "Advertencias académicas")
+                NotificationSectionHeader(title = stringResource(R.string.notif_warnings_section))
             }
             items(state.lowAverages, key = { "low_${it.subject.id}" }) { item ->
                 SubjectAlertCard(
@@ -91,14 +93,14 @@ fun NotificationsScreen(viewModel: NotificationsViewModel) {
                     iconTint = Color(0xFFE53935),
                     iconBg = Color(0xFFFFEBEE),
                     title = item.subject.name,
-                    body = "Tu promedio parcial es ${item.average}. Debes esforzarte más para poder aprobar esta materia."
+                    body = stringResource(R.string.notif_warning_body, item.average)
                 )
             }
         }
 
         if (state.incompleteSubjects.isNotEmpty()) {
             item {
-                NotificationSectionHeader(title = "Evaluaciones incompletas")
+                NotificationSectionHeader(title = stringResource(R.string.notif_incomplete_section))
             }
             items(state.incompleteSubjects, key = { "inc_${it.subject.id}" }) { item ->
                 SubjectAlertCard(
@@ -106,22 +108,22 @@ fun NotificationsScreen(viewModel: NotificationsViewModel) {
                     iconTint = Color(0xFFF57C00),
                     iconBg = Color(0xFFFFF3E0),
                     title = item.subject.name,
-                    body = "Falta configurar el ${item.remainingPercentage.toInt()}% restante del plan de evaluación."
+                    body = stringResource(R.string.notif_incomplete_body, item.remainingPercentage.toInt())
                 )
             }
         }
 
         if (state.passingGrades.isNotEmpty()) {
             item {
-                NotificationSectionHeader(title = "Logros")
+                NotificationSectionHeader(title = stringResource(R.string.notif_achievements_section))
             }
             items(state.passingGrades, key = { "pass_${it.subject.id}" }) { item ->
                 SubjectAlertCard(
                     icon = Icons.Default.CheckCircle,
                     iconTint = Color(0xFF2E7D32),
                     iconBg = Color(0xFFE8F5E9),
-                    title = "¡Felicitaciones!",
-                    body = "Has aprobado ${item.subject.name} con un promedio parcial de ${item.average}. ¡Sigue así!"
+                    title = stringResource(R.string.notif_congratulations),
+                    body = stringResource(R.string.notif_passing_body, item.subject.name, item.average)
                 )
             }
         }
@@ -146,6 +148,7 @@ private fun ReminderCard(item: NotificationItem.Reminder) {
     val diff = item.evento.fecha - now
     val timeLabel = formatTimeLeft(diff)
     val dateLabel = SimpleDateFormat("d MMM, HH:mm", Locale("es")).format(Date(item.evento.fecha))
+    val reminderBody = stringResource(R.string.notif_reminder_body, timeLabel, dateLabel)
 
     NotificationCard(
         icon = Icons.Default.Notifications,
@@ -153,7 +156,7 @@ private fun ReminderCard(item: NotificationItem.Reminder) {
         iconBg = Color(0xFFF3EEF8),
         title = item.evento.titulo,
         body = buildString {
-            append("En $timeLabel ($dateLabel)")
+            append(reminderBody)
             if (!item.subjectName.isNullOrBlank()) append(" · ${item.subjectName}")
         }
     )
@@ -226,8 +229,9 @@ private fun NotificationCard(
     }
 }
 
+@Composable
 private fun formatTimeLeft(diffMs: Long): String {
-    if (diffMs <= 0) return "ahora"
+    if (diffMs <= 0) return stringResource(R.string.notif_now)
     val minutes = TimeUnit.MILLISECONDS.toMinutes(diffMs)
     val hours = TimeUnit.MILLISECONDS.toHours(diffMs)
     val days = TimeUnit.MILLISECONDS.toDays(diffMs)

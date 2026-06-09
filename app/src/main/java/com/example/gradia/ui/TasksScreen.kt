@@ -23,6 +23,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -37,13 +38,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-private val recordatorioOpciones = listOf(
-    15 to "15 min",
-    30 to "30 min",
-    60 to "1 hora",
-    120 to "2 horas",
-    1440 to "1 día"
-)
+private val recordatorioOpciones: List<Int> = listOf(15, 30, 60, 120, 1440)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,7 +47,7 @@ fun TasksScreen(
     onBackClick: () -> Unit = {}
 ) {
     val state by viewModel.uiState.collectAsState()
-    val context = LocalContext.current
+    val ctx = LocalContext.current
     var showDatePicker by remember { mutableStateOf(false) }
     var showSubjectDropdown by remember { mutableStateOf(false) }
 
@@ -82,10 +77,10 @@ fun TasksScreen(
                         viewModel.onFechaChange(localCal.timeInMillis)
                     }
                     showDatePicker = false
-                }) { Text("OK") }
+                }) { Text(stringResource(R.string.action_ok)) }
             },
             dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) { Text("Cancelar") }
+                TextButton(onClick = { showDatePicker = false }) { Text(stringResource(R.string.action_cancel)) }
             }
         ) {
             DatePicker(state = datePickerState)
@@ -105,7 +100,7 @@ fun TasksScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    if (state.editingTaskId != null) "Editar Tarea:" else "Crear Tarea:",
+                    if (state.editingTaskId != null) stringResource(R.string.task_edit_title) else stringResource(R.string.task_create_title),
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold,
                         fontFamily = InterFontFamily,
@@ -115,7 +110,7 @@ fun TasksScreen(
                 )
                 if (state.editingTaskId != null) {
                     TextButton(onClick = { viewModel.cancelEditing() }) {
-                        Text("Cancelar", color = PurpleGradia, fontSize = 13.sp)
+                        Text(stringResource(R.string.action_cancel), color = PurpleGradia, fontSize = 13.sp)
                     }
                 }
             }
@@ -131,7 +126,7 @@ fun TasksScreen(
                 onFechaClick = { showDatePicker = true },
                 onHoraClick = {
                     TimePickerDialog(
-                        context,
+                        ctx,
                         { _, h, m -> viewModel.onHoraChange(h, m) },
                         state.currentHora,
                         state.currentMinuto,
@@ -179,8 +174,8 @@ fun TasksScreen(
         if (state.tareasHoy.isNotEmpty()) {
             item {
                 SectionHeader(
-                    title = "Hoy",
-                    count = "${state.tareasHoy.size} ${if (state.tareasHoy.size == 1) "Tarea" else "Tareas"}",
+                    title = stringResource(R.string.section_today),
+                    count = "${state.tareasHoy.size} ${if (state.tareasHoy.size == 1) stringResource(R.string.task_singular) else stringResource(R.string.task_plural)}",
                     color = PurpleGradia
                 )
             }
@@ -204,7 +199,7 @@ fun TasksScreen(
 
         if (state.tareasProximas.isNotEmpty()) {
             item {
-                SectionHeader(title = "Próximamente", color = Color.Gray)
+                SectionHeader(title = stringResource(R.string.section_upcoming), color = Color.Gray)
             }
             items(state.tareasProximas, key = { it.id }) { tarea ->
                 TaskCard(
@@ -226,7 +221,7 @@ fun TasksScreen(
 
         if (state.tareasCompletadas.isNotEmpty()) {
             item {
-                SectionHeader(title = "Completadas", isCompleted = true, color = Color(0xFF453284))
+                SectionHeader(title = stringResource(R.string.section_completed), isCompleted = true, color = Color(0xFF453284))
             }
             items(state.tareasCompletadas, key = { it.id }) { tarea ->
                 TaskCard(
@@ -281,7 +276,7 @@ fun CreateTaskCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
-                UrgencyLabel("URGENCIA", Color(0xFFD1C4E9))
+                UrgencyLabel(stringResource(R.string.label_urgency), Color(0xFFD1C4E9))
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
@@ -296,7 +291,7 @@ fun CreateTaskCard(
                         onValueChange = onTitleChange,
                         placeholder = {
                             Text(
-                                "Nombre del evento",
+                                stringResource(R.string.placeholder_event_name),
                                 color = Color.LightGray,
                                 fontSize = 14.sp
                             )
@@ -355,7 +350,7 @@ fun CreateTaskCard(
                         Spacer(modifier = Modifier.width(4.dp))
                         Box {
                             Text(
-                                selectedAsignatura?.nombre ?: "Asignatura",
+                                selectedAsignatura?.nombre ?: stringResource(R.string.placeholder_subject_task),
                                 color = if (selectedAsignatura != null) Color(0xFF453284) else Color.LightGray,
                                 fontSize = 13.sp,
                                 modifier = Modifier.clickable { onSubjectDropdownChange(true) }
@@ -374,7 +369,7 @@ fun CreateTaskCard(
                                     )
                                 }
                                 DropdownMenuItem(
-                                    text = { Text("Ninguna", color = Color.Gray) },
+                                    text = { Text(stringResource(R.string.dropdown_none), color = Color.Gray) },
                                     onClick = {
                                         onAsignaturaSelected(null)
                                         onSubjectDropdownChange(false)
@@ -391,14 +386,21 @@ fun CreateTaskCard(
             Spacer(modifier = Modifier.height(10.dp))
 
             Text(
-                "Recordatorio",
+                stringResource(R.string.label_reminder),
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Medium,
                 color = Color.Gray
             )
             Spacer(modifier = Modifier.height(6.dp))
+            val opcionesRecordatorio = listOf(
+                15 to stringResource(R.string.reminder_15min),
+                30 to stringResource(R.string.reminder_30min),
+                60 to stringResource(R.string.reminder_1hour),
+                120 to stringResource(R.string.reminder_2hours),
+                1440 to stringResource(R.string.reminder_1day)
+            )
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                items(recordatorioOpciones) { (minutos, etiqueta) ->
+                items(opcionesRecordatorio) { (minutos, etiqueta) ->
                     val seleccionado = recordatorioMinutos == minutos
                     Surface(
                         shape = RoundedCornerShape(20.dp),

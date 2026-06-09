@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -92,14 +93,14 @@ fun AccountScreen(
                 try {
                     val json = withContext(Dispatchers.IO) {
                         context.contentResolver.openInputStream(uri)?.bufferedReader()?.readText()
-                            ?: throw Exception("No se pudo leer el archivo")
+                            ?: throw Exception(context.getString(R.string.error_cannot_read_file))
                     }
                     val userId = app.authRepository.getCurrentUserId()
-                        ?: throw Exception("No hay sesión activa")
+                        ?: throw Exception(context.getString(R.string.error_no_session))
                     importData(app, json, userId)
-                    importResult = "Datos importados correctamente"
+                    importResult = context.getString(R.string.success_import)
                 } catch (e: Exception) {
-                    importError = e.message ?: "Error al importar"
+                    importError = e.message ?: context.getString(R.string.error_import)
                 } finally {
                     isImporting = false
                 }
@@ -120,14 +121,14 @@ fun AccountScreen(
                 try {
                     app.authRepository.linkWithGoogle(idToken).fold(
                         onSuccess = {
-                            linkSuccess = "Cuenta de Google vinculada correctamente"
+                            linkSuccess = context.getString(R.string.success_google_linked)
                         },
                         onFailure = { e ->
-                            linkError = e.message ?: "Error al vincular Google"
+                            linkError = e.message ?: context.getString(R.string.error_google_link)
                         }
                     )
                 } catch (e: Exception) {
-                    linkError = e.message ?: "Error inesperado"
+                    linkError = e.message ?: context.getString(R.string.error_unexpected)
                 } finally {
                     isLinking = false
                 }
@@ -151,7 +152,7 @@ fun AccountScreen(
         item {
             AccountSettingsItem(
                 iconPainter = painterResource(id = R.drawable.user_outline),
-                title = "Perfil",
+                title = stringResource(R.string.account_profile),
                 onClick = onNavigateToProfile
             )
         }
@@ -159,8 +160,8 @@ fun AccountScreen(
         item {
             AccountSettingsItem(
                 iconPainter = painterResource(id = R.drawable.download),
-                title = "Exportar datos",
-                subtitle = "Guarda tus datos en formato JSON",
+                title = stringResource(R.string.account_export),
+                subtitle = stringResource(R.string.account_export_subtitle),
                 onClick = { showExportDialog = true }
             )
         }
@@ -168,8 +169,8 @@ fun AccountScreen(
         item {
             AccountSettingsItem(
                 iconPainter = painterResource(id = R.drawable.ic_google),
-                title = "Importar datos",
-                subtitle = "Restaura datos desde un archivo JSON",
+                title = stringResource(R.string.account_import),
+                subtitle = stringResource(R.string.account_import_subtitle),
                 onClick = { showImportDialog = true }
             )
         }
@@ -177,8 +178,8 @@ fun AccountScreen(
         item {
             AccountSettingsItem(
                 iconPainter = painterResource(id = R.drawable.delete),
-                title = "Eliminar cuenta",
-                subtitle = "Borra todos tus datos y cierra sesión",
+                title = stringResource(R.string.account_delete),
+                subtitle = stringResource(R.string.account_delete_subtitle),
                 onClick = { showDeleteDialog = true }
             )
         }
@@ -186,8 +187,8 @@ fun AccountScreen(
         item {
             AccountSettingsItem(
                 iconPainter = painterResource(id = R.drawable.ic_google),
-                title = "Cambiar método de inicio",
-                subtitle = "Vincular Google o correo",
+                title = stringResource(R.string.account_change_method),
+                subtitle = stringResource(R.string.account_change_method_subtitle),
                 onClick = { showMethodDialog = true; linkError = null; linkSuccess = null }
             )
         }
@@ -199,11 +200,11 @@ fun AccountScreen(
     if (showExportDialog) {
         AlertDialog(
             onDismissRequest = { if (!isExporting) showExportDialog = false },
-            title = { Text("Exportar datos", fontWeight = FontWeight.Bold) },
+            title = { Text(stringResource(R.string.dialog_export_title), fontWeight = FontWeight.Bold) },
             text = {
                 when {
                     exportError != null -> Text("Error: $exportError", color = Color.Red)
-                    else -> Text("Se exportarán tus materias, notas, eventos y notas personales en formato JSON.")
+                    else -> Text(stringResource(R.string.dialog_export_body))
                 }
             },
             confirmButton = {
@@ -216,18 +217,18 @@ fun AccountScreen(
                             exportError = null
                             try {
                                 val userId = app.authRepository.getCurrentUserId()
-                                if (userId == null) { exportError = "No hay sesión activa"; isExporting = false; return@launch }
+                                if (userId == null) { exportError = context.getString(R.string.error_no_session); isExporting = false; return@launch }
                                 val json = generateExportJson(app, userId)
                                 saveJsonToDownloads(context, json)
                                 showExportDialog = false
-                            } catch (e: Exception) { exportError = e.message ?: "Error desconocido"
+                            } catch (e: Exception) { exportError = e.message ?: context.getString(R.string.error_unknown)
                             } finally { isExporting = false }
                         }
-                    }) { Text("Exportar") }
+                    }) { Text(stringResource(R.string.action_export)) }
                 }
             },
             dismissButton = {
-                if (!isExporting) TextButton(onClick = { showExportDialog = false; exportError = null }) { Text("Cancelar") }
+                if (!isExporting) TextButton(onClick = { showExportDialog = false; exportError = null }) { Text(stringResource(R.string.action_cancel)) }
             }
         )
     }
@@ -236,7 +237,7 @@ fun AccountScreen(
     if (showImportDialog) {
         AlertDialog(
             onDismissRequest = { if (!isImporting) { showImportDialog = false; importResult = null; importError = null } },
-            title = { Text("Importar datos", fontWeight = FontWeight.Bold) },
+            title = { Text(stringResource(R.string.dialog_import_title), fontWeight = FontWeight.Bold) },
             text = {
                 when {
                     importResult != null -> Text(importResult!!, color = Color(0xFF4CAF50))
@@ -245,24 +246,24 @@ fun AccountScreen(
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text("Importando datos...", color = Color.Gray)
+                            Text(stringResource(R.string.status_importing), color = Color.Gray)
                         }
                     }
-                    else -> Text("Selecciona un archivo JSON exportado previamente para restaurar tus datos.")
+                    else -> Text(stringResource(R.string.dialog_import_body))
                 }
             },
             confirmButton = {
                 if (importResult != null || importError != null) {
-                    TextButton(onClick = { showImportDialog = false; importResult = null; importError = null }) { Text("Cerrar") }
+                    TextButton(onClick = { showImportDialog = false; importResult = null; importError = null }) { Text(stringResource(R.string.close)) }
                 } else if (!isImporting) {
                     TextButton(onClick = {
                         importLauncher.launch(arrayOf("application/json", "*/*"))
-                    }) { Text("Seleccionar archivo") }
+                    }) { Text(stringResource(R.string.action_select_file)) }
                 }
             },
             dismissButton = {
                 if (!isImporting && importResult == null) {
-                    TextButton(onClick = { showImportDialog = false; importError = null }) { Text("Cancelar") }
+                    TextButton(onClick = { showImportDialog = false; importError = null }) { Text(stringResource(R.string.action_cancel)) }
                 }
             }
         )
@@ -272,7 +273,7 @@ fun AccountScreen(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { if (!isDeleting) showDeleteDialog = false },
-            title = { Text("Eliminar cuenta", fontWeight = FontWeight.Bold, color = Color.Red) },
+            title = { Text(stringResource(R.string.dialog_delete_title), fontWeight = FontWeight.Bold, color = Color.Red) },
             text = {
                 when {
                     deleteError != null -> Text("Error: $deleteError", color = Color.Red)
@@ -280,18 +281,18 @@ fun AccountScreen(
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text("Eliminando datos...", color = Color.Gray)
+                            Text(stringResource(R.string.status_deleting_data), color = Color.Gray)
                         }
                     }
                     else -> {
                         Column {
-                            Text("¿Estás seguro de que quieres eliminar tu cuenta? Esta acción es irreversible y se borrarán todos tus datos.")
+                            Text(stringResource(R.string.dialog_delete_body))
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text("Se eliminarán:", fontWeight = FontWeight.Medium)
-                            Text("• Materias y notas")
-                            Text("• Eventos y tareas")
-                            Text("• Notas personales")
-                            Text("• Tu cuenta de Firebase")
+                            Text(stringResource(R.string.dialog_delete_items_header), fontWeight = FontWeight.Medium)
+                            Text(stringResource(R.string.dialog_delete_subjects))
+                            Text(stringResource(R.string.dialog_delete_events))
+                            Text(stringResource(R.string.dialog_delete_notes))
+                            Text(stringResource(R.string.dialog_delete_account))
                         }
                     }
                 }
@@ -318,25 +319,25 @@ fun AccountScreen(
                                             onDeleteAccount()
                                         },
                                         onFailure = { e ->
-                                            deleteError = e.message ?: "Error al eliminar cuenta"
+                                            deleteError = e.message ?: context.getString(R.string.error_delete)
                                         }
                                     )
                                 } catch (e: Exception) {
-                                    deleteError = e.message ?: "Error inesperado"
+                                    deleteError = e.message ?: context.getString(R.string.error_unexpected)
                                 } finally {
                                     isDeleting = false
                                 }
                             }
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
-                    ) { Text("Eliminar todo", color = Color.White) }
+                    ) { Text(stringResource(R.string.action_delete_all), color = Color.White) }
                 } else {
-                    TextButton(onClick = { showDeleteDialog = false; deleteError = null }) { Text("Cerrar") }
+                    TextButton(onClick = { showDeleteDialog = false; deleteError = null }) { Text(stringResource(R.string.close)) }
                 }
             },
             dismissButton = {
                 if (!isDeleting && deleteError == null) {
-                    TextButton(onClick = { showDeleteDialog = false }) { Text("Cancelar") }
+                    TextButton(onClick = { showDeleteDialog = false }) { Text(stringResource(R.string.action_cancel)) }
                 }
             }
         )
@@ -346,7 +347,7 @@ fun AccountScreen(
     if (showMethodDialog) {
         AlertDialog(
             onDismissRequest = { if (!isLinking) { showMethodDialog = false; linkError = null; linkSuccess = null } },
-            title = { Text("Métodos de inicio", fontWeight = FontWeight.Bold) },
+            title = { Text(stringResource(R.string.dialog_methods_title), fontWeight = FontWeight.Bold) },
             text = {
                 Column {
                     if (linkSuccess != null) {
@@ -357,24 +358,24 @@ fun AccountScreen(
                         Text("Error: $linkError", color = Color.Red)
                         Spacer(modifier = Modifier.height(8.dp))
                     }
-                    Text("Métodos vinculados actualmente:", fontWeight = FontWeight.Medium)
+                    Text(stringResource(R.string.dialog_methods_header), fontWeight = FontWeight.Medium)
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(if (hasPassword) "✔" else "○", color = if (hasPassword) Color(0xFF4CAF50) else Color.Gray)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Correo electrónico", color = if (hasPassword) Color(0xFF4CAF50) else Color.Gray)
+                        Text(stringResource(R.string.provider_email), color = if (hasPassword) Color(0xFF4CAF50) else Color.Gray)
                     }
                     Spacer(modifier = Modifier.height(4.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(if (hasGoogle) "✔" else "○", color = if (hasGoogle) Color(0xFF4CAF50) else Color.Gray)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Google", color = if (hasGoogle) Color(0xFF4CAF50) else Color.Gray)
+                        Text(stringResource(R.string.provider_google), color = if (hasGoogle) Color(0xFF4CAF50) else Color.Gray)
                     }
                     Spacer(modifier = Modifier.height(4.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(if (hasFacebook) "✔" else "○", color = if (hasFacebook) Color(0xFF4CAF50) else Color.Gray)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Facebook", color = if (hasFacebook) Color(0xFF4CAF50) else Color.Gray)
+                        Text(stringResource(R.string.provider_facebook), color = if (hasFacebook) Color(0xFF4CAF50) else Color.Gray)
                     }
                     Spacer(modifier = Modifier.height(16.dp))
                     if (!hasPassword) {
@@ -384,7 +385,7 @@ fun AccountScreen(
                             shape = RoundedCornerShape(12.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = PurpleGradia),
                             enabled = !isLinking
-                        ) { Text("Vincular correo electrónico") }
+                        ) { Text(stringResource(R.string.action_link_email)) }
                     }
                     if (!hasGoogle) {
                         Spacer(modifier = Modifier.height(8.dp))
@@ -399,7 +400,7 @@ fun AccountScreen(
                             shape = RoundedCornerShape(12.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = PurpleGradia),
                             enabled = !isLinking
-                        ) { Text("Vincular Google") }
+                        ) { Text(stringResource(R.string.action_link_google)) }
                     }
                     if (!hasFacebook) {
                         Spacer(modifier = Modifier.height(8.dp))
@@ -413,14 +414,14 @@ fun AccountScreen(
                                             try {
                                                 app.authRepository.linkWithFacebook(result.accessToken.token).fold(
                                                     onSuccess = {
-                                                        linkSuccess = "Cuenta de Facebook vinculada correctamente"
+                                                        linkSuccess = context.getString(R.string.success_facebook_linked)
                                                     },
                                                     onFailure = { e ->
-                                                        linkError = getFirebaseErrorMessage(e)
+                                                        linkError = getFirebaseErrorMessage(context, e)
                                                     }
                                                 )
                                             } catch (e: Exception) {
-                                                linkError = e.message ?: "Error inesperado"
+                                                linkError = e.message ?: context.getString(R.string.error_unexpected)
                                             } finally {
                                                 isLinking = false
                                             }
@@ -428,7 +429,7 @@ fun AccountScreen(
                                     }
                                     override fun onCancel() {}
                                     override fun onError(error: FacebookException) {
-                                        linkError = error.message ?: "Error al vincular Facebook"
+                                        linkError = error.message ?: context.getString(R.string.error_facebook_link)
                                     }
                                 })
                                 FacebookSignInUtil.loginWithAccountPicker(
@@ -440,16 +441,16 @@ fun AccountScreen(
                             shape = RoundedCornerShape(12.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = PurpleGradia),
                             enabled = !isLinking
-                        ) { Text("Vincular Facebook") }
+                        ) { Text(stringResource(R.string.action_link_facebook)) }
                     }
                     if (providers.size > 1) {
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text("Tienes múltiples métodos. Para desvincular uno, elimina la cuenta y vuelve a registrarte.", color = Color.Gray, fontSize = 12.sp)
+                        Text(stringResource(R.string.info_multiple_methods), color = Color.Gray, fontSize = 12.sp)
                     }
                 }
             },
             confirmButton = {
-                TextButton(onClick = { showMethodDialog = false; linkError = null; linkSuccess = null }) { Text("Cerrar") }
+                TextButton(onClick = { showMethodDialog = false; linkError = null; linkSuccess = null }) { Text(stringResource(R.string.close)) }
             }
         )
     }
@@ -458,7 +459,7 @@ fun AccountScreen(
     if (showEmailLinkDialog) {
         AlertDialog(
             onDismissRequest = { if (!isLinking) { showEmailLinkDialog = false; linkEmailError = null } },
-            title = { Text("Vincular correo", fontWeight = FontWeight.Bold) },
+            title = { Text(stringResource(R.string.dialog_link_email_title), fontWeight = FontWeight.Bold) },
             text = {
                 Column {
                     if (linkEmailError != null) {
@@ -468,7 +469,7 @@ fun AccountScreen(
                     OutlinedTextField(
                         value = linkEmail,
                         onValueChange = { linkEmail = it },
-                        label = { Text("Correo") },
+                        label = { Text(stringResource(R.string.field_email)) },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -476,7 +477,7 @@ fun AccountScreen(
                     OutlinedTextField(
                         value = linkPassword,
                         onValueChange = { linkPassword = it },
-                        label = { Text("Contraseña") },
+                        label = { Text(stringResource(R.string.field_password)) },
                         singleLine = true,
                         visualTransformation = PasswordVisualTransformation(),
                         modifier = Modifier.fillMaxWidth()
@@ -489,7 +490,7 @@ fun AccountScreen(
                 } else {
                     TextButton(onClick = {
                         if (linkEmail.isBlank() || linkPassword.isBlank()) {
-                            linkEmailError = "Completa todos los campos"
+                            linkEmailError = context.getString(R.string.error_fill_fields)
                             return@TextButton
                         }
                         scope.launch {
@@ -499,24 +500,24 @@ fun AccountScreen(
                                 app.authRepository.linkWithEmail(linkEmail, linkPassword).fold(
                                     onSuccess = {
                                         showEmailLinkDialog = false
-                                        linkSuccess = "Correo vinculado correctamente"
+                                        linkSuccess = context.getString(R.string.success_email_linked)
                                     },
                                     onFailure = { e ->
-                                        linkEmailError = e.message ?: "Error al vincular"
+                                        linkEmailError = e.message ?: context.getString(R.string.error_link)
                                     }
                                 )
                             } catch (e: Exception) {
-                                linkEmailError = e.message ?: "Error inesperado"
+                                linkEmailError = e.message ?: context.getString(R.string.error_unexpected)
                             } finally {
                                 isLinking = false
                             }
                         }
-                    }) { Text("Vincular") }
+                    }) { Text(stringResource(R.string.action_link)) }
                 }
             },
             dismissButton = {
                 if (!isLinking) {
-                    TextButton(onClick = { showEmailLinkDialog = false; linkEmailError = null }) { Text("Cancelar") }
+                    TextButton(onClick = { showEmailLinkDialog = false; linkEmailError = null }) { Text(stringResource(R.string.action_cancel)) }
                 }
             }
         )

@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -53,11 +54,16 @@ fun LoginScreen(
 
     val displayError = localError ?: errorMessage
 
+    val errorEmailBlank = stringResource(R.string.error_email_blank)
+    val errorEmailInvalid = stringResource(R.string.error_email_invalid)
+    val errorPasswordBlank = stringResource(R.string.error_password_blank)
+    val errorPasswordShort = stringResource(R.string.error_password_short)
+
     fun validate(): String? {
-        if (email.isBlank()) return "Ingresa tu correo electrónico"
-        if (!email.contains("@") || !email.contains(".")) return "El correo electrónico no es válido"
-        if (password.isBlank()) return "Ingresa tu contraseña"
-        if (password.length < 6) return "La contraseña debe tener al menos 6 caracteres"
+        if (email.isBlank()) return errorEmailBlank
+        if (!email.contains("@") || !email.contains(".")) return errorEmailInvalid
+        if (password.isBlank()) return errorPasswordBlank
+        if (password.length < 6) return errorPasswordShort
         return null
     }
 
@@ -82,7 +88,7 @@ fun LoginScreen(
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Volver",
+                        contentDescription = stringResource(R.string.action_back),
                         tint = Color.White,
                         modifier = Modifier.size(24.dp)
                     )
@@ -105,7 +111,7 @@ fun LoginScreen(
             )
 
             Text(
-                text = "Iniciar Sesión",
+                text = stringResource(R.string.login_title),
                 style = MaterialTheme.typography.displayLarge.copy(fontSize = 32.sp),
                 color = PurpleGradia,
                 modifier = Modifier.padding(bottom = 24.dp)
@@ -114,7 +120,7 @@ fun LoginScreen(
             LoginTextField(
                 value = email,
                 onValueChange = { email = it; clearError() },
-                placeholder = "Correo Electrónico"
+                placeholder = stringResource(R.string.login_email_placeholder)
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -122,7 +128,7 @@ fun LoginScreen(
             LoginTextField(
                 value = password,
                 onValueChange = { password = it; clearError() },
-                placeholder = "Contraseña",
+                placeholder = stringResource(R.string.login_password_placeholder),
                 isPassword = true
             )
 
@@ -139,7 +145,7 @@ fun LoginScreen(
                     colors = CheckboxDefaults.colors(checkedColor = PurpleGradia)
                 )
                 Text(
-                    text = "Recuérdame",
+                    text = stringResource(R.string.login_remember_me),
                     style = MaterialTheme.typography.bodyLarge,
                     color = Color.Gray,
                     modifier = Modifier.clickable { rememberMe = !rememberMe }
@@ -147,7 +153,7 @@ fun LoginScreen(
             }
 
             Text(
-                text = "Olvidaste tu contraseña?",
+                text = stringResource(R.string.login_forgot_password),
                 style = MaterialTheme.typography.bodyLarge.copy(
                     textDecoration = TextDecoration.Underline,
                     fontWeight = FontWeight.Medium
@@ -177,7 +183,7 @@ fun LoginScreen(
             }
 
             LoginPrimaryButton(
-                text = "Inicia Sesión",
+                text = stringResource(R.string.login_button),
                 onClick = {
                     val error = validate()
                     if (error != null) {
@@ -197,7 +203,7 @@ fun LoginScreen(
             ) {
                 HorizontalDivider(modifier = Modifier.weight(1f), color = GrayBorder)
                 Text(
-                    text = " o ",
+                    text = stringResource(R.string.login_or),
                     modifier = Modifier.padding(horizontal = 12.dp),
                     color = Color.Gray,
                     style = MaterialTheme.typography.bodyLarge
@@ -208,7 +214,7 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "Inicia sesión con:",
+                text = stringResource(R.string.login_with),
                 color = Color.Gray,
                 style = MaterialTheme.typography.bodyLarge
             )
@@ -231,7 +237,7 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             Text(
-                text = "Aún no estas registrado?",
+                text = stringResource(R.string.login_not_registered),
                 color = Color.Gray,
                 style = MaterialTheme.typography.bodyLarge
             )
@@ -260,7 +266,7 @@ fun LoginScreen(
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
             ) {
                 Text(
-                    text = "Registrate",
+                    text = stringResource(R.string.login_go_register),
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold
                 )

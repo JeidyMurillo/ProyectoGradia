@@ -36,6 +36,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -90,7 +91,7 @@ fun SubjectsScreen(
             if (state.subjects.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(10.dp))
                 Text(
-                    text = "Mantén pulsada una asignatura para eliminarla",
+                    text = stringResource(R.string.subjects_hint),
                     fontSize = 11.sp,
                     color = Color(0xFFA098AA),
                     fontFamily = InterFontFamily
@@ -142,7 +143,7 @@ fun SubjectsScreen(
             onDismissRequest = { subjectToDelete = null },
             title = {
                 Text(
-                    text = "Eliminar asignatura",
+                    text = stringResource(R.string.dialog_delete_subject_title),
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFFC62828),
                     fontFamily = InterFontFamily
@@ -150,7 +151,7 @@ fun SubjectsScreen(
             },
             text = {
                 Text(
-                    text = "¿Seguro que quieres eliminar \"${subject.name}\"? También se eliminarán todas sus calificaciones. Esta acción no se puede deshacer.",
+                    text = stringResource(R.string.dialog_delete_subject_body, subject.name),
                     fontFamily = InterFontFamily
                 )
             },
@@ -161,11 +162,11 @@ fun SubjectsScreen(
                         subjectToDelete = null
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFC62828))
-                ) { Text("Eliminar", color = Color.White) }
+                ) { Text(stringResource(R.string.action_delete), color = Color.White) }
             },
             dismissButton = {
                 TextButton(onClick = { subjectToDelete = null }) {
-                    Text("Cancelar", color = PurpleGradia)
+                    Text(stringResource(R.string.action_cancel), color = PurpleGradia)
                 }
             }
         )
@@ -182,9 +183,9 @@ private fun SubjectsFilterRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        FilterPill("Todas las asignaturas", SubjectFilter.TODAS, selected, onSelected)
-        FilterPill("Semestre Actual", SubjectFilter.ACTUAL, selected, onSelected)
-        FilterPill("Antiguas", SubjectFilter.ANTIGUAS, selected, onSelected)
+        FilterPill(stringResource(R.string.filter_all_subjects), SubjectFilter.TODAS, selected, onSelected)
+        FilterPill(stringResource(R.string.filter_current_semester), SubjectFilter.ACTUAL, selected, onSelected)
+        FilterPill(stringResource(R.string.filter_old_subjects), SubjectFilter.ANTIGUAS, selected, onSelected)
     }
 }
 
@@ -286,7 +287,7 @@ private fun AddSubjectCard(onClick: () -> Unit) {
             )
             Spacer(modifier = Modifier.height(10.dp))
             Text(
-                text = "Añadir\nAsignatura",
+                text = stringResource(R.string.add_subject_card),
                 fontSize = 15.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = Color(0xFF9C8AAB),
@@ -334,14 +335,14 @@ fun SubjectFormSheet(
     val trimmedName = name.trim()
     val isDuplicateName = existingNames.any { it.trim().equals(trimmedName, ignoreCase = true) }
     val nameError: String? = when {
-        trimmedName.isEmpty() -> "Ingresa el nombre de la asignatura"
-        isDuplicateName -> "Ya existe una asignatura con ese nombre"
+        trimmedName.isEmpty() -> stringResource(R.string.error_subject_name_required)
+        isDuplicateName -> stringResource(R.string.error_duplicate_name)
         else -> null
     }
     val creditsError: String? = when {
-        credits.isEmpty() -> "Ingresa los créditos (de ${SubjectValidation.MIN_CREDITS} a ${SubjectValidation.MAX_CREDITS})"
+        credits.isEmpty() -> stringResource(R.string.error_credits_required, SubjectValidation.MIN_CREDITS, SubjectValidation.MAX_CREDITS)
         creditsInt == null || creditsInt !in SubjectValidation.MIN_CREDITS..SubjectValidation.MAX_CREDITS ->
-            "Debe ser un número entre ${SubjectValidation.MIN_CREDITS} y ${SubjectValidation.MAX_CREDITS}"
+            stringResource(R.string.error_credits_range, SubjectValidation.MIN_CREDITS, SubjectValidation.MAX_CREDITS)
         else -> null
     }
     val isValid = nameError == null && creditsError == null &&
@@ -374,7 +375,7 @@ fun SubjectFormSheet(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = if (isEditing) "Editar Asignatura" else "Agregar Asignatura",
+                        text = if (isEditing) stringResource(R.string.sheet_title_edit_subject) else stringResource(R.string.sheet_title_add_subject),
                         fontSize = 22.sp,
                         fontWeight = FontWeight.ExtraBold,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -456,7 +457,7 @@ fun SubjectFormSheet(
                     }
                 }
                 Column(modifier = Modifier.weight(1f)) {
-                    FieldLabel("Nombre de la Asignatura")
+                    FieldLabel(stringResource(R.string.field_subject_name))
                     Spacer(modifier = Modifier.height(8.dp))
                     PillTextField(
                         value = name,
@@ -466,7 +467,7 @@ fun SubjectFormSheet(
                                 nameTouched = true
                             }
                         },
-                        placeholder = "Ej: Español"
+                        placeholder = stringResource(R.string.placeholder_subject_name)
                     )
                     if (showNameError) {
                         FieldErrorText(nameError!!)
@@ -481,7 +482,7 @@ fun SubjectFormSheet(
                 horizontalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    FieldLabel("N° de Creditos")
+                    FieldLabel(stringResource(R.string.field_credits))
                     Spacer(modifier = Modifier.height(8.dp))
                     PillTextField(
                         value = credits,
@@ -491,7 +492,7 @@ fun SubjectFormSheet(
                                 creditsTouched = true
                             }
                         },
-                        placeholder = "min: 1 - max:6",
+                        placeholder = stringResource(R.string.placeholder_credits),
                         leadingContent = { HashIcon() },
                         keyboardType = KeyboardType.Number
                     )
@@ -500,7 +501,7 @@ fun SubjectFormSheet(
                     }
                 }
                 Column(modifier = Modifier.weight(1f)) {
-                    FieldLabel("Semestre")
+                    FieldLabel(stringResource(R.string.field_semester))
                     Spacer(modifier = Modifier.height(8.dp))
                     SemesterDropdownField(
                         value = semester,
@@ -511,12 +512,12 @@ fun SubjectFormSheet(
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            FieldLabel("Nombre del profesor")
+            FieldLabel(stringResource(R.string.field_professor))
             Spacer(modifier = Modifier.height(8.dp))
             PillTextField(
                 value = professor,
                 onValueChange = { professor = it },
-                placeholder = "Ej: Mauricio",
+                placeholder = stringResource(R.string.placeholder_professor),
                 leadingContent = {
                     Icon(
                         imageVector = Icons.Default.Person,
@@ -529,12 +530,12 @@ fun SubjectFormSheet(
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            FieldLabel("Salon de Clases")
+            FieldLabel(stringResource(R.string.field_classroom))
             Spacer(modifier = Modifier.height(8.dp))
             PillTextField(
                 value = classroom,
                 onValueChange = { classroom = it },
-                placeholder = "Ej: Sala de sistemas 1",
+                placeholder = stringResource(R.string.placeholder_classroom),
                 leadingContent = {
                     Icon(
                         imageVector = Icons.Default.LocationOn,
@@ -584,7 +585,7 @@ fun SubjectFormSheet(
                     )
                 } else {
                     Text(
-                        text = if (isEditing) "Guardar cambios" else "Guardar Asignatura",
+                        text = if (isEditing) stringResource(R.string.action_save_changes) else stringResource(R.string.action_save_subject),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
@@ -644,7 +645,7 @@ private fun SemesterDropdownField(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "Semestre $selected",
+                    text = stringResource(R.string.dropdown_semester, selected),
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurface,
                     fontFamily = InterFontFamily
@@ -667,7 +668,7 @@ private fun SemesterDropdownField(
                 DropdownMenuItem(
                     text = {
                         Text(
-                            text = "Semestre $sem",
+                            text = stringResource(R.string.dropdown_semester, sem.toString()),
                             fontFamily = InterFontFamily,
                             fontSize = 14.sp,
                             fontWeight = if (selected == semStr) FontWeight.Bold else FontWeight.Normal,

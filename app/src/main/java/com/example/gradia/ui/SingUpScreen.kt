@@ -26,6 +26,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -85,13 +86,20 @@ fun SingUpScreen(
 
     val passwordStrength = calculatePasswordStrength(password)
 
+    val errorNameBlank = stringResource(R.string.error_name_blank)
+    val errorEmailBlank = stringResource(R.string.error_email_blank)
+    val errorEmailInvalid = stringResource(R.string.error_email_invalid)
+    val errorPasswordBlank = stringResource(R.string.error_password_blank)
+    val errorPasswordStrength = stringResource(R.string.error_password_strength)
+    val errorTermsRequired = stringResource(R.string.error_terms_required)
+
     fun validate(): String? {
-        if (nombre.isBlank()) return "Ingresa tu nombre"
-        if (email.isBlank()) return "Ingresa tu correo electrónico"
-        if (!email.contains("@") || !email.contains(".")) return "El correo electrónico no es válido"
-        if (password.isBlank()) return "Ingresa tu contraseña"
-        if (!isStrongPassword(password)) return "La contraseña debe tener mayúsculas, minúsculas, número, carácter especial y al menos 8 caracteres"
-        if (!acceptTerms) return "Debes aceptar los términos y condiciones"
+        if (nombre.isBlank()) return errorNameBlank
+        if (email.isBlank()) return errorEmailBlank
+        if (!email.contains("@") || !email.contains(".")) return errorEmailInvalid
+        if (password.isBlank()) return errorPasswordBlank
+        if (!isStrongPassword(password)) return errorPasswordStrength
+        if (!acceptTerms) return errorTermsRequired
         return null
     }
 
@@ -117,7 +125,7 @@ fun SingUpScreen(
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Volver",
+                        contentDescription = stringResource(R.string.action_back),
                         tint = Color.White,
                         modifier = Modifier.size(24.dp)
                     )
@@ -140,7 +148,7 @@ fun SingUpScreen(
             )
 
             Text(
-                text = "Registrarse",
+                text = stringResource(R.string.signup_title),
                 style = MaterialTheme.typography.displayLarge.copy(fontSize = 32.sp),
                 color = PurpleGradia,
                 modifier = Modifier.padding(bottom = 24.dp)
@@ -163,7 +171,7 @@ fun SingUpScreen(
             SingUpTextField(
                 value = nombre,
                 onValueChange = { nombre = it; clearError() },
-                placeholder = "Nombre"
+                placeholder = stringResource(R.string.signup_name_placeholder)
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -171,7 +179,7 @@ fun SingUpScreen(
             SingUpTextField(
                 value = email,
                 onValueChange = { email = it; clearError() },
-                placeholder = "Correo Electrónico"
+                placeholder = stringResource(R.string.signup_email_placeholder)
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -179,7 +187,7 @@ fun SingUpScreen(
             SingUpTextField(
                 value = password,
                 onValueChange = { password = it; clearError() },
-                placeholder = "Contraseña",
+                placeholder = stringResource(R.string.signup_password_placeholder),
                 isPassword = true
             )
 
@@ -190,9 +198,9 @@ fun SingUpScreen(
                     else -> Color(0xFFF44336)
                 }
                 val strengthLabel = when (passwordStrength) {
-                    5, 4 -> "Fuerte"
-                    3 -> "Media"
-                    else -> "Débil"
+                    5, 4 -> stringResource(R.string.signup_password_strong)
+                    3 -> stringResource(R.string.signup_password_medium)
+                    else -> stringResource(R.string.signup_password_weak)
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Box(
@@ -211,7 +219,7 @@ fun SingUpScreen(
                     )
                 }
                 Text(
-                    text = "Seguridad: $strengthLabel",
+                    text = stringResource(R.string.signup_password_strength, strengthLabel),
                     color = strengthColor,
                     style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
                     modifier = Modifier
@@ -220,14 +228,17 @@ fun SingUpScreen(
                 )
             }
 
-            val annotatedTermsText = remember {
+            val termsPrefix = stringResource(R.string.signup_terms_prefix)
+            val termsLink = stringResource(R.string.signup_terms_link)
+            val termsSnackbarMessage = stringResource(R.string.signup_terms_snackbar)
+            val annotatedTermsText = remember(termsPrefix, termsLink) {
                 buildAnnotatedString {
                     withStyle(SpanStyle(
                         color = Color.Gray,
                         fontFamily = InterFontFamily,
                         fontSize = 14.sp
                     )) {
-                        append("He leído y acepto los ")
+                        append(termsPrefix)
                     }
                     pushStringAnnotation(tag = "TERMS", annotation = "terms")
                     withStyle(SpanStyle(
@@ -237,7 +248,7 @@ fun SingUpScreen(
                         fontWeight = FontWeight.Bold,
                         textDecoration = TextDecoration.Underline
                     )) {
-                        append("Términos y Condiciones.")
+                        append(termsLink)
                     }
                     pop()
                 }
@@ -266,7 +277,7 @@ fun SingUpScreen(
                                 ) {
                                     scope.launch {
                                         snackbarHostState.showSnackbar(
-                                            "Primero lee los Términos y Condiciones"
+                                            termsSnackbarMessage
                                         )
                                     }
                                 }
@@ -308,7 +319,7 @@ fun SingUpScreen(
             }
 
             SingUpPrimaryButton(
-                text = "Registrarse",
+                text = stringResource(R.string.signup_button),
                 onClick = {
                     val error = validate()
                     if (error != null) {
@@ -328,7 +339,7 @@ fun SingUpScreen(
             ) {
                 HorizontalDivider(modifier = Modifier.weight(1f), color = GrayBorder)
                 Text(
-                    text = " o ",
+                    text = stringResource(R.string.signup_or),
                     modifier = Modifier.padding(horizontal = 12.dp),
                     color = Color.Gray,
                     style = MaterialTheme.typography.bodyLarge
@@ -339,7 +350,7 @@ fun SingUpScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "Registrarse con:",
+                text = stringResource(R.string.signup_with),
                 color = Color.Gray,
                 style = MaterialTheme.typography.bodyLarge
             )
@@ -362,7 +373,7 @@ fun SingUpScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             Text(
-                text = "¿Ya estás registrado?",
+                text = stringResource(R.string.signup_already_registered),
                 color = Color.Gray,
                 style = MaterialTheme.typography.bodyLarge
             )
@@ -391,7 +402,7 @@ fun SingUpScreen(
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
             ) {
                 Text(
-                    text = "Iniciar Sesión",
+                    text = stringResource(R.string.signup_go_login),
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold
                 )

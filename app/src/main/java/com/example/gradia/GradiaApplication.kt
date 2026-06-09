@@ -2,6 +2,7 @@ package com.example.gradia
 
 import android.app.Application
 import android.content.Context
+import android.util.Log
 import com.example.gradia.data.email.EmailService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -42,9 +43,37 @@ class GradiaApplication : Application() {
 
     val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
+    override fun onCreate() {
+        super.onCreate()
+        setupCrashHandler()
+    }
+
+    private fun setupCrashHandler() {
+        val existingHandler = Thread.getDefaultUncaughtExceptionHandler()
+        Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
+            Log.e("GradiaCrash", "Crash no capturado en hilo: ${thread.name}", throwable)
+            val prefs = getSharedPreferences("gradia_prefs", Context.MODE_PRIVATE)
+            prefs.edit()
+                .putString("last_crash_trace", Log.getStackTraceString(throwable))
+                .putLong("last_crash_time", System.currentTimeMillis())
+                .apply()
+            existingHandler?.uncaughtException(thread, throwable)
+        }
+    }
+
+    fun getLastCrashInfo(): Pair<String?, Long> {
+        val prefs = getSharedPreferences("gradia_prefs", Context.MODE_PRIVATE)
+        val trace = prefs.getString("last_crash_trace", null)
+        val time = prefs.getLong("last_crash_time", 0L)
+        if (trace != null) {
+            prefs.edit().remove("last_crash_trace").remove("last_crash_time").apply()
+        }
+        return trace to time
+    }
+
     val database by lazy { AppDatabase.getDatabase(this) }
 
-    val firebaseAuthService by lazy { FirebaseAuthService() }
+    val firebaseAuthService by lazy { FirebaseAuthService(this) }
     val emailService by lazy { EmailService(BuildConfig.SENDGRID_API_KEY) }
 
     val userRepository by lazy { UserRepository(database.userDao(), firebaseAuthService) }

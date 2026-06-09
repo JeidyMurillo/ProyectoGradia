@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -40,6 +41,19 @@ import java.util.*
 fun CalendarScreen(viewModel: CalendarViewModel) {
     val state by viewModel.uiState.collectAsState()
 
+    var tipoFilter by remember { mutableStateOf<String?>(null) }
+    var prioridadFilter by remember { mutableStateOf<String?>(null) }
+
+    val filteredSelected = state.selectedDateActivities.filter { act ->
+        (tipoFilter == null || act.tipo == tipoFilter) &&
+            (prioridadFilter == null || act.prioridad == prioridadFilter)
+    }
+
+    val filteredNext7Days = state.next7DaysActivities.filter { act ->
+        (tipoFilter == null || act.tipo == tipoFilter) &&
+            (prioridadFilter == null || act.prioridad == prioridadFilter)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -54,15 +68,80 @@ fun CalendarScreen(viewModel: CalendarViewModel) {
             onDateSelect = { viewModel.selectDate(it) }
         )
 
+        Spacer(modifier = Modifier.height(12.dp))
+
+        FilterChipsRow(
+            selectedTipo = tipoFilter,
+            selectedPrioridad = prioridadFilter,
+            onTipoChange = { tipoFilter = if (tipoFilter == it) null else it },
+            onPrioridadChange = { prioridadFilter = if (prioridadFilter == it) null else it }
+        )
+
         Spacer(modifier = Modifier.height(24.dp))
 
-        SelectedDayDetail(state)
+        SelectedDayDetail(state, filteredSelected)
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        Next7DaysSection(state)
+        Next7DaysSection(state, filteredNext7Days)
 
         Spacer(modifier = Modifier.height(40.dp))
+    }
+}
+
+@Composable
+private fun FilterChipsRow(
+    selectedTipo: String?,
+    selectedPrioridad: String?,
+    onTipoChange: (String) -> Unit,
+    onPrioridadChange: (String) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp)
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            val tipos = listOf("EVALUACION" to stringResource(R.string.filter_exam), "TAREA" to stringResource(R.string.filter_assignment), "ENTREGA" to stringResource(R.string.filter_event))
+            tipos.forEach { (value, label) ->
+                FilterChip(
+                    selected = selectedTipo == value,
+                    onClick = { onTipoChange(value) },
+                    label = { Text(label, fontSize = 11.sp, fontFamily = InterFontFamily) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = PurpleGradia,
+                        selectedLabelColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(50)
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            val prioridades = listOf("ALTA" to stringResource(R.string.priority_high), "MEDIA" to stringResource(R.string.priority_medium), "BAJA" to stringResource(R.string.priority_low))
+            prioridades.forEach { (value, label) ->
+                FilterChip(
+                    selected = selectedPrioridad == value,
+                    onClick = { onPrioridadChange(value) },
+                    label = { Text(label, fontSize = 11.sp, fontFamily = InterFontFamily) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = when (value) {
+                            "ALTA" -> Color(0xFFE53935)
+                            "MEDIA" -> Color(0xFFFFC107)
+                            else -> Color(0xFF4CAF50)
+                        },
+                        selectedLabelColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(50)
+                )
+            }
+        }
     }
 }
 
@@ -150,7 +229,15 @@ private fun CalendarCard(
                     .padding(bottom = 12.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                listOf("Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa").forEach { day ->
+                listOf(
+                    stringResource(R.string.day_sun),
+                    stringResource(R.string.day_mon),
+                    stringResource(R.string.day_tue),
+                    stringResource(R.string.day_wed),
+                    stringResource(R.string.day_thu),
+                    stringResource(R.string.day_fri),
+                    stringResource(R.string.day_sat)
+                ).forEach { day ->
                     Text(
                         text = day,
                         style = MaterialTheme.typography.labelSmall.copy(
@@ -289,7 +376,7 @@ private fun RowScope.DayCell(
 }
 
 @Composable
-private fun SelectedDayDetail(state: CalendarUiState) {
+private fun SelectedDayDetail(state: CalendarUiState, filteredActivities: List<CalendarActivity> = state.selectedDateActivities) {
     val date = state.selectedDate
     val formatter = DateTimeFormatter.ofPattern("d 'de' MMMM 'de' yyyy", Locale.forLanguageTag("es"))
     val dateTitle = date.format(formatter)
@@ -310,7 +397,7 @@ private fun SelectedDayDetail(state: CalendarUiState) {
             modifier = Modifier.padding(bottom = 12.dp)
         )
 
-        if (state.selectedDateActivities.isEmpty()) {
+        if (filteredActivities.isEmpty()) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
@@ -326,7 +413,7 @@ private fun SelectedDayDetail(state: CalendarUiState) {
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "No hay actividades programadas para este día",
+                        text = stringResource(R.string.no_activities_day),
                         style = MaterialTheme.typography.bodyMedium.copy(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontFamily = InterFontFamily,
@@ -337,7 +424,7 @@ private fun SelectedDayDetail(state: CalendarUiState) {
                 }
             }
         } else {
-            state.selectedDateActivities.forEach { activity ->
+            filteredActivities.forEach { activity ->
                 ActivityCard(activity)
                 Spacer(modifier = Modifier.height(10.dp))
             }
@@ -433,7 +520,7 @@ private fun ActivityCard(activity: CalendarActivity) {
                 if (!activity.asignaturaNombre.isNullOrBlank()) {
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "Materia: ${activity.asignaturaNombre}",
+                        text = stringResource(R.string.label_subject, activity.asignaturaNombre),
                         style = MaterialTheme.typography.bodySmall.copy(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontFamily = InterFontFamily,
@@ -446,22 +533,22 @@ private fun ActivityCard(activity: CalendarActivity) {
 
                 Spacer(modifier = Modifier.height(2.dp))
                 val prioridadLabel = when (activity.prioridad) {
-                    "ALTA" -> "Alta"
-                    "MEDIA" -> "Media"
-                    "BAJA" -> "Baja"
+                    "ALTA" -> stringResource(R.string.priority_high)
+                    "MEDIA" -> stringResource(R.string.priority_medium)
+                    "BAJA" -> stringResource(R.string.priority_low)
                     else -> activity.prioridad
                 }
                 val tipoLabel = when (activity.tipo) {
-                    "EVALUACION" -> "Parcial"
-                    "TAREA" -> "Tarea"
-                    "ENTREGA" -> "Evento"
-                    "ACTIVIDAD" -> "Actividad"
+                    "EVALUACION" -> stringResource(R.string.type_exam)
+                    "TAREA" -> stringResource(R.string.type_assignment)
+                    "ENTREGA" -> stringResource(R.string.type_event)
+                    "ACTIVIDAD" -> stringResource(R.string.type_activity)
                     else -> activity.tipo
                 }
                 val prioridadTexto = if (activity.esActividad) {
-                    if (activity.prioridad == "PENDIENTE") "Sin calificar" else "Calificada"
+                    if (activity.prioridad == "PENDIENTE") stringResource(R.string.status_unrated) else stringResource(R.string.status_rated)
                 } else {
-                    "Prioridad: $prioridadLabel"
+                    stringResource(R.string.priority_label, prioridadLabel)
                 }
                 Text(
                     text = "$tipoLabel — $prioridadTexto",
@@ -477,14 +564,14 @@ private fun ActivityCard(activity: CalendarActivity) {
 }
 
 @Composable
-private fun Next7DaysSection(state: CalendarUiState) {
+private fun Next7DaysSection(state: CalendarUiState, filteredActivities: List<CalendarActivity> = state.next7DaysActivities) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp)
     ) {
         Text(
-            text = "Próximos 7 días",
+            text = stringResource(R.string.section_next_7_days),
             style = MaterialTheme.typography.titleMedium.copy(
                 fontWeight = FontWeight.Bold,
                 color = PurpleGradia,
@@ -494,7 +581,7 @@ private fun Next7DaysSection(state: CalendarUiState) {
             modifier = Modifier.padding(bottom = 12.dp)
         )
 
-        if (state.next7DaysActivities.isEmpty()) {
+        if (filteredActivities.isEmpty()) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
@@ -510,7 +597,7 @@ private fun Next7DaysSection(state: CalendarUiState) {
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "No hay actividades programadas para los próximos 7 días",
+                        text = stringResource(R.string.no_activities_next_7),
                         style = MaterialTheme.typography.bodyMedium.copy(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontFamily = InterFontFamily,
@@ -521,7 +608,7 @@ private fun Next7DaysSection(state: CalendarUiState) {
                 }
             }
         } else {
-            state.next7DaysActivities.forEach { activity ->
+            filteredActivities.forEach { activity ->
                 UpcomingActivityCard(activity)
                 Spacer(modifier = Modifier.height(10.dp))
             }
@@ -537,9 +624,9 @@ private fun UpcomingActivityCard(activity: CalendarActivity) {
     val dotColor = proximidad.proximidadColor()
 
     val daysText = when {
-        diasRestantes == 0L -> "Hoy"
-        diasRestantes == 1L -> "Mañana"
-        else -> "En $diasRestantes días"
+        diasRestantes == 0L -> stringResource(R.string.label_today)
+        diasRestantes == 1L -> stringResource(R.string.label_tomorrow)
+        else -> stringResource(R.string.label_in_days, diasRestantes)
     }
 
     val (bgColor, iconBg, iconRes) = when (activity.tipo) {
@@ -622,10 +709,10 @@ private fun UpcomingActivityCard(activity: CalendarActivity) {
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 val tipoLabel = when (activity.tipo) {
-                    "EVALUACION" -> "Parcial"
-                    "TAREA" -> "Tarea"
-                    "ENTREGA" -> "Evento"
-                    "ACTIVIDAD" -> "Actividad"
+                    "EVALUACION" -> stringResource(R.string.type_exam)
+                    "TAREA" -> stringResource(R.string.type_assignment)
+                    "ENTREGA" -> stringResource(R.string.type_event)
+                    "ACTIVIDAD" -> stringResource(R.string.type_activity)
                     else -> activity.tipo
                 }
                 Text(

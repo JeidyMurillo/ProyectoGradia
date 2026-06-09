@@ -2,6 +2,7 @@ package com.example.gradia.ui
 
 import android.content.Intent
 import android.net.Uri
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -16,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -24,6 +26,7 @@ import com.example.gradia.BuildConfig
 import com.example.gradia.R
 import com.example.gradia.ui.theme.PurpleGradia
 import com.example.gradia.ui.theme.InterFontFamily
+import com.example.gradia.util.LocaleHelper
 
 @Composable
 fun SettingsScreen(
@@ -34,7 +37,8 @@ fun SettingsScreen(
     var showAboutDialog by remember { mutableStateOf(false) }
     var showFaqDialog by remember { mutableStateOf(false) }
     var showPrivacyDialog by remember { mutableStateOf(false) }
-    var showComingSoonDialog by remember { mutableStateOf(false) }
+    var showLanguageDialog by remember { mutableStateOf(false) }
+    val currentLanguage = remember { LocaleHelper.getCurrentLanguageName(context) }
 
     LazyColumn(
         modifier = Modifier
@@ -47,26 +51,26 @@ fun SettingsScreen(
         item {
             SettingsItem(
                 iconPainter = painterResource(id = R.drawable.language),
-                title = "Idioma",
-                value = "Español",
-                onClick = { showComingSoonDialog = true }
+                title = stringResource(R.string.settings_language),
+                value = currentLanguage,
+                onClick = { showLanguageDialog = true }
             )
         }
         item {
             SettingsItem(
                 iconPainter = painterResource(id = R.drawable.user_outline),
-                title = "Cuenta",
+                title = stringResource(R.string.settings_account),
                 onClick = onNavigateToAccount
             )
         }
         item {
             SettingsItem(
                 iconPainter = painterResource(id = R.drawable.help),
-                title = "Ayuda y Soporte",
+                title = stringResource(R.string.settings_help),
                 onClick = {
                     val intent = Intent(Intent.ACTION_SENDTO).apply {
                         data = Uri.parse("mailto:soporte@gradia.app")
-                        putExtra(Intent.EXTRA_SUBJECT, "Ayuda y Soporte - Gradia")
+                        putExtra(Intent.EXTRA_SUBJECT, context.getString(R.string.email_subject_help))
                     }
                     context.startActivity(intent)
                 }
@@ -75,18 +79,18 @@ fun SettingsScreen(
         item {
             SettingsItem(
                 iconPainter = painterResource(id = R.drawable.faq),
-                title = "FAQ (Preguntas Frecuentes)",
+                title = stringResource(R.string.settings_faq),
                 onClick = { showFaqDialog = true }
             )
         }
         item {
             SettingsItem(
                 iconPainter = painterResource(id = R.drawable.email),
-                title = "Contacto",
+                title = stringResource(R.string.settings_contact),
                 onClick = {
                     val intent = Intent(Intent.ACTION_SENDTO).apply {
                         data = Uri.parse("mailto:soporte@gradia.app")
-                        putExtra(Intent.EXTRA_SUBJECT, "Contacto - Gradia")
+                        putExtra(Intent.EXTRA_SUBJECT, context.getString(R.string.email_subject_contact))
                     }
                     context.startActivity(intent)
                 }
@@ -95,7 +99,7 @@ fun SettingsScreen(
         item {
             SettingsItem(
                 iconPainter = painterResource(id = R.drawable.star),
-                title = "Valorar App",
+                title = stringResource(R.string.settings_rate),
                 onClick = {
                     try {
                         context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=${context.packageName}")))
@@ -108,34 +112,34 @@ fun SettingsScreen(
         item {
             SettingsItem(
                 iconPainter = painterResource(id = R.drawable.share),
-                title = "Compartir App",
+                title = stringResource(R.string.settings_share),
                 onClick = {
                     val intent = Intent(Intent.ACTION_SEND).apply {
                         type = "text/plain"
-                        putExtra(Intent.EXTRA_TEXT, "Descarga Gradia y controla tus notas: https://play.google.com/store/apps/details?id=${context.packageName}")
+                        putExtra(Intent.EXTRA_TEXT, context.getString(R.string.share_text))
                     }
-                    context.startActivity(Intent.createChooser(intent, "Compartir Gradia"))
+                    context.startActivity(Intent.createChooser(intent, context.getString(R.string.share_subject)))
                 }
             )
         }
         item {
             SettingsItem(
                 iconPainter = painterResource(id = R.drawable.document),
-                title = "Políticas de Privacidad",
+                title = stringResource(R.string.settings_privacy),
                 onClick = { showPrivacyDialog = true }
             )
         }
         item {
             SettingsItem(
                 iconPainter = painterResource(id = R.drawable.document),
-                title = "Términos y Condiciones",
+                title = stringResource(R.string.settings_terms),
                 onClick = onNavigateToTerms
             )
         }
         item {
             SettingsItem(
                 iconPainter = painterResource(id = R.drawable.information),
-                title = "Acerca de",
+                title = stringResource(R.string.settings_about),
                 onClick = { showAboutDialog = true }
             )
         }
@@ -147,18 +151,18 @@ fun SettingsScreen(
         AlertDialog(
             onDismissRequest = { showAboutDialog = false },
             title = {
-                Text("Acerca de Gradia", fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.about_title), fontWeight = FontWeight.Bold)
             },
             text = {
                 Column {
-                    Text("Versión: ${BuildConfig.VERSION_NAME}", fontWeight = FontWeight.Medium)
+                    Text("${stringResource(R.string.about_version)}: ${BuildConfig.VERSION_NAME}", fontWeight = FontWeight.Medium)
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        "Gradia es una aplicación móvil diseñada para que estudiantes universitarios puedan llevar el control de sus notas, materias, metas académicas y progreso personal.",
+                        stringResource(R.string.about_description),
                         color = Color.Gray
                     )
                     Spacer(modifier = Modifier.height(12.dp))
-                    Text("Integrantes:", fontWeight = FontWeight.Medium)
+                    Text(stringResource(R.string.about_team), fontWeight = FontWeight.Medium)
                     Text("- Karol T. Burbano N.", color = Color.Gray)
                     Text("- Sebastian Castro R.", color = Color.Gray)
                     Text("- Verónica L. Mujica G.", color = Color.Gray)
@@ -169,26 +173,23 @@ fun SettingsScreen(
             },
             confirmButton = {
                 TextButton(onClick = { showAboutDialog = false }) {
-                    Text("Cerrar")
+                    Text(stringResource(R.string.close))
                 }
             }
         )
     }
 
-    if (showComingSoonDialog) {
-        AlertDialog(
-            onDismissRequest = { showComingSoonDialog = false },
-            title = {
-                Text("Idioma", fontWeight = FontWeight.Bold)
+    if (showLanguageDialog) {
+        val languages = listOf("es", "en")
+        LanguagePickerDialog(
+            currentLanguage = LocaleHelper.getLanguage(context),
+            languages = languages,
+            onSelect = { code ->
+                LocaleHelper.setLanguage(context, code)
+                showLanguageDialog = false
+                (context as? ComponentActivity)?.recreate()
             },
-            text = {
-                Text("Próximamente estarán disponibles más idiomas.", color = Color.Gray)
-            },
-            confirmButton = {
-                TextButton(onClick = { showComingSoonDialog = false }) {
-                    Text("Cerrar")
-                }
-            }
+            onDismiss = { showLanguageDialog = false }
         )
     }
 
@@ -196,20 +197,20 @@ fun SettingsScreen(
         AlertDialog(
             onDismissRequest = { showFaqDialog = false },
             title = {
-                Text("Preguntas Frecuentes", fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.faq_title), fontWeight = FontWeight.Bold)
             },
             text = {
                 Column {
-                    FAQItem("¿Cómo agrego una materia?", "Ve a la pestaña Materias y presiona el botón + para añadir una nueva materia.")
-                    FAQItem("¿Cómo calculo mi nota final?", "Usa la calculadora de Nota Final desde el menú principal.")
-                    FAQItem("¿Los datos se guardan en la nube?", "Tus datos se sincronizan con Firebase cuando inicias sesión.")
-                    FAQItem("¿Puedo usar Gradia sin internet?", "Sí, los datos se almacenan localmente y se sincronizan cuando tengas conexión.")
-                    FAQItem("¿Cómo elimino mi cuenta?", "Ve a Perfil y selecciona la opción de eliminar cuenta.")
+                    FAQItem(stringResource(R.string.faq_q1), stringResource(R.string.faq_a1))
+                    FAQItem(stringResource(R.string.faq_q2), stringResource(R.string.faq_a2))
+                    FAQItem(stringResource(R.string.faq_q3), stringResource(R.string.faq_a3))
+                    FAQItem(stringResource(R.string.faq_q4), stringResource(R.string.faq_a4))
+                    FAQItem(stringResource(R.string.faq_q5), stringResource(R.string.faq_a5))
                 }
             },
             confirmButton = {
                 TextButton(onClick = { showFaqDialog = false }) {
-                    Text("Cerrar")
+                    Text(stringResource(R.string.close))
                 }
             }
         )
@@ -219,19 +220,17 @@ fun SettingsScreen(
         AlertDialog(
             onDismissRequest = { showPrivacyDialog = false },
             title = {
-                Text("Políticas de Privacidad", fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.privacy_title), fontWeight = FontWeight.Bold)
             },
             text = {
                 Text(
-                    "En Gradia, valoramos tu privacidad. Los datos académicos que ingresas (notas, materias, metas) se almacenan localmente en tu dispositivo y, si utilizas sincronización, en servidores protegidos de Firebase.\n\n" +
-                    "No vendemos ni compartimos tu información académica personal con terceros. Podemos recopilar datos de uso anónimos para mejorar la experiencia de la aplicación.\n\n" +
-                    "Puedes solicitar la eliminación de tus datos en cualquier momento contactando a soporte@gradia.app.",
+                    stringResource(R.string.privacy_body),
                     color = Color.Gray
                 )
             },
             confirmButton = {
                 TextButton(onClick = { showPrivacyDialog = false }) {
-                    Text("Cerrar")
+                    Text(stringResource(R.string.close))
                 }
             }
         )
@@ -255,6 +254,49 @@ private fun FAQItem(question: String, answer: String) {
         )
         HorizontalDivider(modifier = Modifier.padding(top = 8.dp), color = Color.LightGray.copy(alpha = 0.3f))
     }
+}
+
+@Composable
+fun LanguagePickerDialog(
+    currentLanguage: String,
+    languages: List<String>,
+    onSelect: (String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(stringResource(R.string.select_language), fontWeight = FontWeight.Bold)
+        },
+        text = {
+            Column {
+                languages.forEach { code ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onSelect(code) }
+                            .padding(vertical = 12.dp, horizontal = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(
+                            selected = code == currentLanguage,
+                            onClick = { onSelect(code) }
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = LocaleHelper.getLanguageDisplayName(code),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.close))
+            }
+        }
+    )
 }
 
 @Composable

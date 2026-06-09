@@ -17,7 +17,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
+import androidx.compose.ui.res.stringResource
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.navigation.NavType
@@ -33,6 +37,7 @@ import com.facebook.FacebookCallback
 import com.facebook.FacebookException
 import com.facebook.login.LoginManager
 import com.facebook.login.LoginResult
+import com.example.gradia.ui.AuthGuard
 import com.example.gradia.ui.ForgotPasswordScreen
 import com.example.gradia.ui.HomeScreen
 import com.example.gradia.ui.LoginScreen
@@ -40,11 +45,17 @@ import com.example.gradia.ui.SingUpScreen
 import com.example.gradia.ui.TermsAndConditionsScreen
 import com.example.gradia.ui.WelcomeScreen
 import com.example.gradia.ui.theme.GradiaTheme
+import com.example.gradia.util.ErrorHandler
+import com.example.gradia.util.LocaleHelper
 import kotlinx.coroutines.launch
 
 private const val TAG = "GradiaFacebook"
 
 class MainActivity : ComponentActivity() {
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LocaleHelper.wrap(newBase))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
@@ -80,11 +91,16 @@ class MainActivity : ComponentActivity() {
 
             var startDestination by remember { mutableStateOf("welcome") }
             var checkingSession by remember { mutableStateOf(true) }
+            var showCrashDialog by remember { mutableStateOf(false) }
             LaunchedEffect(Unit) {
                 if (app.isRememberMeEnabled && app.authRepository.isUserLoggedIn()) {
                     val userId = app.authRepository.getCurrentUserId()
                     val localUser = if (userId != null) app.authRepository.getLocalUser(userId) else null
                     startDestination = if (localUser != null) "home" else "welcome"
+                }
+                val (crashTrace, crashTime) = app.getLastCrashInfo()
+                if (crashTrace != null) {
+                    showCrashDialog = true
                 }
                 checkingSession = false
             }
@@ -113,6 +129,21 @@ class MainActivity : ComponentActivity() {
 
             GradiaTheme(darkTheme = isDarkMode) {
                 if (checkingSession) return@GradiaTheme
+
+                if (showCrashDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showCrashDialog = false },
+                        title = { Text(stringResource(R.string.recovery_title)) },
+                        text = {
+                            Text(stringResource(R.string.recovery_body))
+                        },
+                        confirmButton = {
+                            TextButton(onClick = { showCrashDialog = false }) {
+                                Text(stringResource(R.string.recovery_dismiss))
+                            }
+                        }
+                    )
+                }
 
                 NavHost(
                     navController = navController,
@@ -183,12 +214,12 @@ class MainActivity : ComponentActivity() {
                                         },
                                         onFailure = { e ->
                                             isLoginLoading = false
-                                            loginError = getFirebaseErrorMessage(e)
+                                            loginError = getFirebaseErrorMessage(this@MainActivity, e)
                                         }
                                     )
                                 }
                             } else {
-                                loginError = getFirebaseErrorMessage(accountResult.exception ?: Exception("Error desconocido al iniciar sesión con Google"))
+                                loginError = getFirebaseErrorMessage(this@MainActivity, accountResult.exception ?: Exception(this@MainActivity.getString(R.string.unknown_google_login_error)))
                             }
                         }
 
@@ -216,7 +247,7 @@ class MainActivity : ComponentActivity() {
                                     onFailure = { e ->
                                         Log.e(TAG, "Login: Firebase signIn failed", e)
                                         isLoginLoading = false
-                                        loginError = getFirebaseErrorMessage(e)
+                                        loginError = getFirebaseErrorMessage(this@MainActivity, e)
                                     }
                                 )
                             }
@@ -242,14 +273,17 @@ class MainActivity : ComponentActivity() {
                                         },
                                         onFailure = { e ->
                                             isLoginLoading = false
-                                            loginError = getFirebaseErrorMessage(e)
+                                            loginError = getFirebaseErrorMessage(this@MainActivity, e)
                                         }
                                     )
                                 }
                             },
                             onGoogleSignIn = {
                                 loginError = null
-                                googleLauncher.launch(GoogleSignInUtil.getSignInIntent())
+                                scope.launch {
+                                    GoogleSignInUtil.signOut()
+                                    googleLauncher.launch(GoogleSignInUtil.getSignInIntent())
+                                }
                             },
                             onFacebookSignIn = {
                                 Log.d(TAG, "Login: Facebook button clicked")
@@ -263,7 +297,7 @@ class MainActivity : ComponentActivity() {
                                     }
                                     override fun onError(error: FacebookException) {
                                         Log.e(TAG, "Login: Facebook onError", error)
-                                        loginError = getFirebaseErrorMessage(error)
+                                        loginError = getFirebaseErrorMessage(this@MainActivity, error)
                                     }
                                 })
                                 Log.d(TAG, "Login: Calling loginWithAccountPicker")
@@ -292,11 +326,11 @@ class MainActivity : ComponentActivity() {
                                     app.authRepository.sendPasswordResetEmail(email).fold(
                                         onSuccess = {
                                             isSending = false
-                                            resetSuccess = "Se ha enviado un enlace de recuperación a tu correo."
+                                            resetSuccess = this@MainActivity.getString(R.string.reset_email_sent)
                                         },
                                         onFailure = { e ->
                                             isSending = false
-                                            resetError = getFirebaseErrorMessage(e)
+                                            resetError = getFirebaseErrorMessage(this@MainActivity, e)
                                         }
                                     )
                                 }
@@ -338,12 +372,12 @@ class MainActivity : ComponentActivity() {
                                         },
                                         onFailure = { e ->
                                             isRegisterLoading = false
-                                            registerError = getFirebaseErrorMessage(e)
+                                            registerError = getFirebaseErrorMessage(this@MainActivity, e)
                                         }
                                     )
                                 }
                             } else {
-                                registerError = getFirebaseErrorMessage(accountResult.exception ?: Exception("Error desconocido al registrarse con Google"))
+                                registerError = getFirebaseErrorMessage(this@MainActivity, accountResult.exception ?: Exception(this@MainActivity.getString(R.string.unknown_google_register_error)))
                             }
                         }
 
@@ -363,7 +397,7 @@ class MainActivity : ComponentActivity() {
                                     onFailure = { e ->
                                         Log.e(TAG, "Register: Firebase signIn failed", e)
                                         isRegisterLoading = false
-                                        registerError = getFirebaseErrorMessage(e)
+                                        registerError = getFirebaseErrorMessage(this@MainActivity, e)
                                     }
                                 )
                             }
@@ -375,7 +409,7 @@ class MainActivity : ComponentActivity() {
                             onTermsClick = { navController.navigate("terms_and_conditions") },
                             isLoading = isRegisterLoading,
                             errorMessage = registerError,
-                            googleMessage = if (fromGoogle) "No tienes una cuenta con Gradia. Regístrate con Google para continuar." else null,
+                            googleMessage = if (fromGoogle) stringResource(R.string.google_register_prompt) else null,
                             onRegister = { email, password, nombre ->
                                 registerError = null
                                 isRegisterLoading = true
@@ -390,7 +424,7 @@ class MainActivity : ComponentActivity() {
                                         },
                                         onFailure = { e ->
                                             isRegisterLoading = false
-                                            registerError = getFirebaseErrorMessage(e)
+                                            registerError = getFirebaseErrorMessage(this@MainActivity, e)
                                         }
                                     )
                                 }
@@ -413,7 +447,7 @@ class MainActivity : ComponentActivity() {
                                     }
                                     override fun onError(error: FacebookException) {
                                         Log.e(TAG, "Register: Facebook onError", error)
-                                        registerError = getFirebaseErrorMessage(error)
+                                        registerError = getFirebaseErrorMessage(this@MainActivity, error)
                                     }
                                 })
                                 Log.d(TAG, "Register: Calling loginWithAccountPicker")
@@ -430,36 +464,45 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     composable("home") {
-                        val userId = app.authRepository.getCurrentUserId()
-                        val user by if (userId != null) {
-                            app.userRepository.getUserById(userId).collectAsState(initial = null)
-                        } else {
-                            remember { mutableStateOf(null) }
-                        }
-
-                        HomeScreen(
-                            userName = user?.nombre ?: "Usuario",
-                            userEmail = user?.email ?: "",
-                            isDarkMode = isDarkMode,
-                            onToggleTheme = {
-                                isDarkMode = !isDarkMode
-                                prefs.edit().putBoolean("dark_mode", isDarkMode).apply()
-                            },
-                            onNavigateToTerms = { navController.navigate("terms_and_conditions") },
-                            onLogout = {
-                                app.isRememberMeEnabled = false
-                                app.authRepository.signOut()
-                                navController.navigate("welcome") {
-                                    popUpTo("home") { inclusive = true }
-                                }
-                            },
-                            onDeleteAccount = {
-                                app.isRememberMeEnabled = false
+                        AuthGuard(
+                            authRepository = app.authRepository,
+                            onUnauthenticated = {
                                 navController.navigate("welcome") {
                                     popUpTo("home") { inclusive = true }
                                 }
                             }
-                        )
+                        ) {
+                            val userId = app.authRepository.getCurrentUserId()
+                            val user by if (userId != null) {
+                                app.userRepository.getUserById(userId).collectAsState(initial = null)
+                            } else {
+                                remember { mutableStateOf(null) }
+                            }
+
+                            HomeScreen(
+                                userName = user?.nombre ?: stringResource(R.string.home_default_username),
+                                userEmail = user?.email ?: "",
+                                isDarkMode = isDarkMode,
+                                onToggleTheme = {
+                                    isDarkMode = !isDarkMode
+                                    prefs.edit().putBoolean("dark_mode", isDarkMode).apply()
+                                },
+                                onNavigateToTerms = { navController.navigate("terms_and_conditions") },
+                                onLogout = {
+                                    app.isRememberMeEnabled = false
+                                    app.authRepository.signOut()
+                                    navController.navigate("welcome") {
+                                        popUpTo("home") { inclusive = true }
+                                    }
+                                },
+                                onDeleteAccount = {
+                                    app.isRememberMeEnabled = false
+                                    navController.navigate("welcome") {
+                                        popUpTo("home") { inclusive = true }
+                                    }
+                                }
+                            )
+                        }
                     }
                 }
             }
