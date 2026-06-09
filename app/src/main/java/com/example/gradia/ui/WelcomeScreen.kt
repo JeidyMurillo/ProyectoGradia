@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -60,7 +61,7 @@ fun WelcomeScreen(
 
         // Eslogan con Martini (usando headlineMedium definido en Type.kt)
         Text(
-            text = "Controla tus notas,\ndomina tu semestre.",
+            text = stringResource(R.string.welcome_slogan),
             style = MaterialTheme.typography.headlineMedium.copy(
                 fontSize = 20.sp // Ajuste fino del tamaño
             ),
@@ -73,14 +74,14 @@ fun WelcomeScreen(
 
         // Botones con Inter y Animación
         WelcomeButton(
-            text = "Iniciar Sesión",
+            text = stringResource(R.string.welcome_login),
             onClick = onLoginClick
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         WelcomeButton(
-            text = "Registrarse",
+            text = stringResource(R.string.welcome_register),
             onClick = onRegisterClick
         )
 

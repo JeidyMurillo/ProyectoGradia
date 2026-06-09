@@ -1,6 +1,8 @@
 package com.example.gradia.data.firebase
 
+import android.content.Context
 import android.util.Log
+import com.example.gradia.R
 import com.google.firebase.Firebase
 import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.EmailAuthProvider
@@ -16,7 +18,7 @@ import kotlinx.coroutines.tasks.await
 
 private const val TAG = "GradiaFirebaseAuth"
 
-class FirebaseAuthService {
+class FirebaseAuthService(private val context: Context) {
 
     private val auth = Firebase.auth
 
@@ -33,7 +35,7 @@ class FirebaseAuthService {
             val result = auth.signInWithEmailAndPassword(email, password).await()
             result.user?.let {
                 Result.success(it)
-            } ?: Result.failure(Exception("Usuario no encontrado"))
+            } ?: Result.failure(Exception(context.getString(R.string.firebase_user_not_found)))
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -48,7 +50,7 @@ class FirebaseAuthService {
                 }
                 user.updateProfile(profileUpdates).await()
                 Result.success(user)
-            } ?: Result.failure(Exception("Error al crear usuario"))
+            } ?: Result.failure(Exception(context.getString(R.string.firebase_create_user_error)))
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -63,7 +65,7 @@ class FirebaseAuthService {
             val firebaseUser = result.user
             if (firebaseUser == null) {
                 Log.e(TAG, "signInWithFacebook: user is null")
-                return Result.failure(Exception("Error al iniciar sesión con Facebook"))
+                return Result.failure(Exception(context.getString(R.string.firebase_facebook_login_error)))
             }
             val isNewUser = result.additionalUserInfo?.isNewUser ?: false
             Log.d(TAG, "signInWithFacebook: success, uid=${firebaseUser.uid}, isNewUser=$isNewUser")
@@ -78,7 +80,7 @@ class FirebaseAuthService {
         return try {
             val credential: AuthCredential = GoogleAuthProvider.getCredential(idToken, null)
             val result = auth.signInWithCredential(credential).await()
-            val firebaseUser = result.user ?: return Result.failure(Exception("Error al iniciar sesión con Google"))
+            val firebaseUser = result.user ?: return Result.failure(Exception(context.getString(R.string.firebase_google_login_error)))
             val isNewUser = result.additionalUserInfo?.isNewUser ?: false
             Result.success(Pair(firebaseUser, isNewUser))
         } catch (e: Exception) {

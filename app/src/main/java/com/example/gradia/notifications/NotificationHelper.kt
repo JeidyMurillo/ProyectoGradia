@@ -14,17 +14,16 @@ class NotificationHelper(private val context: Context) {
 
     companion object {
         const val CHANNEL_ID = "gradia_reminders"
-        const val CHANNEL_NAME = "Recordatorios"
     }
 
     fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
-                CHANNEL_NAME,
+                context.getString(R.string.notif_channel_name),
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                description = "Recordatorios de tareas y eventos"
+                description = context.getString(R.string.notif_channel_description)
             }
             val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             manager.createNotificationChannel(channel)
@@ -56,11 +55,11 @@ class NotificationHelper(private val context: Context) {
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.gradia_white_logo)
-            .setContentTitle(if (esNota) "Recordatorio de actividad" else "Recordatorio de tarea")
+            .setContentTitle(if (esNota) context.getString(R.string.notif_reminder_title) else context.getString(R.string.notif_reminder_task_title))
             .setContentText(title)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentIntent(openPendingIntent)
-            .addAction(R.drawable.ic_notification, "Marcar como completada", completePendingIntent)
+            .addAction(R.drawable.ic_notification, context.getString(R.string.notif_mark_complete), completePendingIntent)
             .setAutoCancel(true)
             .build()
 

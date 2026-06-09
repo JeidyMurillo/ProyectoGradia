@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -88,8 +89,8 @@ fun StatsScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    if (state.totalSubjects == 0) "Aún no tienes asignaturas registradas"
-                    else "Registra notas en tus asignaturas para ver estadísticas",
+                    if (state.totalSubjects == 0) stringResource(R.string.stats_no_subjects)
+                    else stringResource(R.string.stats_add_grades_hint),
                     style = MaterialTheme.typography.bodyLarge.copy(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontFamily = InterFontFamily
@@ -127,7 +128,7 @@ private fun AverageCard(
             horizontalAlignment = Alignment.Start
         ) {
             Text(
-                "Promedio General",
+                stringResource(R.string.stats_general_average),
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontWeight = FontWeight.Medium,
                     color = PurpleGradia,
@@ -192,7 +193,7 @@ private fun CreditsCard(
             horizontalAlignment = Alignment.Start
         ) {
             Text(
-                "Créditos",
+                stringResource(R.string.stats_credits),
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface,
@@ -249,7 +250,7 @@ private fun DistributionChartCard(
                 .padding(20.dp)
         ) {
             Text(
-                "Distribución de notas",
+                stringResource(R.string.stats_grade_distribution),
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface,
@@ -273,19 +274,19 @@ private fun DistributionChartCard(
                 ) {
                     LegendItem(
                         color = Color(0xFF4CAF50),
-                        label = "Excelente (${excellentCount})"
+                        label = stringResource(R.string.stats_excellent, excellentCount)
                     )
                     LegendItem(
                         color = Color(0xFF81C784),
-                        label = "Aprobado (${approvedCount})"
+                        label = stringResource(R.string.stats_approved, approvedCount)
                     )
                     LegendItem(
                         color = Color(0xFFFFF176),
-                        label = "Regular (${regularCount})"
+                        label = stringResource(R.string.stats_regular, regularCount)
                     )
                     LegendItem(
                         color = Color(0xFFEF9A9A),
-                        label = "Reprobado (${failedCount})"
+                        label = stringResource(R.string.stats_failed, failedCount)
                     )
                 }
             }
@@ -346,7 +347,7 @@ private fun DonutChart(
                 )
             )
             Text(
-                "Calificaciones",
+                stringResource(R.string.stats_grades),
                 style = MaterialTheme.typography.bodySmall.copy(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontFamily = InterFontFamily
@@ -393,7 +394,7 @@ private fun RecentMilestonesCard(
                 .padding(20.dp)
         ) {
             Text(
-                "Hitos recientes",
+                stringResource(R.string.stats_milestones),
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface,
@@ -415,7 +416,7 @@ private fun RecentMilestonesCard(
                 Column {
                     if (bestSubjectName.isNotEmpty()) {
                         Text(
-                            "Mejor promedio: $bestSubjectName",
+                            stringResource(R.string.stats_best_average, bestSubjectName),
                             style = MaterialTheme.typography.bodyLarge.copy(
                                 fontWeight = FontWeight.SemiBold,
                                 color = MaterialTheme.colorScheme.onSurface,
@@ -426,7 +427,7 @@ private fun RecentMilestonesCard(
                     Spacer(modifier = Modifier.height(4.dp))
                     if (bestGradeName.isNotEmpty()) {
                         Text(
-                            "Has alcanzado un ${"%.1f".format(bestGradeValue)} en $bestGradeName",
+                            stringResource(R.string.stats_best_grade, "%.1f".format(bestGradeValue), bestGradeName),
                             style = MaterialTheme.typography.bodySmall.copy(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontFamily = InterFontFamily
@@ -450,7 +451,7 @@ fun CTAButton(onNavigateToPerformance: () -> Unit = {}) {
         colors = ButtonDefaults.buttonColors(containerColor = PurpleGradia)
     ) {
         Text(
-            "Ver rendimiento por asignatura",
+            stringResource(R.string.stats_view_performance),
             style = MaterialTheme.typography.bodyLarge.copy(
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onPrimary,

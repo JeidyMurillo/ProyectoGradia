@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -36,9 +37,12 @@ fun ForgotPasswordScreen(
 
     val displayError = localError ?: errorMessage
 
+    val errorEmailBlank = stringResource(R.string.error_email_blank)
+    val errorEmailInvalid = stringResource(R.string.error_email_invalid)
+
     fun validate(): String? {
-        if (email.isBlank()) return "Ingresa tu correo electrónico"
-        if (!email.contains("@") || !email.contains(".")) return "El correo electrónico no es válido"
+        if (email.isBlank()) return errorEmailBlank
+        if (!email.contains("@") || !email.contains(".")) return errorEmailInvalid
         return null
     }
 
@@ -59,7 +63,7 @@ fun ForgotPasswordScreen(
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Volver",
+                        contentDescription = stringResource(R.string.action_back),
                         tint = Color.White,
                         modifier = Modifier.size(24.dp)
                     )
@@ -86,14 +90,14 @@ fun ForgotPasswordScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             Text(
-                text = "Recuperar Contraseña",
+                text = stringResource(R.string.forgot_title),
                 style = MaterialTheme.typography.displayLarge.copy(fontSize = 28.sp),
                 color = PurpleGradia,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
             Text(
-                text = "Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.",
+                text = stringResource(R.string.forgot_instruction),
                 style = MaterialTheme.typography.bodyLarge,
                 color = Color.Gray,
                 textAlign = TextAlign.Center,
@@ -103,7 +107,7 @@ fun ForgotPasswordScreen(
             LoginTextField(
                 value = email,
                 onValueChange = { email = it; localError = null },
-                placeholder = "Correo Electrónico"
+                placeholder = stringResource(R.string.forgot_email_placeholder)
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -141,7 +145,7 @@ fun ForgotPasswordScreen(
             }
 
             LoginPrimaryButton(
-                text = "Enviar enlace",
+                text = stringResource(R.string.forgot_button),
                 onClick = {
                     val error = validate()
                     if (error != null) {
@@ -156,7 +160,7 @@ fun ForgotPasswordScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             Text(
-                text = "Revisa tu bandeja de entrada y sigue las instrucciones del enlace.",
+                text = stringResource(R.string.forgot_hint),
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.LightGray,
                 textAlign = TextAlign.Center

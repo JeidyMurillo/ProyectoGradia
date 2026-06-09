@@ -27,6 +27,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -56,7 +57,7 @@ fun HomeScreen(
     onNavigateToTerms: () -> Unit = {},
     onToggleTheme: () -> Unit = {},
     isDarkMode: Boolean = false,
-    userName: String = "Usuario",
+    userName: String = "",
     userEmail: String = ""
 ) {
     var selectedTab by rememberSaveable { mutableIntStateOf(0) }
@@ -135,20 +136,20 @@ fun HomeScreen(
                         title = {
                             Text(
                                 when (selectedTab) {
-                                    0 -> "Home"
-                                    1 -> "Nota Final"
-                                    2 -> "Añadir"
-                                    3 -> "Materias"
-                                    4 -> "Calendario"
-                                    5 -> "Notas"
-                                    6 -> "Tareas"
-                                    7 -> "Ajustes"
-                                    8 -> "Perfil"
-                                    9 -> selectedSubjectName.ifBlank { "Materia" }
-                                    10 -> "Estadísticas"
-                                    12 -> "Rendimiento"
-                                    13 -> "Notificaciones"
-                                    else -> "Gradia"
+                                    0 -> stringResource(R.string.tab_home)
+                                    1 -> stringResource(R.string.tab_final_grade)
+                                    2 -> stringResource(R.string.tab_add)
+                                    3 -> stringResource(R.string.tab_subjects)
+                                    4 -> stringResource(R.string.tab_calendar)
+                                    5 -> stringResource(R.string.tab_notes)
+                                    6 -> stringResource(R.string.tab_tasks)
+                                    7 -> stringResource(R.string.tab_settings)
+                                    8 -> stringResource(R.string.tab_profile)
+                                    9 -> selectedSubjectName.ifBlank { stringResource(R.string.tab_subject) }
+                                    10 -> stringResource(R.string.tab_statistics)
+                                    12 -> stringResource(R.string.tab_performance)
+                                    13 -> stringResource(R.string.tab_notifications)
+                                    else -> stringResource(R.string.app_name)
                                 },
                                 modifier = Modifier.fillMaxWidth(),
                                 textAlign = TextAlign.Center,
@@ -197,7 +198,7 @@ fun HomeScreen(
                                     ) {
                                         if (selectedTab == 6 && tasksState.selectedTaskIds.isNotEmpty()) {
                                             DropdownMenuItem(
-                                                text = { Text("Eliminar seleccionadas (${tasksState.selectedTaskIds.size})", color = MaterialTheme.colorScheme.error) },
+                                                text = { Text(stringResource(R.string.menu_delete_selected, tasksState.selectedTaskIds.size), color = MaterialTheme.colorScheme.error) },
                                                 onClick = {
                                                     showMenu = false
                                                     tasksViewModel.deleteSelectedTasks()
@@ -210,7 +211,7 @@ fun HomeScreen(
                                         }
                                         if (selectedTab == 5) {
                                             DropdownMenuItem(
-                                                text = { Text("Gestionar categorías") },
+                                                text = { Text(stringResource(R.string.menu_manage_categories)) },
                                                 onClick = {
                                                     showMenu = false
                                                     showCategoryManager = true
@@ -222,7 +223,7 @@ fun HomeScreen(
                                         }
                                         if (selectedTab == 3) {
                                             Text(
-                                                text = "Ordenar por",
+                                                text = stringResource(R.string.menu_sort_by),
                                                 fontSize = 12.sp,
                                                 fontWeight = FontWeight.SemiBold,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -230,7 +231,7 @@ fun HomeScreen(
                                                 modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 4.dp)
                                             )
                                             SubjectSortMenuItem(
-                                                label = "Nombre (A–Z)",
+                                                label = stringResource(R.string.sort_name_az),
                                                 value = SubjectSort.NOMBRE,
                                                 selected = subjectsState.sort,
                                                 onClick = {
@@ -239,7 +240,7 @@ fun HomeScreen(
                                                 }
                                             )
                                             SubjectSortMenuItem(
-                                                label = "Semestre",
+                                                label = stringResource(R.string.sort_semester),
                                                 value = SubjectSort.SEMESTRE,
                                                 selected = subjectsState.sort,
                                                 onClick = {
@@ -248,7 +249,7 @@ fun HomeScreen(
                                                 }
                                             )
                                             SubjectSortMenuItem(
-                                                label = "Créditos (mayor a menor)",
+                                                label = stringResource(R.string.sort_credits_desc),
                                                 value = SubjectSort.CREDITOS,
                                                 selected = subjectsState.sort,
                                                 onClick = {
@@ -257,7 +258,7 @@ fun HomeScreen(
                                                 }
                                             )
                                             SubjectSortMenuItem(
-                                                label = "Promedio (mayor a menor)",
+                                                label = stringResource(R.string.sort_average_desc),
                                                 value = SubjectSort.PROMEDIO,
                                                 selected = subjectsState.sort,
                                                 onClick = {
@@ -269,7 +270,7 @@ fun HomeScreen(
                                         if (selectedTab == 9 && subjectDetailViewModel != null) {
                                             val detailState by subjectDetailViewModel.uiState.collectAsState()
                                             Text(
-                                                text = "Ordenar notas",
+                                                text = stringResource(R.string.sort_grades_header),
                                                 fontSize = 12.sp,
                                                 fontWeight = FontWeight.SemiBold,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -277,7 +278,7 @@ fun HomeScreen(
                                                 modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 4.dp)
                                             )
                                             SortCheckMenuItem(
-                                                label = "Predeterminado",
+                                                label = stringResource(R.string.sort_default),
                                                 isSelected = detailState.sort == GradeSort.PREDETERMINADO,
                                                 onClick = {
                                                     subjectDetailViewModel.onGradeSortChange(GradeSort.PREDETERMINADO)
@@ -285,7 +286,7 @@ fun HomeScreen(
                                                 }
                                             )
                                             SortCheckMenuItem(
-                                                label = "Nota (mayor a menor)",
+                                                label = stringResource(R.string.sort_grade_desc),
                                                 isSelected = detailState.sort == GradeSort.NOTA,
                                                 onClick = {
                                                     subjectDetailViewModel.onGradeSortChange(GradeSort.NOTA)
@@ -293,7 +294,7 @@ fun HomeScreen(
                                                 }
                                             )
                                             SortCheckMenuItem(
-                                                label = "Peso (mayor a menor)",
+                                                label = stringResource(R.string.sort_weight_desc),
                                                 isSelected = detailState.sort == GradeSort.PESO,
                                                 onClick = {
                                                     subjectDetailViewModel.onGradeSortChange(GradeSort.PESO)
@@ -301,7 +302,7 @@ fun HomeScreen(
                                                 }
                                             )
                                             SortCheckMenuItem(
-                                                label = "Pendientes primero",
+                                                label = stringResource(R.string.sort_pending_first),
                                                 isSelected = detailState.sort == GradeSort.PENDIENTES,
                                                 onClick = {
                                                     subjectDetailViewModel.onGradeSortChange(GradeSort.PENDIENTES)
@@ -428,7 +429,7 @@ fun HomeScreen(
                         13 -> NotificationsScreen(viewModel = notificationsViewModel)
                         else -> {
                             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                Text("Próximamente", style = MaterialTheme.typography.titleLarge)
+                                Text(stringResource(R.string.coming_soon), style = MaterialTheme.typography.titleLarge)
                             }
                         }
                     }
@@ -438,11 +439,11 @@ fun HomeScreen(
             if (showCategoryManager) {
                 AlertDialog(
                     onDismissRequest = { showCategoryManager = false },
-                    title = { Text("Gestionar categorías", fontWeight = FontWeight.Bold) },
+                    title = { Text(stringResource(R.string.dialog_manage_categories), fontWeight = FontWeight.Bold) },
                     text = {
                         Column {
                             if (notesState.allCategories.isEmpty()) {
-                                Text("No hay categorías creadas.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(stringResource(R.string.dialog_no_categories), color = MaterialTheme.colorScheme.onSurfaceVariant)
                             } else {
                                 notesState.allCategories.forEach { cat ->
                                     Row(
@@ -466,7 +467,7 @@ fun HomeScreen(
                                         TextButton(onClick = {
                                             notesViewModel.deleteCategory(cat.id)
                                         }) {
-                                            Text("Eliminar", color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
+                                            Text(stringResource(R.string.action_delete), color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
                                         }
                                     }
                                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
@@ -476,7 +477,7 @@ fun HomeScreen(
                     },
                     confirmButton = {
                         TextButton(onClick = { showCategoryManager = false }) {
-                            Text("Cerrar")
+                            Text(stringResource(R.string.action_close))
                         }
                     }
                 )
@@ -512,7 +513,7 @@ fun HomeScreen(
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         QuickAddMenuItem(
-                            label = "Agregar nota",
+                            label = stringResource(R.string.quick_add_note),
                             iconRes = R.drawable.sticky,
                             onClick = {
                                 previousTab = selectedTab
@@ -521,7 +522,7 @@ fun HomeScreen(
                             }
                         )
                         QuickAddMenuItem(
-                            label = "To-do List",
+                            label = stringResource(R.string.quick_add_todo),
                             iconRes = R.drawable.todo,
                             onClick = {
                                 previousTab = selectedTab
@@ -616,7 +617,7 @@ fun GradiaDrawerContent(
     onItemClick: (String) -> Unit,
     isDarkMode: Boolean = false,
     onToggleTheme: () -> Unit = {},
-    userName: String = "Usuario",
+    userName: String = "",
     userEmail: String = ""
 ) {
     val app = LocalContext.current.applicationContext as GradiaApplication
@@ -684,7 +685,7 @@ fun GradiaDrawerContent(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = userName,
+                    text = userName.ifBlank { stringResource(R.string.home_default_username) },
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold,
                         fontFamily = InterFontFamily,
@@ -707,21 +708,21 @@ fun GradiaDrawerContent(
 
             // Menu Items
             DrawerMenuItem(
-                label = "Perfil",
+                label = stringResource(R.string.drawer_profile),
                 outlineIconId = R.drawable.user_outline,
                 boldIconId = R.drawable.user_bold,
                 isSelected = selectedItem == "Perfil",
                 onClick = { onItemClick("Perfil") }
             )
             DrawerMenuItem(
-                label = "Estadísticas",
+                label = stringResource(R.string.drawer_statistics),
                 outlineIconId = R.drawable.stats_chart_outline,
                 boldIconId = R.drawable.stats_chart,
                 isSelected = selectedItem == "Estadísticas",
                 onClick = { onItemClick("Estadísticas") }
             )
             DrawerMenuItem(
-                label = "Ajustes",
+                label = stringResource(R.string.drawer_settings),
                 outlineIconId = R.drawable.settings_linear,
                 boldIconId = R.drawable.settings_rounded,
                 isSelected = selectedItem == "Ajustes",
@@ -732,14 +733,14 @@ fun GradiaDrawerContent(
 
             // Bottom Items
             DrawerMenuItem(
-                label = if (isDarkMode) "Tema Claro" else "Tema Oscuro",
+                label = if (isDarkMode) stringResource(R.string.drawer_light_theme) else stringResource(R.string.drawer_dark_theme),
                 outlineIconId = if (isDarkMode) R.drawable.sun_light else R.drawable.moon,
                 boldIconId = if (isDarkMode) R.drawable.sun_light else R.drawable.moon,
                 isSelected = false,
                 onClick = onToggleTheme
             )
             DrawerMenuItem(
-                label = "Log Out",
+                label = stringResource(R.string.drawer_logout),
                 outlineIconId = R.drawable.log_out,
                 boldIconId = R.drawable.logout_bold,
                 isSelected = selectedItem == "Log Out",
@@ -806,7 +807,7 @@ fun HomeContent(onSubjectClick: (Subject) -> Unit = {}) {
     ) {
         item {
             Text(
-                "Mi Semestre",
+                stringResource(R.string.home_my_semester),
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface,
@@ -830,7 +831,7 @@ fun HomeContent(onSubjectClick: (Subject) -> Unit = {}) {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        "Promedio General",
+                        stringResource(R.string.home_overall_average),
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
@@ -847,14 +848,14 @@ fun HomeContent(onSubjectClick: (Subject) -> Unit = {}) {
                         CircularProgressChart(
                             progress = if (hasGrades) (average / 5.0).toFloat().coerceIn(0f, 1f) else 0f,
                             score = if (hasGrades) "%.1f".format(average) else "—",
-                            status = performance.status
+                            status = stringResource(performance.statusResId)
                         )
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))
 
                     Text(
-                        text = performance.message,
+                        text = stringResource(performance.messageResId),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center
@@ -870,7 +871,7 @@ fun HomeContent(onSubjectClick: (Subject) -> Unit = {}) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    "Materias",
+                    stringResource(R.string.home_subjects),
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -879,7 +880,7 @@ fun HomeContent(onSubjectClick: (Subject) -> Unit = {}) {
                 )
                 if (subjects.size > 3) {
                     Text(
-                        text = if (isExpanded) "Ver menos" else "Ver todas",
+                        text = if (isExpanded) stringResource(R.string.home_see_less) else stringResource(R.string.home_see_all),
                         color = PurpleGradia,
                         style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
                         modifier = Modifier.clickable { isExpanded = !isExpanded }
@@ -926,7 +927,7 @@ fun EmptySubjectsCard() {
             )
             Spacer(modifier = Modifier.height(10.dp))
             Text(
-                text = "Aún no tienes asignaturas",
+                text = stringResource(R.string.home_empty_title),
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 15.sp,
@@ -934,7 +935,7 @@ fun EmptySubjectsCard() {
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Ve a \"Materias\" en la barra inferior para crear tu primera asignatura.",
+                text = stringResource(R.string.home_empty_body),
                 fontSize = 12.sp,
                 color = Color.Gray,
                 textAlign = TextAlign.Center,
@@ -944,7 +945,7 @@ fun EmptySubjectsCard() {
     }
 }
 
-private data class PerformanceInfo(val status: String, val message: String)
+private data class PerformanceInfo(val statusResId: Int, val messageResId: Int)
 
 /**
  * Devuelve la etiqueta y el mensaje del Promedio General según cómo le va al
@@ -952,24 +953,24 @@ private data class PerformanceInfo(val status: String, val message: String)
  */
 private fun performanceFor(average: Double, hasGrades: Boolean): PerformanceInfo = when {
     !hasGrades -> PerformanceInfo(
-        status = "Sin notas",
-        message = "Aún no has registrado calificaciones."
+        statusResId = R.string.status_no_grades,
+        messageResId = R.string.message_no_grades
     )
     average < 3.0 -> PerformanceInfo(
-        status = "Bajo",
-        message = "Vas por debajo de lo necesario. ¡Aún puedes mejorar!"
+        statusResId = R.string.status_low,
+        messageResId = R.string.message_low
     )
     average < 4.0 -> PerformanceInfo(
-        status = "Regular",
-        message = "Vas aprobando, sigue esforzándote."
+        statusResId = R.string.status_average,
+        messageResId = R.string.message_average
     )
     average < 4.5 -> PerformanceInfo(
-        status = "Bien",
-        message = "¡Buen rendimiento este ciclo!"
+        statusResId = R.string.status_good,
+        messageResId = R.string.message_good
     )
     else -> PerformanceInfo(
-        status = "Excelente",
-        message = "¡Excelente rendimiento este ciclo!"
+        statusResId = R.string.status_excellent,
+        messageResId = R.string.message_excellent
     )
 }
 
