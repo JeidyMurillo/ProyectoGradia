@@ -812,7 +812,7 @@ fun NoteGridItem(
             ) {
                 Text(
                     text = note.title.ifEmpty { stringResource(R.string.fallback_untitled) },
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = Color.Black),
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -821,7 +821,7 @@ fun NoteGridItem(
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = previewText.ifEmpty { stringResource(R.string.fallback_no_content) },
-                    style = MaterialTheme.typography.bodySmall.copy(color = Color.Black),
+                    style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurface),
                     maxLines = 4,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -856,7 +856,7 @@ fun NoteGridItem(
                 Text(
                     text = note.title.ifEmpty { stringResource(R.string.fallback_untitled) },
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             },
             text = {
@@ -883,7 +883,7 @@ fun NoteGridItem(
 
                     Text(
                         text = annotatedText,
-                        style = MaterialTheme.typography.bodyLarge.copy(color = Color.Black)
+                        style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface)
                     )
 
                     if (fullData.imagePaths.isNotEmpty()) {
