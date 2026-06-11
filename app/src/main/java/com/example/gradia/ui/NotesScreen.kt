@@ -1,5 +1,10 @@
 package com.example.gradia.ui
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -82,6 +87,12 @@ fun NotesScreen(viewModel: NotesViewModel? = null) {
             )
         }
 
+        if (state.currentTitle.isBlank() && state.currentContent.isBlank() && state.savedNotes.isEmpty() && state.showOnboarding) {
+            item {
+                NotesOnboardingCard(onDismiss = { vm.dismissOnboarding() })
+            }
+        }
+
         item {
             NoteEditorCard(
                 title = state.currentTitle,
@@ -98,30 +109,32 @@ fun NotesScreen(viewModel: NotesViewModel? = null) {
 
         if (state.selectedNoteIds.isNotEmpty()) {
             item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color(0xFFF3EDF7), RoundedCornerShape(12.dp))
-                        .padding(horizontal = 12.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        stringResource(R.string.notes_selected, state.selectedNoteIds.size),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp
-                    )
+Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(12.dp))
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            stringResource(R.string.notes_selected, state.selectedNoteIds.size),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         TextButton(onClick = vm::clearNoteSelection) {
                             Text(stringResource(R.string.action_cancel), fontSize = 13.sp)
                         }
-                        Button(
-                            onClick = vm::deleteSelectedNotes,
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error.copy(alpha = 0.8f)),
-                            shape = RoundedCornerShape(8.dp),
-                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
+                        IconButton(
+                            onClick = vm::deleteSelectedNotes
                         ) {
-                            Text(stringResource(R.string.action_delete), color = Color.White, fontSize = 13.sp)
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = stringResource(R.string.action_delete),
+                                tint = MaterialTheme.colorScheme.error
+                            )
                         }
                     }
                 }
@@ -263,7 +276,7 @@ fun CategoryChip(label: String, backgroundColor: Color, isSelected: Boolean = fa
                 text = label,
                 style = MaterialTheme.typography.labelMedium.copy(
                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = if (isSelected) Color.Black else MaterialTheme.colorScheme.onSurface,
                     fontFamily = InterFontFamily
                 )
             )
@@ -430,6 +443,7 @@ fun NoteEditorCard(
     var isBoldActive by remember { mutableStateOf(false) }
     var isItalicActive by remember { mutableStateOf(false) }
     var isBulletActive by remember { mutableStateOf(false) }
+    var showFormatToolbar by remember { mutableStateOf(false) }
 
     val visualTransformation = remember(boldRanges, italicRanges) {
         RichTextUtil.visualTransformation(boldRanges, italicRanges)
@@ -508,7 +522,7 @@ fun NoteEditorCard(
             TextField(
                 value = title,
                 onValueChange = onTitleChange,
-                placeholder = { Text("Title", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                placeholder = { Text(stringResource(R.string.placeholder_note_title), fontSize = 24.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant) },
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.Transparent,
                     unfocusedContainerColor = Color.Transparent,
@@ -658,7 +672,7 @@ fun NoteEditorCard(
                                     text = category.name,
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                        color = MaterialTheme.colorScheme.onSurface,
+                                        color = if (isSelected) Color.Black else MaterialTheme.colorScheme.onSurface,
                                         fontSize = 11.sp
                                     )
                                 )
@@ -678,92 +692,98 @@ fun NoteEditorCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        "B",
-                        fontWeight = if (isBoldActive) FontWeight.ExtraBold else FontWeight.Bold,
-                        color = if (isBoldActive) MaterialTheme.colorScheme.primary else PurpleGradia,
-                        fontSize = 18.sp,
-                        modifier = Modifier.clickable {
-                            val sel = tfValue.selection
-                            if (sel.collapsed) {
-                                isBoldActive = !isBoldActive
-                            } else {
-                                toggleFormat(boldRanges, sel.min until sel.max, { boldRanges = it })
-                            }
-                        }
+                        text = "Aa",
+                        fontWeight = if (showFormatToolbar) FontWeight.ExtraBold else FontWeight.Bold,
+                        fontSize = 15.sp,
+                        color = if (showFormatToolbar) MaterialTheme.colorScheme.primary else PurpleGradia,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .clickable { showFormatToolbar = !showFormatToolbar }
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
                     )
-                    Icon(
-                        painter = painterResource(id = R.drawable.italic),
-                        contentDescription = "Italic",
-                        tint = if (isItalicActive) MaterialTheme.colorScheme.primary else PurpleGradia,
-                        modifier = Modifier.size(18.dp).clickable {
-                            val sel = tfValue.selection
-                            if (sel.collapsed) {
-                                isItalicActive = !isItalicActive
-                            } else {
-                                toggleFormat(italicRanges, sel.min until sel.max, { italicRanges = it })
-                            }
-                        }
-                    )
-                    Icon(
-                        Icons.Default.Delete,
-                        contentDescription = "Delete",
-                        tint = PurpleGradia,
-                        modifier = Modifier.size(18.dp).clickable {
-                            tfValue = TextFieldValue("")
-                            boldRanges = emptyList()
-                            italicRanges = emptyList()
-                            isBoldActive = false
-                            isItalicActive = false
-                            isBulletActive = false
-                            imagePaths = emptyList()
-                            onContentChange("")
-                            onTitleChange("")
-                        }
-                    )
-                    Icon(
-                        painter = painterResource(id = R.drawable.list),
-                        contentDescription = "Bullets",
-                        tint = if (isBulletActive) MaterialTheme.colorScheme.primary else PurpleGradia,
-                        modifier = Modifier.size(18.dp).clickable {
-                            val text = tfValue.text
-                            val cursor = tfValue.selection.start
-                            val lineStart = text.lastIndexOf('\n', cursor - 1) + 1
-                            val lineEnd = text.indexOf('\n', cursor).let { if (it == -1) text.length else it }
-                            val lineText = text.substring(lineStart, lineEnd)
 
-                            if (isBulletActive) {
-                                if (lineText.startsWith("• ")) {
-                                    val newText = text.substring(0, lineStart) + text.substring(lineStart + 2)
-                                    val newCursor = (cursor - 2).coerceIn(0, newText.length)
-                                    boldRanges = adjustRanges(boldRanges, text.length, newText.length, isBoldActive)
-                                    italicRanges = adjustRanges(italicRanges, text.length, newText.length, isItalicActive)
-                                    tfValue = TextFieldValue(newText, TextRange(newCursor))
+                    AnimatedVisibility(
+                        visible = showFormatToolbar,
+                        enter = expandHorizontally() + fadeIn(),
+                        exit = shrinkHorizontally() + fadeOut()
+                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                "B",
+                                fontWeight = if (isBoldActive) FontWeight.ExtraBold else FontWeight.Bold,
+                                color = if (isBoldActive) MaterialTheme.colorScheme.primary else PurpleGradia,
+                                fontSize = 18.sp,
+                                modifier = Modifier.clickable {
+                                    val sel = tfValue.selection
+                                    if (sel.collapsed) {
+                                        isBoldActive = !isBoldActive
+                                    } else {
+                                        toggleFormat(boldRanges, sel.min until sel.max, { boldRanges = it })
+                                    }
                                 }
-                                isBulletActive = false
-                            } else {
-                                if (!lineText.startsWith("• ")) {
-                                    val newText = text.substring(0, lineStart) + "• " + text.substring(lineStart)
-                                    val newCursor = (cursor + 2).coerceIn(0, newText.length)
-                                    boldRanges = adjustRanges(boldRanges, text.length, newText.length, isBoldActive)
-                                    italicRanges = adjustRanges(italicRanges, text.length, newText.length, isItalicActive)
-                                    tfValue = TextFieldValue(newText, TextRange(newCursor))
+                            )
+                            Icon(
+                                painter = painterResource(id = R.drawable.italic),
+                                contentDescription = "Italic",
+                                tint = if (isItalicActive) MaterialTheme.colorScheme.primary else PurpleGradia,
+                                modifier = Modifier.size(18.dp).clickable {
+                                    val sel = tfValue.selection
+                                    if (sel.collapsed) {
+                                        isItalicActive = !isItalicActive
+                                    } else {
+                                        toggleFormat(italicRanges, sel.min until sel.max, { italicRanges = it })
+                                    }
                                 }
-                                isBulletActive = true
-                            }
+                            )
+                            Icon(
+                                painter = painterResource(id = R.drawable.list),
+                                contentDescription = "Bullets",
+                                tint = if (isBulletActive) MaterialTheme.colorScheme.primary else PurpleGradia,
+                                modifier = Modifier.size(18.dp).clickable {
+                                    val text = tfValue.text
+                                    val cursor = tfValue.selection.start
+                                    val lineStart = text.lastIndexOf('\n', cursor - 1) + 1
+                                    val lineEnd = text.indexOf('\n', cursor).let { if (it == -1) text.length else it }
+                                    val lineText = text.substring(lineStart, lineEnd)
+
+                                    if (isBulletActive) {
+                                        if (lineText.startsWith("• ")) {
+                                            val newText = text.substring(0, lineStart) + text.substring(lineStart + 2)
+                                            val newCursor = (cursor - 2).coerceIn(0, newText.length)
+                                            boldRanges = adjustRanges(boldRanges, text.length, newText.length, isBoldActive)
+                                            italicRanges = adjustRanges(italicRanges, text.length, newText.length, isItalicActive)
+                                            tfValue = TextFieldValue(newText, TextRange(newCursor))
+                                        }
+                                        isBulletActive = false
+                                    } else {
+                                        if (!lineText.startsWith("• ")) {
+                                            val newText = text.substring(0, lineStart) + "• " + text.substring(lineStart)
+                                            val newCursor = (cursor + 2).coerceIn(0, newText.length)
+                                            boldRanges = adjustRanges(boldRanges, text.length, newText.length, isBoldActive)
+                                            italicRanges = adjustRanges(italicRanges, text.length, newText.length, isItalicActive)
+                                            tfValue = TextFieldValue(newText, TextRange(newCursor))
+                                        }
+                                        isBulletActive = true
+                                    }
+                                }
+                            )
+                            Icon(
+                                painter = painterResource(id = R.drawable.image),
+                                contentDescription = "Image",
+                                tint = PurpleGradia,
+                                modifier = Modifier.size(18.dp).clickable {
+                                    launcher.launch("image/*")
+                                }
+                            )
                         }
-                    )
-                    Icon(
-                        painter = painterResource(id = R.drawable.image),
-                        contentDescription = "Image",
-                        tint = PurpleGradia,
-                        modifier = Modifier.size(18.dp).clickable {
-                            launcher.launch("image/*")
-                        }
-                    )
+                    }
                 }
 
                 Button(
@@ -927,7 +947,7 @@ fun NoteGridItem(
                                         Text(
                                             text = category.name,
                                             style = MaterialTheme.typography.labelSmall,
-                                            color = MaterialTheme.colorScheme.onSurface
+                                            color = Color.Black
                                         )
                                     }
                                 }
@@ -970,6 +990,46 @@ fun NoteGridItem(
                 TextButton(onClick = { showFullNote = false }) { Text(stringResource(R.string.action_close)) }
             }
         )
+    }
+}
+
+@Composable
+fun NotesOnboardingCard(onDismiss: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = PurpleGradia.copy(alpha = 0.1f)),
+        border = androidx.compose.foundation.BorderStroke(1.dp, PurpleGradia.copy(alpha = 0.3f))
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.notes_onboarding_title),
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = PurpleGradia
+                )
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = stringResource(R.string.notes_onboarding_message),
+                style = MaterialTheme.typography.bodySmall.copy(
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            TextButton(
+                onClick = onDismiss,
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.action_close),
+                    color = PurpleGradia,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
     }
 }
 
