@@ -18,6 +18,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -739,7 +740,7 @@ fun AccountSettingsItem(
                 text = title,
                 style = MaterialTheme.typography.bodyLarge.copy(
                     fontFamily = InterFontFamily,
-                    color = PurpleGradia,
+                    color = if (MaterialTheme.colorScheme.background.luminance() < 0.5f) Color.White else PurpleGradia,
                     fontWeight = FontWeight.Medium,
                     fontSize = 17.sp
                 )
