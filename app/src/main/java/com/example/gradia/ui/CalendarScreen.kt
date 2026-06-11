@@ -15,6 +15,7 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -26,6 +27,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.gradia.R
+import com.example.gradia.data.local.OnboardingPrefs
 import com.example.gradia.presentation.viewmodel.CalendarActivity
 import com.example.gradia.presentation.viewmodel.CalendarUiState
 import com.example.gradia.presentation.viewmodel.CalendarViewModel
@@ -43,6 +45,8 @@ fun CalendarScreen(viewModel: CalendarViewModel) {
 
     var tipoFilter by remember { mutableStateOf<String?>(null) }
     var prioridadFilter by remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
+    var showOnboarding by remember { mutableStateOf(!OnboardingPrefs.isDismissed(context, "calendar")) }
 
     val filteredSelected = state.selectedDateActivities.filter { act ->
         (tipoFilter == null || act.tipo == tipoFilter) &&
@@ -61,6 +65,17 @@ fun CalendarScreen(viewModel: CalendarViewModel) {
             .verticalScroll(rememberScrollState())
     ) {
         Spacer(modifier = Modifier.height(16.dp))
+
+        if (showOnboarding) {
+                OnboardingCard(
+                    title = stringResource(R.string.onboarding_calendar_title),
+                    message = stringResource(R.string.onboarding_calendar_message),
+                    onDismiss = {
+                        OnboardingPrefs.dismiss(context, "calendar")
+                        showOnboarding = false
+                    }
+                )
+        }
 
         CalendarCard(
             state = state,

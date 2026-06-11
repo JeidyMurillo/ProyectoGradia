@@ -545,11 +545,23 @@
     <string name="notif_mark_complete">Mark as completed</string>
 
     <!-- Recovery Dialog -->
-    <string name="recovery_title">Recovery completed</string>
-    <string name="recovery_body">The application closed unexpectedly in the previous session. All your data has been restored successfully.</string>
+    <string name="recovery_title">Recovery Complete</string>
+    <string name="recovery_body">The app was closed unexpectedly in the previous session. All your data has been recovered successfully.</string>
     <string name="recovery_dismiss">Got it</string>
 
     <!-- Onboarding -->
+    <string name="onboarding_home_title">Welcome to Gradia</string>
+    <string name="onboarding_home_message">Here you\'ll see your overall average and quick access to your current semester subjects. Try adding some subjects and notes to see changes.</string>
+    <string name="onboarding_subjects_title">Your Subjects</string>
+    <string name="onboarding_subjects_message">Here you can add, edit, and organize your subjects by semester. Use filters to quickly find what you\'re looking for.</string>
+    <string name="onboarding_final_grade_title">Final Grade</string>
+    <string name="onboarding_final_grade_message">Select a subject and an activity to calculate the grade you need on remaining work to reach your target.</string>
+    <string name="onboarding_calendar_title">Calendar</string>
+    <string name="onboarding_calendar_message">View all your activities and tasks organized by date. Tap any day to see details and add events.</string>
+    <string name="onboarding_tasks_title">Tasks</string>
+    <string name="onboarding_tasks_message">Create tasks with date, time, and priority. Assign them a subject to keep everything organized and track your progress.</string>
+    <string name="onboarding_stats_title">Statistics</string>
+    <string name="onboarding_stats_message">Check your overall average, trends by period, approved credits, and more academic performance details.</string>
     <string name="onboarding_title">Welcome to Gradia!</string>
     <string name="onboarding_message">To get started, tell us what you\'re studying and which semester you\'re in.</string>
     <string name="onboarding_semestre_required">Semester is required</string>

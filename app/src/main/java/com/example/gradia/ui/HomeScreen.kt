@@ -21,6 +21,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
@@ -40,8 +44,10 @@ import android.util.Log
 import kotlin.math.roundToInt
 import com.example.gradia.GradiaApplication
 import com.example.gradia.R
+import com.example.gradia.data.local.OnboardingPrefs
 import com.example.gradia.domain.model.Subject
 import com.example.gradia.presentation.viewmodel.GradeSort
+import com.example.gradia.presentation.viewmodel.HomeViewModel
 import com.example.gradia.presentation.viewmodel.NotesViewModel
 import com.example.gradia.presentation.viewmodel.NotificationsViewModel
 import com.example.gradia.presentation.viewmodel.SubjectSort
@@ -82,9 +88,22 @@ fun HomeScreen(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
+    var isBottomBarVisible by remember { mutableStateOf(true) }
+    val nestedScrollConnection = remember {
+        object : NestedScrollConnection {
+            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                if (source == NestedScrollSource.UserInput && available.y != 0f) {
+                    isBottomBarVisible = available.y > 0f
+                }
+                return Offset.Zero
+            }
+        }
+    }
+
     val app = LocalContext.current.applicationContext as GradiaApplication
     val context = LocalContext.current
     val currentUserId = app.authRepository.getCurrentUserId() ?: ""
+    val homeViewModel = remember { app.provideHomeViewModel() }
     val notesViewModel = remember(currentUserId) { app.provideNotesViewModel(currentUserId) }
     val notesState by notesViewModel.uiState.collectAsState()
     val tasksViewModel = remember { app.provideTasksViewModel() }
@@ -161,6 +180,7 @@ fun HomeScreen(
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             Scaffold(
+                modifier = Modifier.nestedScroll(nestedScrollConnection),
                 contentWindowInsets = WindowInsets.safeDrawing,
                 topBar = {
                     TopAppBar(
@@ -407,21 +427,27 @@ fun HomeScreen(
                     )
                 },
                 bottomBar = {
-                    GradiaBottomBar(
-                        selectedTab = selectedTab,
-                        onTabSelected = {
-                            if (it == 2) {
-                                isQuickAddOpen = !isQuickAddOpen
-                            } else {
-                                if (it != selectedTab) {
-                                    previousTab = selectedTab
+                    AnimatedVisibility(
+                        visible = isBottomBarVisible,
+                        enter = slideInVertically(animationSpec = tween(300)) { it },
+                        exit = slideOutVertically(animationSpec = tween(300)) { it }
+                    ) {
+                        GradiaBottomBar(
+                            selectedTab = selectedTab,
+                            onTabSelected = {
+                                if (it == 2) {
+                                    isQuickAddOpen = !isQuickAddOpen
+                                } else {
+                                    if (it != selectedTab) {
+                                        previousTab = selectedTab
+                                    }
+                                    selectedTab = it
+                                    isQuickAddOpen = false
                                 }
-                                selectedTab = it
-                                isQuickAddOpen = false
-                            }
-                        },
-                        isQuickAddOpen = isQuickAddOpen
-                    )
+                            },
+                            isQuickAddOpen = isQuickAddOpen
+                        )
+                    }
                 },
                 containerColor = MaterialTheme.colorScheme.background
             ) { innerPadding ->
@@ -433,7 +459,8 @@ fun HomeScreen(
                                 selectedSubjectName = subject.name
                                 previousTab = selectedTab
                                 selectedTab = 9
-                            }
+                            },
+                            externalViewModel = homeViewModel
                         )
                         1 -> SubjectsScreen(
                             externalViewModel = subjectsViewModel,
@@ -969,12 +996,17 @@ fun DrawerMenuItem(
 }
 
 @Composable
-fun HomeContent(onSubjectClick: (Subject) -> Unit = {}) {
+fun HomeContent(
+    onSubjectClick: (Subject) -> Unit = {},
+    externalViewModel: HomeViewModel? = null
+) {
     val app = LocalContext.current.applicationContext as GradiaApplication
-    val homeViewModel = remember { app.provideHomeViewModel() }
+    val homeViewModel = externalViewModel ?: remember { app.provideHomeViewModel() }
     val homeState by homeViewModel.uiState.collectAsState()
     val subjects = homeState.subjects
     var isExpanded by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    var showOnboarding by remember { mutableStateOf(!OnboardingPrefs.isDismissed(context, "home")) }
 
     val visibleSubjects = if (isExpanded || subjects.size <= 3) subjects else subjects.take(3)
 
@@ -984,6 +1016,18 @@ fun HomeContent(onSubjectClick: (Subject) -> Unit = {}) {
             .padding(horizontal = 24.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
+        if (showOnboarding) {
+            item {
+                OnboardingCard(
+                    title = stringResource(R.string.onboarding_home_title),
+                    message = stringResource(R.string.onboarding_home_message),
+                    onDismiss = {
+                        OnboardingPrefs.dismiss(context, "home")
+                        showOnboarding = false
+                    }
+                )
+            }
+        }
         item {
             Text(
                 stringResource(R.string.home_my_semester),

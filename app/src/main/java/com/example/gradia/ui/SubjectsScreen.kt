@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.gradia.GradiaApplication
 import com.example.gradia.R
+import com.example.gradia.data.local.OnboardingPrefs
 import com.example.gradia.domain.model.Subject
 import com.example.gradia.domain.validation.SubjectValidation
 import com.example.gradia.presentation.viewmodel.SubjectFilter
@@ -66,6 +67,8 @@ fun SubjectsScreen(
     val viewModel = externalViewModel ?: remember { app.provideSubjectsViewModel() }
     val state by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
+    var showOnboarding by remember { mutableStateOf(!OnboardingPrefs.isDismissed(context, "subjects")) }
 
     var showAddSheet by remember { mutableStateOf(false) }
     var subjectToDelete by remember { mutableStateOf<Subject?>(null) }
@@ -84,6 +87,16 @@ fun SubjectsScreen(
                 .padding(horizontal = 20.dp)
         ) {
             Spacer(modifier = Modifier.height(4.dp))
+            if (showOnboarding) {
+                OnboardingCard(
+                    title = stringResource(R.string.onboarding_subjects_title),
+                    message = stringResource(R.string.onboarding_subjects_message),
+                    onDismiss = {
+                        OnboardingPrefs.dismiss(context, "subjects")
+                        showOnboarding = false
+                    }
+                )
+            }
             SubjectsFilterRow(
                 selected = state.filter,
                 onSelected = viewModel::onFilterChange
