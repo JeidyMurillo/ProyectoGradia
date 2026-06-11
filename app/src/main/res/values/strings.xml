@@ -467,6 +467,9 @@
     <string name="notif_passing_body">Has aprobado %1$s con un promedio parcial de %2$s. ¡Sigue así!</string>
     <string name="notif_reminder_body">En %1$s (%2$s)</string>
     <string name="notif_now">ahora</string>
+    <string name="notif_urgent_section">Urgentes</string>
+    <string name="notif_upcoming_section">Próximas</string>
+    <string name="notif_completed_section">Completadas</string>
 
     <!-- Final Grade -->
     <string name="final_grade_title">¿Qué necesito sacar?</string>

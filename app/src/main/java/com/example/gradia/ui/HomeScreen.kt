@@ -182,7 +182,7 @@ fun HomeScreen(
                             }
                         },
                         actions = {
-                            if (selectedTab in setOf(1, 4, 5, 6, 7, 9)) {
+                            if (selectedTab in setOf(1, 5, 6, 7, 9)) {
                                 Box {
                                     IconButton(onClick = { showMenu = true }) {
                                         Icon(

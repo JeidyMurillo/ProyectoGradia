@@ -22,4 +22,14 @@ sealed class NotificationItem {
         val subject: Subject,
         val average: Double
     ) : NotificationItem()
+
+    data class ActivityProximityNotification(
+        val activityTitle: String,
+        val activityType: String,
+        val subjectName: String?,
+        val dueDateMillis: Long,
+        val daysRemaining: Long,
+        val isCompleted: Boolean,
+        val message: String
+    ) : NotificationItem()
 }
