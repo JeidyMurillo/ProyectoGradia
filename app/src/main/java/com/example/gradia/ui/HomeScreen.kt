@@ -161,6 +161,7 @@ fun HomeScreen(
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             Scaffold(
+                contentWindowInsets = WindowInsets.safeDrawing,
                 topBar = {
                     TopAppBar(
                         title = {
@@ -1277,6 +1278,7 @@ fun SubjectHomeItem(subject: Subject, average: Double = 0.0, onClick: () -> Unit
 fun GradiaBottomBar(selectedTab: Int, onTabSelected: (Int) -> Unit, isQuickAddOpen: Boolean) {
     Surface(
         modifier = Modifier
+            .navigationBarsPadding()
             .padding(horizontal = 24.dp, vertical = 16.dp)
             .fillMaxWidth()
             .height(55.dp),

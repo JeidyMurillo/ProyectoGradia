@@ -73,6 +73,7 @@ fun LoginScreen(
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
+        contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
             Box(
                 modifier = Modifier
