@@ -27,6 +27,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
@@ -259,7 +260,7 @@ fun HomeScreen(
                                         )
                                     }
                                 }
-                            } else if (selectedTab in setOf(1, 5, 7, 9)) {
+                            } else if (selectedTab in setOf(1, 5, 9)) {
                                 Box {
                                     IconButton(onClick = { showMenu = true }) {
                                         Icon(
@@ -987,7 +988,7 @@ fun DrawerMenuItem(
             text = label,
             style = MaterialTheme.typography.bodyLarge.copy(
                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                color = PurpleGradia,
+                color = if (MaterialTheme.colorScheme.background.luminance() < 0.5f) Color.White else PurpleGradia,
                 fontFamily = InterFontFamily,
                 fontSize = 18.sp
             )
