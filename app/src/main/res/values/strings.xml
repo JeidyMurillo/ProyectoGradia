@@ -558,4 +558,13 @@
     <string name="recovery_body">La aplicación se cerró inesperadamente en la sesión anterior. Todos tus datos han sido recuperados correctamente.</string>
     <string name="recovery_dismiss">Entendido</string>
 
+    <!-- Onboarding -->
+    <string name="onboarding_title">¡Bienvenido a Gradia!</string>
+    <string name="onboarding_message">Para empezar, cuéntanos qué carrera estudias y en qué semestre vas.</string>
+    <string name="onboarding_semestre_required">El semestre es obligatorio</string>
+    <string name="onboarding_career_hint">Ej: Administrador</string>
+    <string name="onboarding_semestre_hint">Ej: 3</string>
+    <string name="profile_career_hint">Ej: Administrador</string>
+    <string name="profile_semester_hint">Ej: 3</string>
+
 </resources>

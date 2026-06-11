@@ -529,4 +529,13 @@
     <string name="recovery_body">The application closed unexpectedly in the previous session. All your data has been restored successfully.</string>
     <string name="recovery_dismiss">Got it</string>
 
+    <!-- Onboarding -->
+    <string name="onboarding_title">Welcome to Gradia!</string>
+    <string name="onboarding_message">To get started, tell us what you\'re studying and which semester you\'re in.</string>
+    <string name="onboarding_semestre_required">Semester is required</string>
+    <string name="onboarding_career_hint">Ex: Business Administration</string>
+    <string name="onboarding_semestre_hint">Ex: 3</string>
+    <string name="profile_career_hint">Ex: Business Administration</string>
+    <string name="profile_semester_hint">Ex: 3</string>
+
 </resources>

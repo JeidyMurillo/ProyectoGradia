@@ -201,14 +201,15 @@ fun ProfileScreen(
             label = stringResource(R.string.profile_career),
             value = career,
             isEditing = isEditing,
-            onValueChange = { career = it }
+            onValueChange = { career = it },
+            placeholder = stringResource(R.string.profile_career_hint)
         )
 
         Spacer(modifier = Modifier.height(20.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
@@ -221,9 +222,11 @@ fun ProfileScreen(
                 )
             )
 
-Box(
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Box(
                 modifier = Modifier
-                    .width(140.dp)
+                    .width(160.dp)
                     .shadow(
                         elevation = 2.dp,
                         shape = RoundedCornerShape(30.dp),
@@ -246,6 +249,14 @@ Box(
                         modifier = Modifier.fillMaxWidth(),
                         contentAlignment = Alignment.Center
                     ) {
+                        if (semester.isEmpty()) {
+                            Text(
+                                text = stringResource(R.string.profile_semester_hint),
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                                fontFamily = InterFontFamily,
+                                fontSize = 16.sp
+                            )
+                        }
                         BasicTextField(
                             value = semester,
                             onValueChange = { semester = it; semesterTouched = true },
@@ -474,6 +485,7 @@ fun ProfileField(
     onValueChange: (String) -> Unit,
     isError: Boolean = false,
     errorMessage: String? = null,
+    placeholder: String? = null,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
@@ -510,6 +522,14 @@ fun ProfileField(
                 .padding(horizontal = 16.dp, vertical = 10.dp)
         ) {
             if (isEditing) {
+                if (value.isEmpty() && placeholder != null) {
+                    Text(
+                        text = placeholder,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                        fontFamily = InterFontFamily,
+                        fontSize = 16.sp
+                    )
+                }
                 BasicTextField(
                     value = value,
                     onValueChange = onValueChange,
