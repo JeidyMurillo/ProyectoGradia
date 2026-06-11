@@ -402,6 +402,11 @@
     <string name="label_reminder">Reminder</string>
     <string name="task_singular">Task</string>
     <string name="task_plural">Tasks</string>
+    <string name="urgency_urgent">URGENT</string>
+    <string name="urgency_medium">MEDIUM</string>
+    <string name="urgency_low">LOW</string>
+    <string name="action_add">Add</string>
+    <string name="selected">selected</string>
 
     <!-- Notes -->
     <string name="notes_selected">%d selected</string>

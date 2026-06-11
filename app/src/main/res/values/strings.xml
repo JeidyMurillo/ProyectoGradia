@@ -428,6 +428,11 @@
     <string name="label_reminder">Recordatorio</string>
     <string name="task_singular">Tarea</string>
     <string name="task_plural">Tareas</string>
+    <string name="urgency_urgent">URGENTE</string>
+    <string name="urgency_medium">MEDIO</string>
+    <string name="urgency_low">BAJO</string>
+    <string name="action_add">Añadir</string>
+    <string name="selected">seleccionada(s)</string>
 
     <!-- Notes -->
     <string name="notes_selected">%d seleccionada(s)</string>
