@@ -121,6 +121,10 @@ class AuthRepository(
         return authService.getCurrentUserId()
     }
 
+    fun getCurrentFirebaseEmail(): String? {
+        return authService.getCurrentFirebaseEmail()
+    }
+
     fun getLinkedProviders(): List<String> {
         return authService.getLinkedProviders()
     }
