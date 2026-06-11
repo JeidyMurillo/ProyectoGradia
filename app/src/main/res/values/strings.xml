@@ -223,6 +223,13 @@
     <string name="action_cancel">Cancelar</string>
     <string name="quick_add_note">Agregar apunte</string>
     <string name="quick_add_todo">To-do List</string>
+    <string name="achievements_dialog_title">Tus logros</string>
+    <string name="achievements_dialog_body">Has completado %d tareas.</string>
+    <string name="achievements_dialog_motivation">¡Sigue así!</string>
+    <string name="delete_confirm_title">Eliminar tarea</string>
+    <string name="delete_confirm_body">¿Estás seguro de que deseas eliminar esta tarea? Esta acción no se puede deshacer.</string>
+    <string name="save_confirm_title">Guardar cambios</string>
+    <string name="save_confirm_body">¿Deseas guardar los cambios realizados en la tarea?</string>
 
     <!-- Drawer -->
     <string name="drawer_profile">Perfil</string>
