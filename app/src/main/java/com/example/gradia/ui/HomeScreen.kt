@@ -493,8 +493,7 @@ fun HomeScreen(
                                 }
                             }
                         }
-                    },
-                    onDismiss = { showOnboarding = false }
+                    }
                 )
             }
 
@@ -1264,27 +1263,45 @@ fun OnboardingDialog(
     error: String?,
     onCareerChange: (String) -> Unit,
     onSemestreChange: (String) -> Unit,
-    onSave: () -> Unit,
-    onDismiss: () -> Unit
+    onSave: () -> Unit
 ) {
     AlertDialog(
-        onDismissRequest = onDismiss,
-        shape = RoundedCornerShape(24.dp),
+        onDismissRequest = {},
+        shape = RoundedCornerShape(28.dp),
+        containerColor = MaterialTheme.colorScheme.surface,
         title = {
-            Text(
-                stringResource(R.string.onboarding_title),
-                fontWeight = FontWeight.Bold,
-                fontFamily = InterFontFamily,
-                color = MaterialTheme.colorScheme.onSurface
-            )
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    stringResource(R.string.onboarding_title),
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = InterFontFamily,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontSize = 22.sp
+                )
+            }
         },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 Text(
                     stringResource(R.string.onboarding_message),
                     fontSize = 14.sp,
                     fontFamily = InterFontFamily,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                HorizontalDivider(
+                    color = MaterialTheme.colorScheme.outlineVariant,
+                    thickness = 1.dp
                 )
 
                 error?.let {
@@ -1292,91 +1309,121 @@ fun OnboardingDialog(
                         it,
                         color = MaterialTheme.colorScheme.error,
                         fontSize = 13.sp,
+                        fontFamily = InterFontFamily,
+                        fontWeight = FontWeight.Medium,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text(
+                        stringResource(R.string.profile_career),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontFamily = InterFontFamily
                     )
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .shadow(2.dp, RoundedCornerShape(16.dp))
+                            .border(1.dp, PurpleGradia, RoundedCornerShape(16.dp))
+                            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp))
+                            .padding(horizontal = 14.dp, vertical = 8.dp)
+                    ) {
+                        if (career.isEmpty()) {
+                            Text(
+                                stringResource(R.string.onboarding_career_hint),
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                                fontFamily = InterFontFamily,
+                                fontSize = 14.sp
+                            )
+                        }
+                        BasicTextField(
+                            value = career,
+                            onValueChange = onCareerChange,
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            textStyle = MaterialTheme.typography.bodyMedium.copy(
+                                fontFamily = InterFontFamily,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontSize = 14.sp
+                            ),
+                            cursorBrush = SolidColor(PurpleGradia)
+                        )
+                    }
                 }
 
-                Text(
-                    stringResource(R.string.profile_career),
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontFamily = InterFontFamily
-                )
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(1.dp, PurpleGradia, RoundedCornerShape(16.dp))
-                        .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp))
-                        .padding(horizontal = 12.dp, vertical = 4.dp)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Start,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    BasicTextField(
-                        value = career,
-                        onValueChange = onCareerChange,
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                        textStyle = MaterialTheme.typography.bodyMedium.copy(
-                            fontFamily = InterFontFamily,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            fontSize = 14.sp
-                        ),
-                        cursorBrush = SolidColor(PurpleGradia)
+                    Text(
+                        stringResource(R.string.profile_current_semester),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontFamily = InterFontFamily
                     )
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    Box(
+                        modifier = Modifier
+                            .width(120.dp)
+                            .shadow(2.dp, RoundedCornerShape(16.dp))
+                            .border(1.dp, PurpleGradia, RoundedCornerShape(16.dp))
+                            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp))
+                            .padding(horizontal = 14.dp, vertical = 8.dp)
+                    ) {
+                        if (semestre.isEmpty()) {
+                            Text(
+                                stringResource(R.string.onboarding_semestre_hint),
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                                fontFamily = InterFontFamily,
+                                fontSize = 12.sp
+                            )
+                        }
+                        BasicTextField(
+                            value = semestre,
+                            onValueChange = onSemestreChange,
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            textStyle = MaterialTheme.typography.bodyMedium.copy(
+                                fontFamily = InterFontFamily,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontSize = 14.sp
+                            ),
+                            cursorBrush = SolidColor(PurpleGradia)
+                        )
+                    }
                 }
 
-                Text(
-                    stringResource(R.string.profile_current_semester),
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontFamily = InterFontFamily
-                )
+                Spacer(modifier = Modifier.height(4.dp))
 
-                Box(
+                Button(
+                    onClick = onSave,
                     modifier = Modifier
-                        .width(100.dp)
-                        .border(1.dp, PurpleGradia, RoundedCornerShape(16.dp))
-                        .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp))
-                        .padding(horizontal = 12.dp, vertical = 4.dp)
+                        .width(180.dp)
+                        .height(44.dp),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = PurpleGradia)
                 ) {
-                    BasicTextField(
-                        value = semestre,
-                        onValueChange = onSemestreChange,
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        textStyle = MaterialTheme.typography.bodyMedium.copy(
-                            fontFamily = InterFontFamily,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            fontSize = 14.sp
-                        ),
-                        cursorBrush = SolidColor(PurpleGradia)
+                    Text(
+                        stringResource(R.string.profile_save),
+                        fontFamily = InterFontFamily,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 15.sp
                     )
                 }
             }
         },
-        confirmButton = {
-            Button(
-                onClick = onSave,
-                shape = RoundedCornerShape(24.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = PurpleGradia)
-            ) {
-                Text(
-                    stringResource(R.string.profile_save),
-                    fontFamily = InterFontFamily,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(
-                    stringResource(R.string.profile_cancel),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
+        confirmButton = {},
+        dismissButton = {}
     )
 }
 
