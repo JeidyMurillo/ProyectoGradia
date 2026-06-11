@@ -195,7 +195,7 @@
     <string name="tab_add">Añadir</string>
     <string name="tab_subjects">Materias</string>
     <string name="tab_calendar">Calendario</string>
-    <string name="tab_notes">Notas</string>
+    <string name="tab_notes">Apuntes</string>
     <string name="tab_tasks">Tareas</string>
     <string name="tab_settings">Ajustes</string>
     <string name="tab_profile">Perfil</string>
@@ -221,7 +221,7 @@
     <string name="action_delete">Eliminar</string>
     <string name="action_close">Cerrar</string>
     <string name="action_cancel">Cancelar</string>
-    <string name="quick_add_note">Agregar nota</string>
+    <string name="quick_add_note">Agregar apunte</string>
     <string name="quick_add_todo">To-do List</string>
 
     <!-- Drawer -->
@@ -438,13 +438,21 @@
     <string name="dialog_edit_category_title">Editar categoría</string>
     <string name="action_delete_category">Eliminar esta categoría</string>
     <string name="action_save">Guardar</string>
-    <string name="placeholder_add_text">Añade un texto aquí</string>
+    <string name="placeholder_add_text">Escribe tu nota aquí…</string>
+    <string name="placeholder_note_title">Título de la nota</string>
+    <string name="notes_onboarding_title">Bienvenido a Notas</string>
+    <string name="notes_onboarding_message">Escribe un título, agrega tu contenido y usa las categorías para organizar. Toca \"Aa\" para ver las opciones de formato.</string>
+    <string name="note_color_label">Color</string>
     <string name="action_save_note">Guardar nota</string>
     <string name="fallback_untitled">Sin título</string>
     <string name="fallback_no_content">Sin contenido</string>
     <string name="label_categories">Categorías:</string>
     <string name="cd_delete_note">Eliminar nota</string>
     <string name="cd_edit_note">Editar nota</string>
+    <string name="title_new_note">Nueva nota</string>
+    <string name="title_edit_note">Editar nota</string>
+    <string name="notes_empty_title">Sin notas</string>
+    <string name="notes_empty_hint">Toca + para crear una nota</string>
 
     <!-- Stats -->
     <string name="stats_no_subjects">Aún no tienes asignaturas registradas</string>

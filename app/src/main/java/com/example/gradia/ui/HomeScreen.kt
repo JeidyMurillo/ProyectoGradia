@@ -74,6 +74,7 @@ fun HomeScreen(
     var isQuickAddOpen by remember { mutableStateOf(false) }
     var showMenu by remember { mutableStateOf(false) }
     var showCategoryManager by remember { mutableStateOf(false) }
+    var editCategory by remember { mutableStateOf<com.example.gradia.domain.model.Category?>(null) }
     var selectedSubjectId by remember { mutableStateOf<Long?>(null) }
     var selectedSubjectName by remember { mutableStateOf("") }
 
@@ -525,10 +526,27 @@ fun HomeScreen(
                                             modifier = Modifier.weight(1f),
                                             fontWeight = FontWeight.Medium
                                         )
-                                        TextButton(onClick = {
-                                            notesViewModel.deleteCategory(cat.id)
-                                        }) {
-                                            Text(stringResource(R.string.action_delete), color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
+                                        IconButton(
+                                            onClick = { editCategory = cat },
+                                            modifier = Modifier.size(32.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Edit,
+                                                contentDescription = stringResource(R.string.cd_edit_note),
+                                                tint = PurpleGradia,
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                        }
+                                        IconButton(
+                                            onClick = { notesViewModel.deleteCategory(cat.id) },
+                                            modifier = Modifier.size(32.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Delete,
+                                                contentDescription = stringResource(R.string.cd_delete_note),
+                                                tint = MaterialTheme.colorScheme.error,
+                                                modifier = Modifier.size(18.dp)
+                                            )
                                         }
                                     }
                                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
@@ -540,6 +558,21 @@ fun HomeScreen(
                         TextButton(onClick = { showCategoryManager = false }) {
                             Text(stringResource(R.string.action_close))
                         }
+                    }
+                )
+            }
+
+            editCategory?.let { cat ->
+                EditCategoryDialog(
+                    category = cat,
+                    onDismiss = { editCategory = null },
+                    onSave = { name, color ->
+                        notesViewModel.updateCategory(cat.id, name, color)
+                        editCategory = null
+                    },
+                    onDelete = {
+                        notesViewModel.deleteCategory(cat.id)
+                        editCategory = null
                     }
                 )
             }

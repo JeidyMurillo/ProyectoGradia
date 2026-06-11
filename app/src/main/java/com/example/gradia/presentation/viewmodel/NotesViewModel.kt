@@ -31,7 +31,8 @@ data class NotesUiState(
     val editingNoteId: Long = 0,
     val isSaving: Boolean = false,
     val error: String? = null,
-    val selectedNoteIds: Set<Long> = emptySet()
+    val selectedNoteIds: Set<Long> = emptySet(),
+    val showOnboarding: Boolean = true
 )
 
 class NotesViewModel(
@@ -212,5 +213,9 @@ class NotesViewModel(
 
     fun clearError() {
         _uiState.update { it.copy(error = null) }
+    }
+
+    fun dismissOnboarding() {
+        _uiState.update { it.copy(showOnboarding = false) }
     }
 }
