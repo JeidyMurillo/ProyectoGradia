@@ -34,6 +34,7 @@ import java.util.Locale
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gradia.GradiaApplication
 import com.example.gradia.R
+import com.example.gradia.data.local.OnboardingPrefs
 import com.example.gradia.domain.model.Subject
 import com.example.gradia.domain.usecase.RequiredGradeResult
 import com.example.gradia.domain.validation.GradeValidation
@@ -61,6 +62,7 @@ fun FinalGradeScreen(viewModel: FinalGradeViewModel = viewModel(
     var showActivityDropdown by remember { mutableStateOf(false) }
     var metaInput by remember { mutableStateOf("") }
     var selectedActivityIndex by remember { mutableStateOf(0) }
+    var showOnboarding by remember { mutableStateOf(!OnboardingPrefs.isDismissed(context, "final_grade")) }
 
     LaunchedEffect(uiState.targetGrade) {
         if (metaInput.isEmpty() && uiState.targetGrade > 0) {
@@ -84,6 +86,17 @@ fun FinalGradeScreen(viewModel: FinalGradeViewModel = viewModel(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.height(16.dp))
+
+        if (showOnboarding) {
+                OnboardingCard(
+                    title = stringResource(R.string.onboarding_final_grade_title),
+                    message = stringResource(R.string.onboarding_final_grade_message),
+                    onDismiss = {
+                        OnboardingPrefs.dismiss(context, "final_grade")
+                        showOnboarding = false
+                    }
+                )
+        }
 
         Box(
             modifier = Modifier

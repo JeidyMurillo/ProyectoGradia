@@ -555,4 +555,18 @@
     <string name="recovery_body">La aplicación se cerró inesperadamente en la sesión anterior. Todos tus datos han sido recuperados correctamente.</string>
     <string name="recovery_dismiss">Entendido</string>
 
+    <!-- Onboarding -->
+    <string name="onboarding_home_title">Bienvenido a Gradia</string>
+    <string name="onboarding_home_message">Aquí verás tu promedio general y tienes acceso rápido a tus materias de tu semestre actual. Prueba a añadir algunas materias y notas para ver cambios.</string>
+    <string name="onboarding_subjects_title">Tus materias</string>
+    <string name="onboarding_subjects_message">Aquí puedes añadir, editar y organizar tus materias por semestre. Usa los filtros para encontrar rápido lo que buscas.</string>
+    <string name="onboarding_final_grade_title">Nota final</string>
+    <string name="onboarding_final_grade_message">Selecciona una materia y una actividad para calcular qué nota necesitas en lo que te falta para alcanzar tu meta.</string>
+    <string name="onboarding_calendar_title">Calendario</string>
+    <string name="onboarding_calendar_message">Visualiza todas tus actividades y tareas organizadas por fecha. Toca cualquier día para ver los detalles y añadir eventos.</string>
+    <string name="onboarding_tasks_title">Tareas</string>
+    <string name="onboarding_tasks_message">Crea tareas con fecha, hora y prioridad. Asígnales una materia para mantener todo organizado y haz seguimiento a tu progreso.</string>
+    <string name="onboarding_stats_title">Estadísticas</string>
+    <string name="onboarding_stats_message">Revisa tu promedio general, tendencias por período, créditos aprobados y más detalles de tu rendimiento académico.</string>
+
 </resources>

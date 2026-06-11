@@ -15,6 +15,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
@@ -28,6 +29,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.gradia.R
+import com.example.gradia.data.local.OnboardingPrefs
 import com.example.gradia.presentation.viewmodel.StatsUiState
 import com.example.gradia.presentation.viewmodel.StatsViewModel
 import com.example.gradia.ui.theme.InterFontFamily
@@ -40,6 +42,8 @@ fun StatsScreen(
     onNavigateToPerformance: () -> Unit = {}
 ) {
     val state by statsViewModel.uiState.collectAsState()
+    val context = LocalContext.current
+    var showOnboarding by remember { mutableStateOf(!OnboardingPrefs.isDismissed(context, "stats")) }
 
     Column(
         modifier = Modifier
@@ -50,6 +54,17 @@ fun StatsScreen(
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         Spacer(modifier = Modifier.height(8.dp))
+
+        if (showOnboarding) {
+                OnboardingCard(
+                    title = stringResource(R.string.onboarding_stats_title),
+                    message = stringResource(R.string.onboarding_stats_message),
+                    onDismiss = {
+                        OnboardingPrefs.dismiss(context, "stats")
+                        showOnboarding = false
+                    }
+                )
+        }
 
         if (state.hasData) {
             Row(

@@ -30,6 +30,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.gradia.R
+import com.example.gradia.data.local.OnboardingPrefs
 import com.example.gradia.presentation.viewmodel.TasksViewModel
 import com.example.gradia.presentation.viewmodel.Urgencia
 import com.example.gradia.ui.theme.GrayText
@@ -51,6 +52,8 @@ fun TasksScreen(
     val ctx = LocalContext.current
     var showDatePicker by remember { mutableStateOf(false) }
     var showSubjectDropdown by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    var showOnboarding by remember { mutableStateOf(!OnboardingPrefs.isDismissed(context, "tasks")) }
 
     if (showDatePicker) {
         val datePickerState = rememberDatePickerState(
@@ -94,6 +97,19 @@ fun TasksScreen(
             .padding(horizontal = 24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        if (showOnboarding) {
+            item {
+                OnboardingCard(
+                    title = stringResource(R.string.onboarding_tasks_title),
+                    message = stringResource(R.string.onboarding_tasks_message),
+                    onDismiss = {
+                        OnboardingPrefs.dismiss(context, "tasks")
+                        showOnboarding = false
+                    }
+                )
+            }
+        }
+
         item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
