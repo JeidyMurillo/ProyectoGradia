@@ -74,6 +74,7 @@ fun HomeScreen(
     var isQuickAddOpen by remember { mutableStateOf(false) }
     var showMenu by remember { mutableStateOf(false) }
     var showCategoryManager by remember { mutableStateOf(false) }
+    var showAchievementsDialog by remember { mutableStateOf(false) }
     var selectedSubjectId by remember { mutableStateOf<Long?>(null) }
     var selectedSubjectName by remember { mutableStateOf("") }
 
@@ -209,7 +210,34 @@ fun HomeScreen(
                             }
                         },
                         actions = {
-                            if (selectedTab in setOf(1, 5, 6, 7, 9)) {
+                            if (selectedTab == 6) {
+                                Box(
+                                    modifier = Modifier
+                                        .padding(end = 8.dp)
+                                        .clickable { showAchievementsDialog = true }
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier
+                                            .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
+                                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                                    ) {
+                                        Text(
+                                            text = "\uD83C\uDFC6",
+                                            fontSize = 18.sp
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            text = "${tasksState.tareasCompletadas.size}",
+                                            style = MaterialTheme.typography.labelLarge.copy(
+                                                fontWeight = FontWeight.Bold,
+                                                color = PurpleGradia,
+                                                fontFamily = InterFontFamily
+                                            )
+                                        )
+                                    }
+                                }
+                            } else if (selectedTab in setOf(1, 5, 7, 9)) {
                                 Box {
                                     IconButton(onClick = { showMenu = true }) {
                                         Icon(
@@ -539,6 +567,62 @@ fun HomeScreen(
                     confirmButton = {
                         TextButton(onClick = { showCategoryManager = false }) {
                             Text(stringResource(R.string.action_close))
+                        }
+                    }
+                )
+            }
+
+            if (showAchievementsDialog) {
+                val completedCount = tasksState.tareasCompletadas.size
+                AlertDialog(
+                    onDismissRequest = { showAchievementsDialog = false },
+                    shape = RoundedCornerShape(24.dp),
+                    title = {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                            Text(
+                                text = "\uD83C\uDFC6",
+                                fontSize = 40.sp
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = stringResource(R.string.achievements_dialog_title),
+                                style = MaterialTheme.typography.titleLarge.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = PurpleGradia,
+                                    fontFamily = InterFontFamily
+                                )
+                            )
+                        }
+                    },
+                    text = {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                            Text(
+                                text = stringResource(R.string.achievements_dialog_body, completedCount),
+                                style = MaterialTheme.typography.bodyLarge.copy(
+                                    fontFamily = InterFontFamily,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                ),
+                                textAlign = TextAlign.Center
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = stringResource(R.string.achievements_dialog_motivation),
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = PurpleGradia,
+                                    fontFamily = InterFontFamily
+                                ),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(onClick = { showAchievementsDialog = false }) {
+                            Text(
+                                text = stringResource(R.string.action_close),
+                                fontWeight = FontWeight.Bold,
+                                color = PurpleGradia
+                            )
                         }
                     }
                 )

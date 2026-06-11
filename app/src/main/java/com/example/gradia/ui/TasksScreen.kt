@@ -51,6 +51,8 @@ fun TasksScreen(
     val ctx = LocalContext.current
     var showDatePicker by remember { mutableStateOf(false) }
     var showSubjectDropdown by remember { mutableStateOf(false) }
+    var taskToDelete by remember { mutableStateOf<Long?>(null) }
+    var pendingSave by remember { mutableStateOf(false) }
 
     if (showDatePicker) {
         val datePickerState = rememberDatePickerState(
@@ -86,6 +88,90 @@ fun TasksScreen(
         ) {
             DatePicker(state = datePickerState)
         }
+    }
+
+    taskToDelete?.let { id ->
+        AlertDialog(
+            onDismissRequest = { taskToDelete = null },
+            shape = RoundedCornerShape(24.dp),
+            title = {
+                Text(
+                    text = stringResource(R.string.delete_confirm_title),
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontFamily = InterFontFamily
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(R.string.delete_confirm_body),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontFamily = InterFontFamily
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.deleteTask(id)
+                    taskToDelete = null
+                }) {
+                    Text(
+                        text = stringResource(R.string.action_delete),
+                        color = MaterialTheme.colorScheme.error,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { taskToDelete = null }) {
+                    Text(
+                        text = stringResource(R.string.action_cancel),
+                        color = PurpleGradia
+                    )
+                }
+            }
+        )
+    }
+
+    if (pendingSave) {
+        AlertDialog(
+            onDismissRequest = { pendingSave = false },
+            shape = RoundedCornerShape(24.dp),
+            title = {
+                Text(
+                    text = stringResource(R.string.save_confirm_title),
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontFamily = InterFontFamily
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(R.string.save_confirm_body),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontFamily = InterFontFamily
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    pendingSave = false
+                    viewModel.saveTask()
+                }) {
+                    Text(
+                        text = stringResource(R.string.action_save),
+                        color = PurpleGradia,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingSave = false }) {
+                    Text(
+                        text = stringResource(R.string.action_cancel),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        )
     }
 
     LazyColumn(
@@ -151,7 +237,11 @@ fun TasksScreen(
                     .height(40.dp)
                     .background(Color(0xFFE9E4F0), RoundedCornerShape(12.dp))
                     .clickable(enabled = state.currentTitle.isNotBlank() && !state.isSaving) {
-                        viewModel.saveTask()
+                        if (state.editingTaskId != null) {
+                            pendingSave = true
+                        } else {
+                            viewModel.saveTask()
+                        }
                     },
                 contentAlignment = Alignment.Center
             ) {
@@ -193,7 +283,7 @@ fun TasksScreen(
                     onClick = { viewModel.loadTaskForEditing(tarea) },
                     onLongClick = { viewModel.toggleTaskSelection(tarea.id) },
                     onEdit = { viewModel.loadTaskForEditing(tarea) },
-                    onDelete = { viewModel.deleteTask(tarea.id) }
+                    onDelete = { taskToDelete = tarea.id }
                 )
             }
         }
@@ -215,7 +305,7 @@ fun TasksScreen(
                     onClick = { viewModel.loadTaskForEditing(tarea) },
                     onLongClick = { viewModel.toggleTaskSelection(tarea.id) },
                     onEdit = { viewModel.loadTaskForEditing(tarea) },
-                    onDelete = { viewModel.deleteTask(tarea.id) }
+                    onDelete = { taskToDelete = tarea.id }
                 )
             }
         }
@@ -237,7 +327,7 @@ fun TasksScreen(
                     onClick = { viewModel.loadTaskForEditing(tarea) },
                     onLongClick = { viewModel.toggleTaskSelection(tarea.id) },
                     onEdit = { viewModel.loadTaskForEditing(tarea) },
-                    onDelete = { viewModel.deleteTask(tarea.id) }
+                    onDelete = { taskToDelete = tarea.id }
                 )
             }
         }
