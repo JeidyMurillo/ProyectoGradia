@@ -24,6 +24,7 @@ fun TermsAndConditionsScreen(
     onBackClick: () -> Unit
 ) {
     Scaffold(
+        contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
             TopAppBar(
                     title = {

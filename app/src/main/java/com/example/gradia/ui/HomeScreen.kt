@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -39,6 +40,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import android.util.Log
 import kotlin.math.roundToInt
 import com.example.gradia.GradiaApplication
 import com.example.gradia.R
@@ -55,6 +57,11 @@ import java.util.Locale
 import com.example.gradia.ui.AccountScreen
 import com.example.gradia.ui.ProfileScreen
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.graphics.SolidColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,6 +80,7 @@ fun HomeScreen(
     var isQuickAddOpen by remember { mutableStateOf(false) }
     var showMenu by remember { mutableStateOf(false) }
     var showCategoryManager by remember { mutableStateOf(false) }
+    var showAchievementsDialog by remember { mutableStateOf(false) }
     var editCategory by remember { mutableStateOf<com.example.gradia.domain.model.Category?>(null) }
     var selectedSubjectId by remember { mutableStateOf<Long?>(null) }
     var selectedSubjectName by remember { mutableStateOf("") }
@@ -93,6 +101,7 @@ fun HomeScreen(
     }
 
     val app = LocalContext.current.applicationContext as GradiaApplication
+    val context = LocalContext.current
     val currentUserId = app.authRepository.getCurrentUserId() ?: ""
     val homeViewModel = remember { app.provideHomeViewModel() }
     val notesViewModel = remember(currentUserId) { app.provideNotesViewModel(currentUserId) }
@@ -111,6 +120,25 @@ fun HomeScreen(
     // desde el menú de la barra superior (tab 9).
     val subjectDetailViewModel = remember(selectedSubjectId) {
         selectedSubjectId?.let { app.provideSubjectDetailViewModel(it) }
+    }
+
+    var showOnboarding by remember { mutableStateOf(false) }
+    var onboardingCareer by remember { mutableStateOf("") }
+    var onboardingSemestre by remember { mutableStateOf("") }
+    var onboardingError by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(Unit) {
+        Log.d("Onboarding", "Iniciando carga de usuario, currentUserId=$currentUserId")
+        val user = app.userRepository.getUserById(currentUserId).first()
+        Log.d("Onboarding", "Usuario obtenido: $user")
+        Log.d("Onboarding", "semestre='${user?.semestre}', isBlank=${user?.semestre?.isBlank()}")
+        if (user != null && user.semestre.isBlank()) {
+            showOnboarding = true
+            onboardingCareer = user.carrera
+            Log.d("Onboarding", "Dialog mostrado correctamente")
+        } else {
+            Log.d("Onboarding", "NO se muestra dialog. user=null? ${user == null}")
+        }
     }
 
     ModalNavigationDrawer(
@@ -153,6 +181,7 @@ fun HomeScreen(
         Box(modifier = Modifier.fillMaxSize()) {
             Scaffold(
                 modifier = Modifier.nestedScroll(nestedScrollConnection),
+                contentWindowInsets = WindowInsets.safeDrawing,
                 topBar = {
                     TopAppBar(
                         title = {
@@ -203,7 +232,34 @@ fun HomeScreen(
                             }
                         },
                         actions = {
-                            if (selectedTab in setOf(1, 4, 5, 6, 7, 9)) {
+                            if (selectedTab == 6) {
+                                Box(
+                                    modifier = Modifier
+                                        .padding(end = 8.dp)
+                                        .clickable { showAchievementsDialog = true }
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier
+                                            .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
+                                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                                    ) {
+                                        Text(
+                                            text = "\uD83C\uDFC6",
+                                            fontSize = 18.sp
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            text = "${tasksState.tareasCompletadas.size}",
+                                            style = MaterialTheme.typography.labelLarge.copy(
+                                                fontWeight = FontWeight.Bold,
+                                                color = PurpleGradia,
+                                                fontFamily = InterFontFamily
+                                            )
+                                        )
+                                    }
+                                }
+                            } else if (selectedTab in setOf(1, 5, 7, 9)) {
                                 Box {
                                     IconButton(onClick = { showMenu = true }) {
                                         Icon(
@@ -465,6 +521,39 @@ fun HomeScreen(
                 }
             }
 
+            if (showOnboarding) {
+                OnboardingDialog(
+                    career = onboardingCareer,
+                    semestre = onboardingSemestre,
+                    error = onboardingError,
+                    onCareerChange = { onboardingCareer = it },
+                    onSemestreChange = { onboardingSemestre = it; onboardingError = null },
+                    onSave = {
+                        if (onboardingSemestre.isBlank()) {
+                            onboardingError = context.getString(R.string.onboarding_semestre_required)
+                        } else {
+                            val sem = onboardingSemestre.toIntOrNull()
+                            if (sem == null || sem !in 1..12) {
+                                onboardingError = context.getString(R.string.profile_error_semester_invalid)
+                            } else {
+                                scope.launch {
+                                    Log.d("Onboarding", "Guardando: career='$onboardingCareer', semestre='$onboardingSemestre'")
+                                    val user = app.userRepository.getUserById(currentUserId).first()
+                                    Log.d("Onboarding", "Usuario encontrado para update: $user")
+                                    user?.let {
+                                        app.userRepository.updateUser(
+                                            it.copy(carrera = onboardingCareer, semestre = onboardingSemestre)
+                                        )
+                                        Log.d("Onboarding", "updateUser ejecutado correctamente")
+                                    } ?: Log.d("Onboarding", "user es null, no se actualizó")
+                                    showOnboarding = false
+                                }
+                            }
+                        }
+                    }
+                )
+            }
+
             if (showCategoryManager) {
                 AlertDialog(
                     onDismissRequest = { showCategoryManager = false },
@@ -524,6 +613,62 @@ fun HomeScreen(
                     confirmButton = {
                         TextButton(onClick = { showCategoryManager = false }) {
                             Text(stringResource(R.string.action_close))
+                        }
+                    }
+                )
+            }
+
+            if (showAchievementsDialog) {
+                val completedCount = tasksState.tareasCompletadas.size
+                AlertDialog(
+                    onDismissRequest = { showAchievementsDialog = false },
+                    shape = RoundedCornerShape(24.dp),
+                    title = {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                            Text(
+                                text = "\uD83C\uDFC6",
+                                fontSize = 40.sp
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = stringResource(R.string.achievements_dialog_title),
+                                style = MaterialTheme.typography.titleLarge.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = PurpleGradia,
+                                    fontFamily = InterFontFamily
+                                )
+                            )
+                        }
+                    },
+                    text = {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                            Text(
+                                text = stringResource(R.string.achievements_dialog_body, completedCount),
+                                style = MaterialTheme.typography.bodyLarge.copy(
+                                    fontFamily = InterFontFamily,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                ),
+                                textAlign = TextAlign.Center
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = stringResource(R.string.achievements_dialog_motivation),
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = PurpleGradia,
+                                    fontFamily = InterFontFamily
+                                ),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(onClick = { showAchievementsDialog = false }) {
+                            Text(
+                                text = stringResource(R.string.action_close),
+                                fontWeight = FontWeight.Bold,
+                                color = PurpleGradia
+                            )
                         }
                     }
                 )
@@ -1272,6 +1417,177 @@ fun BottomBarItem(
             modifier = Modifier.size(26.dp)
         )
     }
+}
+
+@Composable
+fun OnboardingDialog(
+    career: String,
+    semestre: String,
+    error: String?,
+    onCareerChange: (String) -> Unit,
+    onSemestreChange: (String) -> Unit,
+    onSave: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = {},
+        shape = RoundedCornerShape(28.dp),
+        containerColor = MaterialTheme.colorScheme.surface,
+        title = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    stringResource(R.string.onboarding_title),
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = InterFontFamily,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontSize = 22.sp
+                )
+            }
+        },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    stringResource(R.string.onboarding_message),
+                    fontSize = 14.sp,
+                    fontFamily = InterFontFamily,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                HorizontalDivider(
+                    color = MaterialTheme.colorScheme.outlineVariant,
+                    thickness = 1.dp
+                )
+
+                error?.let {
+                    Text(
+                        it,
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 13.sp,
+                        fontFamily = InterFontFamily,
+                        fontWeight = FontWeight.Medium,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text(
+                        stringResource(R.string.profile_career),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontFamily = InterFontFamily
+                    )
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .shadow(2.dp, RoundedCornerShape(16.dp))
+                            .border(1.dp, PurpleGradia, RoundedCornerShape(16.dp))
+                            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp))
+                            .padding(horizontal = 14.dp, vertical = 8.dp)
+                    ) {
+                        if (career.isEmpty()) {
+                            Text(
+                                stringResource(R.string.onboarding_career_hint),
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                                fontFamily = InterFontFamily,
+                                fontSize = 14.sp
+                            )
+                        }
+                        BasicTextField(
+                            value = career,
+                            onValueChange = onCareerChange,
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            textStyle = MaterialTheme.typography.bodyMedium.copy(
+                                fontFamily = InterFontFamily,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontSize = 14.sp
+                            ),
+                            cursorBrush = SolidColor(PurpleGradia)
+                        )
+                    }
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Start,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        stringResource(R.string.profile_current_semester),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontFamily = InterFontFamily
+                    )
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    Box(
+                        modifier = Modifier
+                            .width(120.dp)
+                            .shadow(2.dp, RoundedCornerShape(16.dp))
+                            .border(1.dp, PurpleGradia, RoundedCornerShape(16.dp))
+                            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp))
+                            .padding(horizontal = 14.dp, vertical = 8.dp)
+                    ) {
+                        if (semestre.isEmpty()) {
+                            Text(
+                                stringResource(R.string.onboarding_semestre_hint),
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                                fontFamily = InterFontFamily,
+                                fontSize = 12.sp
+                            )
+                        }
+                        BasicTextField(
+                            value = semestre,
+                            onValueChange = onSemestreChange,
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            textStyle = MaterialTheme.typography.bodyMedium.copy(
+                                fontFamily = InterFontFamily,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontSize = 14.sp
+                            ),
+                            cursorBrush = SolidColor(PurpleGradia)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Button(
+                    onClick = onSave,
+                    modifier = Modifier
+                        .width(180.dp)
+                        .height(44.dp),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = PurpleGradia)
+                ) {
+                    Text(
+                        stringResource(R.string.profile_save),
+                        fontFamily = InterFontFamily,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 15.sp
+                    )
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {}
+    )
 }
 
 @Preview(showBackground = true)

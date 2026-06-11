@@ -14,7 +14,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -36,6 +36,9 @@ import com.example.gradia.presentation.viewmodel.Urgencia
 import com.example.gradia.ui.theme.GrayText
 import com.example.gradia.ui.theme.InterFontFamily
 import com.example.gradia.ui.theme.PurpleGradia
+import com.example.gradia.ui.theme.UrgencyAlta
+import com.example.gradia.ui.theme.UrgencyBaja
+import com.example.gradia.ui.theme.UrgencyMedia
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -52,8 +55,9 @@ fun TasksScreen(
     val ctx = LocalContext.current
     var showDatePicker by remember { mutableStateOf(false) }
     var showSubjectDropdown by remember { mutableStateOf(false) }
-    val context = LocalContext.current
-    var showOnboarding by remember { mutableStateOf(!OnboardingPrefs.isDismissed(context, "tasks")) }
+    var showOnboarding by remember { mutableStateOf(!OnboardingPrefs.isDismissed(ctx, "tasks")) }
+    var taskToDelete by remember { mutableStateOf<Long?>(null) }
+    var pendingSave by remember { mutableStateOf(false) }
 
     if (showDatePicker) {
         val datePickerState = rememberDatePickerState(
@@ -91,6 +95,90 @@ fun TasksScreen(
         }
     }
 
+    taskToDelete?.let { id ->
+        AlertDialog(
+            onDismissRequest = { taskToDelete = null },
+            shape = RoundedCornerShape(24.dp),
+            title = {
+                Text(
+                    text = stringResource(R.string.delete_confirm_title),
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontFamily = InterFontFamily
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(R.string.delete_confirm_body),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontFamily = InterFontFamily
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.deleteTask(id)
+                    taskToDelete = null
+                }) {
+                    Text(
+                        text = stringResource(R.string.action_delete),
+                        color = MaterialTheme.colorScheme.error,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { taskToDelete = null }) {
+                    Text(
+                        text = stringResource(R.string.action_cancel),
+                        color = PurpleGradia
+                    )
+                }
+            }
+        )
+    }
+
+    if (pendingSave) {
+        AlertDialog(
+            onDismissRequest = { pendingSave = false },
+            shape = RoundedCornerShape(24.dp),
+            title = {
+                Text(
+                    text = stringResource(R.string.save_confirm_title),
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontFamily = InterFontFamily
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(R.string.save_confirm_body),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontFamily = InterFontFamily
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    pendingSave = false
+                    viewModel.saveTask()
+                }) {
+                    Text(
+                        text = stringResource(R.string.action_save),
+                        color = PurpleGradia,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingSave = false }) {
+                    Text(
+                        text = stringResource(R.string.action_cancel),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        )
+    }
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -103,7 +191,7 @@ fun TasksScreen(
                     title = stringResource(R.string.onboarding_tasks_title),
                     message = stringResource(R.string.onboarding_tasks_message),
                     onDismiss = {
-                        OnboardingPrefs.dismiss(context, "tasks")
+                        OnboardingPrefs.dismiss(ctx, "tasks")
                         showOnboarding = false
                     }
                 )
@@ -161,30 +249,55 @@ fun TasksScreen(
         }
 
         item {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(40.dp)
-                    .background(Color(0xFFE9E4F0), RoundedCornerShape(12.dp))
-                    .clickable(enabled = state.currentTitle.isNotBlank() && !state.isSaving) {
+            Button(
+                onClick = {
+                    if (state.editingTaskId != null) {
+                        pendingSave = true
+                    } else {
                         viewModel.saveTask()
-                    },
-                contentAlignment = Alignment.Center
+                    }
+                },
+                enabled = state.currentTitle.isNotBlank() && !state.isSaving,
+                modifier = Modifier.fillMaxWidth().height(48.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = PurpleGradia,
+                    disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant
+                )
             ) {
                 if (state.isSaving) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(20.dp),
-                        color = PurpleGradia,
+                        color = Color.White,
                         strokeWidth = 2.dp
                     )
                 } else {
                     Icon(
-                        painter = painterResource(id = R.drawable.add_gray),
-                        contentDescription = if (state.editingTaskId != null) "Guardar tarea" else "Crear tarea",
-                        tint = Color.Unspecified,
-                        modifier = Modifier.size(24.dp)
+                        imageVector = Icons.Default.Check,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        if (state.editingTaskId != null) stringResource(R.string.action_save) else stringResource(R.string.action_add),
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
                     )
                 }
+            }
+        }
+
+        if (state.selectedTaskIds.isNotEmpty()) {
+            item {
+                MultiSelectBanner(
+                    selectedCount = state.selectedTaskIds.size,
+                    onDeleteSelected = {
+                        taskToDelete = state.selectedTaskIds.first()
+                        viewModel.deleteSelectedTasks()
+                    },
+                    onClearSelection = viewModel::clearTaskSelection
+                )
             }
         }
 
@@ -199,17 +312,14 @@ fun TasksScreen(
             items(state.tareasHoy, key = { it.id }) { tarea ->
                 TaskCard(
                     title = tarea.titulo,
-                    urgency = tarea.urgencia.name,
-                    urgencyColor = urgencyColor(tarea.urgencia),
+                    urgency = tarea.urgencia,
                     time = formatFecha(tarea.fecha),
                     subject = tarea.asignaturaNombre,
                     isCompleted = false,
                     isSelected = tarea.id in state.selectedTaskIds,
                     onToggleCompletion = { viewModel.toggleTaskCompletion(tarea.id, false) },
                     onClick = { viewModel.loadTaskForEditing(tarea) },
-                    onLongClick = { viewModel.toggleTaskSelection(tarea.id) },
-                    onEdit = { viewModel.loadTaskForEditing(tarea) },
-                    onDelete = { viewModel.deleteTask(tarea.id) }
+                    onLongClick = { viewModel.toggleTaskSelection(tarea.id) }
                 )
             }
         }
@@ -221,44 +331,82 @@ fun TasksScreen(
             items(state.tareasProximas, key = { it.id }) { tarea ->
                 TaskCard(
                     title = tarea.titulo,
-                    urgency = tarea.urgencia.name,
-                    urgencyColor = urgencyColor(tarea.urgencia),
+                    urgency = tarea.urgencia,
                     time = formatFecha(tarea.fecha),
                     subject = tarea.asignaturaNombre,
                     isCompleted = false,
                     isSelected = tarea.id in state.selectedTaskIds,
                     onToggleCompletion = { viewModel.toggleTaskCompletion(tarea.id, false) },
                     onClick = { viewModel.loadTaskForEditing(tarea) },
-                    onLongClick = { viewModel.toggleTaskSelection(tarea.id) },
-                    onEdit = { viewModel.loadTaskForEditing(tarea) },
-                    onDelete = { viewModel.deleteTask(tarea.id) }
+                    onLongClick = { viewModel.toggleTaskSelection(tarea.id) }
                 )
             }
         }
 
         if (state.tareasCompletadas.isNotEmpty()) {
             item {
-                SectionHeader(title = stringResource(R.string.section_completed), isCompleted = true, color = Color(0xFF453284))
+                SectionHeader(title = stringResource(R.string.section_completed), isCompleted = true, color = MaterialTheme.colorScheme.primary)
             }
             items(state.tareasCompletadas, key = { it.id }) { tarea ->
                 TaskCard(
                     title = tarea.titulo,
-                    urgency = tarea.urgencia.name,
-                    urgencyColor = urgencyColor(tarea.urgencia),
+                    urgency = tarea.urgencia,
                     time = formatFecha(tarea.fecha),
                     subject = tarea.asignaturaNombre,
                     isCompleted = true,
                     isSelected = tarea.id in state.selectedTaskIds,
                     onToggleCompletion = { viewModel.toggleTaskCompletion(tarea.id, true) },
                     onClick = { viewModel.loadTaskForEditing(tarea) },
-                    onLongClick = { viewModel.toggleTaskSelection(tarea.id) },
-                    onEdit = { viewModel.loadTaskForEditing(tarea) },
-                    onDelete = { viewModel.deleteTask(tarea.id) }
+                    onLongClick = { viewModel.toggleTaskSelection(tarea.id) }
                 )
             }
         }
 
         item { Spacer(modifier = Modifier.height(100.dp)) }
+    }
+}
+
+@Composable
+fun MultiSelectBanner(
+    selectedCount: Int,
+    onDeleteSelected: () -> Unit,
+    onClearSelection: () -> Unit
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        color = MaterialTheme.colorScheme.primaryContainer,
+        tonalElevation = 2.dp
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                "$selectedCount ${stringResource(R.string.selected)}",
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                fontSize = 14.sp
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            TextButton(onClick = onDeleteSelected) {
+                Icon(
+                    painter = painterResource(id = R.drawable.delete),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(stringResource(R.string.action_delete), color = MaterialTheme.colorScheme.error)
+            }
+            IconButton(onClick = onClearSelection) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            }
+        }
     }
 }
 
@@ -289,12 +437,6 @@ fun CreateTaskCard(
         border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
-                UrgencyLabel(stringResource(R.string.label_urgency), Color(0xFFD1C4E9))
-            }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
                     modifier = Modifier
@@ -315,7 +457,7 @@ fun CreateTaskCard(
                         },
                         textStyle = TextStyle(
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF453284),
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontSize = 14.sp
                         ),
                         singleLine = true,
@@ -333,13 +475,13 @@ fun CreateTaskCard(
                         Icon(
                             painter = painterResource(id = R.drawable.calendar),
                             contentDescription = null,
-                            tint = Color.Unspecified,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             formatFechaCorta(fecha),
-                            color = if (fecha > 0) Color(0xFF453284) else GrayText,
+                            color = if (fecha > 0) MaterialTheme.colorScheme.onSurface else GrayText,
                             fontSize = 13.sp,
                             modifier = Modifier.clickable { onFechaClick() }
                         )
@@ -347,13 +489,13 @@ fun CreateTaskCard(
                         Icon(
                             painter = painterResource(id = R.drawable.clock),
                             contentDescription = null,
-                            tint = Color.Unspecified,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             horaFormateada,
-                            color = Color(0xFF453284),
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontSize = 13.sp,
                             modifier = Modifier.clickable { onHoraClick() }
                         )
@@ -361,14 +503,14 @@ fun CreateTaskCard(
                         Icon(
                             painter = painterResource(id = R.drawable.graduation_cap_gray),
                             contentDescription = null,
-                            tint = Color.Unspecified,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Box {
                             Text(
                                 selectedAsignatura?.nombre ?: stringResource(R.string.placeholder_subject_task),
-                                color = if (selectedAsignatura != null) Color(0xFF453284) else GrayText,
+                                color = if (selectedAsignatura != null) MaterialTheme.colorScheme.onSurface else GrayText,
                                 fontSize = 13.sp,
                                 modifier = Modifier.clickable { onSubjectDropdownChange(true) }
                             )
@@ -399,7 +541,7 @@ fun CreateTaskCard(
             }
 
             Spacer(modifier = Modifier.height(12.dp))
-            HorizontalDivider(color = Color.LightGray.copy(alpha = 0.4f))
+            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
             Spacer(modifier = Modifier.height(10.dp))
 
             Text(
@@ -421,15 +563,15 @@ fun CreateTaskCard(
                     val seleccionado = recordatorioMinutos == minutos
                     Surface(
                         shape = RoundedCornerShape(20.dp),
-                        color = if (seleccionado) PurpleGradia else Color(0xFFE9E4F0),
+                        color = if (seleccionado) PurpleGradia else MaterialTheme.colorScheme.surfaceVariant,
                         modifier = Modifier.clickable { onRecordatorioChange(minutos) }
                     ) {
                         Text(
                             text = etiqueta,
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 7.dp),
                             fontSize = 12.sp,
                             fontWeight = if (seleccionado) FontWeight.Bold else FontWeight.Normal,
-                            color = if (seleccionado) Color.White else Color(0xFF453284)
+                            color = if (seleccionado) Color.White else MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
@@ -476,20 +618,17 @@ fun SectionHeader(title: String, count: String? = null, color: Color, isComplete
 @Composable
 fun TaskCard(
     title: String,
-    urgency: String,
-    urgencyColor: Color,
+    urgency: Urgencia,
     time: String? = null,
     subject: String? = null,
     isCompleted: Boolean = false,
     isSelected: Boolean = false,
     onToggleCompletion: (() -> Unit)? = null,
     onClick: (() -> Unit)? = null,
-    onLongClick: (() -> Unit)? = null,
-    onEdit: (() -> Unit)? = null,
-    onDelete: (() -> Unit)? = null
+    onLongClick: (() -> Unit)? = null
 ) {
     val alpha = if (isCompleted) 0.5f else 1f
-    val borderColor = if (isSelected) PurpleGradia else Color.LightGray.copy(alpha = 0.3f)
+    val borderColor = if (isSelected) PurpleGradia else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
     val borderWidth = if (isSelected) 2.dp else 1.dp
 
     Card(
@@ -501,40 +640,15 @@ fun TaskCard(
                 onLongClick = onLongClick ?: {}
             ),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = if (isCompleted) Color(0xFFF9F9F9) else Color(0xFFFDFBFF)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = androidx.compose.foundation.BorderStroke(borderWidth, borderColor)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically
+                horizontalArrangement = Arrangement.End
             ) {
-                if (onEdit != null) {
-                    IconButton(onClick = onEdit, modifier = Modifier.size(32.dp)) {
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = "Editar tarea",
-                            tint = PurpleGradia,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-                }
-                if (onDelete != null) {
-                    IconButton(onClick = onDelete, modifier = Modifier.size(32.dp)) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.delete),
-                            contentDescription = "Eliminar tarea",
-                            tint = Color(0xFFC62828),
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-                }
-                UrgencyLabel(
-                    text = urgency,
-                    color = urgencyColor,
-                    textColor = if (urgency == "MEDIO") Color.Black else urgencyColor
-                )
+                UrgencyLabel(urgency)
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
@@ -559,7 +673,7 @@ fun TaskCard(
                         title,
                         style = MaterialTheme.typography.bodyLarge.copy(
                             fontWeight = FontWeight.SemiBold,
-                            color = if (isCompleted) GrayText else Color(0xFF4A4A4A)
+                            color = if (isCompleted) GrayText else MaterialTheme.colorScheme.onSurface
                         )
                     )
                     if (time != null || subject != null) {
@@ -569,7 +683,7 @@ fun TaskCard(
                                 Icon(
                                     painter = painterResource(id = R.drawable.clock),
                                     contentDescription = null,
-                                    tint = Color.Unspecified,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
@@ -580,7 +694,7 @@ fun TaskCard(
                                 Icon(
                                     painter = painterResource(id = R.drawable.graduation_cap_gray),
                                     contentDescription = null,
-                                    tint = Color.Unspecified,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
@@ -595,25 +709,24 @@ fun TaskCard(
 }
 
 @Composable
-fun UrgencyLabel(text: String, color: Color, textColor: Color = color) {
+fun UrgencyLabel(urgency: Urgencia) {
+    val (bgColor, textColor, label) = when (urgency) {
+        Urgencia.URGENTE -> Triple(UrgencyAlta, Color.White, stringResource(R.string.urgency_urgent))
+        Urgencia.MEDIO -> Triple(UrgencyMedia, Color.Black, stringResource(R.string.urgency_medium))
+        Urgencia.BAJO -> Triple(UrgencyBaja, Color.White, stringResource(R.string.urgency_low))
+    }
     Surface(
         shape = RoundedCornerShape(8.dp),
-        color = color.copy(alpha = 0.3f)
+        color = bgColor.copy(alpha = 0.25f)
     ) {
         Text(
-            text = text,
+            text = label,
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
             fontSize = 9.sp,
             fontWeight = FontWeight.Bold,
             color = textColor
         )
     }
-}
-
-private fun urgencyColor(urgencia: Urgencia): Color = when (urgencia) {
-    Urgencia.URGENTE -> Color(0xFFFF8A80)
-    Urgencia.MEDIO -> Color(0xFFFFF176)
-    Urgencia.BAJO -> Color(0xFFA5D6A7)
 }
 
 private fun formatFechaCorta(fecha: Long): String {

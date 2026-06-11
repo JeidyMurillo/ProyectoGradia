@@ -1,6 +1,7 @@
 package com.example.gradia.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -20,10 +21,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import com.example.gradia.R
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.gradia.R
 import com.example.gradia.domain.model.NotificationItem
 import com.example.gradia.presentation.viewmodel.NotificationsViewModel
 import com.example.gradia.ui.theme.InterFontFamily
@@ -80,6 +81,33 @@ fun NotificationsScreen(viewModel: NotificationsViewModel) {
             }
             items(state.reminders, key = { "rem_${it.evento.id}" }) { item ->
                 ReminderCard(item)
+            }
+        }
+
+        if (state.urgentNotifications.isNotEmpty()) {
+            item {
+                NotificationSectionHeader(title = stringResource(R.string.notif_urgent_section))
+            }
+            items(state.urgentNotifications, key = { "urg_${it.activityTitle}_${it.dueDateMillis}" }) { item ->
+                ProximityCard(item)
+            }
+        }
+
+        if (state.upcomingNotifications.isNotEmpty()) {
+            item {
+                NotificationSectionHeader(title = stringResource(R.string.notif_upcoming_section))
+            }
+            items(state.upcomingNotifications, key = { "upc_${it.activityTitle}_${it.dueDateMillis}" }) { item ->
+                ProximityCard(item)
+            }
+        }
+
+        if (state.completedNotifications.isNotEmpty()) {
+            item {
+                NotificationSectionHeader(title = stringResource(R.string.notif_completed_section))
+            }
+            items(state.completedNotifications, key = { "cmp_${it.activityTitle}_${it.dueDateMillis}" }) { item ->
+                ProximityCard(item)
             }
         }
 
@@ -150,15 +178,17 @@ private fun ReminderCard(item: NotificationItem.Reminder) {
     val dateLabel = SimpleDateFormat("d MMM, HH:mm", Locale("es")).format(Date(item.evento.fecha))
     val reminderBody = stringResource(R.string.notif_reminder_body, timeLabel, dateLabel)
 
+    val title = buildString {
+        append(item.evento.titulo)
+        if (!item.subjectName.isNullOrBlank()) append(" - ${item.subjectName}")
+    }
+
     NotificationCard(
         icon = Icons.Default.Notifications,
         iconTint = PurpleGradia,
         iconBg = Color(0xFFF3EEF8),
-        title = item.evento.titulo,
-        body = buildString {
-            append(reminderBody)
-            if (!item.subjectName.isNullOrBlank()) append(" · ${item.subjectName}")
-        }
+        title = title,
+        body = reminderBody
     )
 }
 
@@ -227,6 +257,46 @@ private fun NotificationCard(
             }
         }
     }
+}
+
+@Composable
+private fun ProximityCard(item: NotificationItem.ActivityProximityNotification) {
+    val isDark = isSystemInDarkTheme()
+    val (iconTint, iconBg, icon) = when {
+        item.isCompleted -> Triple(
+            Color(0xFF2E7D32),
+            Color(0xFFE8F5E9),
+            Icons.Default.CheckCircle
+        )
+        item.daysRemaining < 0 || item.daysRemaining <= 1 -> Triple(
+            Color(0xFFE53935),
+            Color(0xFFFFEBEE),
+            Icons.Default.Warning
+        )
+        item.daysRemaining <= 3 -> Triple(
+            Color(0xFFF57C00),
+            Color(0xFFFFF3E0),
+            Icons.Default.Notifications
+        )
+        else -> Triple(
+            if (isDark) Color(0xFFCE93D8) else Color(0xFF7B1FA2),
+            if (isDark) Color(0xFF4A235A) else Color(0xFFF3EEF8),
+            Icons.Default.Notifications
+        )
+    }
+
+    val title = buildString {
+        append(item.activityTitle)
+        if (!item.subjectName.isNullOrBlank()) append(" - ${item.subjectName}")
+    }
+
+    NotificationCard(
+        icon = icon,
+        iconTint = iconTint,
+        iconBg = iconBg,
+        title = title,
+        body = item.message
+    )
 }
 
 @Composable

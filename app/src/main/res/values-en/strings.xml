@@ -153,6 +153,14 @@
     <string name="profile_error_new_password_short">New password must be at least 6 characters</string>
     <string name="profile_error_passwords_mismatch">Passwords do not match</string>
     <string name="profile_error_wrong_password">Current password is incorrect</string>
+    <string name="profile_success_updated">Profile updated successfully</string>
+    <string name="profile_success_profile_and_password">Profile and password updated successfully</string>
+    <string name="profile_error_update">Error saving. Please try again.</string>
+    <string name="profile_error_password_not_saved">Profile saved, but password was not updated.</string>
+    <string name="profile_saving">Saving…</string>
+    <string name="profile_error_photo">Could not save profile photo</string>
+    <string name="profile_error_semester_required">Semester is required</string>
+    <string name="profile_error_semester_invalid">Enter a valid number (1-12)</string>
 
     <!-- Home -->
     <string name="home_default_username">User</string>
@@ -189,6 +197,13 @@
     <string name="action_cancel">Cancel</string>
     <string name="quick_add_note">Add note</string>
     <string name="quick_add_todo">To-do List</string>
+    <string name="achievements_dialog_title">Your achievements</string>
+    <string name="achievements_dialog_body">You have completed %d tasks.</string>
+    <string name="achievements_dialog_motivation">Keep it up!</string>
+    <string name="delete_confirm_title">Delete task</string>
+    <string name="delete_confirm_body">Are you sure you want to delete this task? This action cannot be undone.</string>
+    <string name="save_confirm_title">Save changes</string>
+    <string name="save_confirm_body">Do you want to save the changes made to this task?</string>
 
     <!-- Drawer -->
     <string name="drawer_profile">Profile</string>
@@ -387,6 +402,11 @@
     <string name="label_reminder">Reminder</string>
     <string name="task_singular">Task</string>
     <string name="task_plural">Tasks</string>
+    <string name="urgency_urgent">URGENT</string>
+    <string name="urgency_medium">MEDIUM</string>
+    <string name="urgency_low">LOW</string>
+    <string name="action_add">Add</string>
+    <string name="selected">selected</string>
 
     <!-- Notes -->
     <string name="notes_selected">%d selected</string>
@@ -449,6 +469,9 @@
     <string name="notif_passing_body">You passed %1$s with a partial average of %2$s. Keep it up!</string>
     <string name="notif_reminder_body">In %1$s (%2$s)</string>
     <string name="notif_now">now</string>
+    <string name="notif_urgent_section">Urgent</string>
+    <string name="notif_upcoming_section">Upcoming</string>
+    <string name="notif_completed_section">Completed</string>
 
     <!-- Final Grade -->
     <string name="final_grade_title">What do I need to score?</string>
@@ -539,5 +562,12 @@
     <string name="onboarding_tasks_message">Create tasks with date, time, and priority. Assign them a subject to keep everything organized and track your progress.</string>
     <string name="onboarding_stats_title">Statistics</string>
     <string name="onboarding_stats_message">Check your overall average, trends by period, approved credits, and more academic performance details.</string>
+    <string name="onboarding_title">Welcome to Gradia!</string>
+    <string name="onboarding_message">To get started, tell us what you\'re studying and which semester you\'re in.</string>
+    <string name="onboarding_semestre_required">Semester is required</string>
+    <string name="onboarding_career_hint">Ex: Business Administration</string>
+    <string name="onboarding_semestre_hint">Ex: 3</string>
+    <string name="profile_career_hint">Ex: Business Administration</string>
+    <string name="profile_semester_hint">Ex: 3</string>
 
 </resources>

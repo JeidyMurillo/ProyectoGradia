@@ -44,6 +44,7 @@ import com.example.gradia.R
 import com.example.gradia.data.local.entity.User
 import com.example.gradia.ui.theme.*
 import kotlinx.coroutines.launch
+import com.example.gradia.data.firebase.getFirebaseErrorMessage
 
 @Composable
 fun ProfileScreen(
@@ -65,6 +66,26 @@ fun ProfileScreen(
     var pendingNewPassword by remember { mutableStateOf<String?>(null) }
     var originalUser by remember { mutableStateOf<User?>(null) }
     var photoUri by remember { mutableStateOf<String?>(null) }
+    var isSaving by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    var attemptedSave by remember { mutableStateOf(false) }
+    var emailTouched by remember { mutableStateOf(false) }
+    var semesterTouched by remember { mutableStateOf(false) }
+
+    val emailError: String? = when {
+        email.isBlank() -> context.getString(R.string.error_email_blank)
+        !email.contains("@") -> context.getString(R.string.error_email_invalid)
+        else -> null
+    }
+    val semesterError: String? = when {
+        semester.isBlank() -> context.getString(R.string.profile_error_semester_required)
+        semester.toIntOrNull() == null -> context.getString(R.string.profile_error_semester_invalid)
+        (semester.toIntOrNull() ?: 0) !in 1..12 -> context.getString(R.string.profile_error_semester_invalid)
+        else -> null
+    }
+    val showEmailError = (attemptedSave || emailTouched) && emailError != null
+    val showSemesterError = (attemptedSave || semesterTouched) && semesterError != null
+    val isValid = emailError == null && semesterError == null
 
     LaunchedEffect(userId) {
         if (userId.isNotEmpty()) {
@@ -86,22 +107,27 @@ fun ProfileScreen(
     ) { uri: Uri? ->
         uri?.let {
             scope.launch {
-                val localPath = withContext(Dispatchers.IO) {
-                    copyImageToInternalStorage(it, userId, context)
+                try {
+                    val localPath = withContext(Dispatchers.IO) {
+                        copyImageToInternalStorage(it, userId, context)
+                    }
+                    photoUri = localPath
+                } catch (e: Exception) {
+                    snackbarHostState.showSnackbar(context.getString(R.string.profile_error_photo))
                 }
-                photoUri = localPath
             }
         }
     }
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
+    Box(modifier = modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
         Spacer(modifier = Modifier.height(8.dp))
 
         Box(
@@ -164,7 +190,9 @@ fun ProfileScreen(
             label = stringResource(R.string.profile_email),
             value = email,
             isEditing = isEditing,
-            onValueChange = { email = it }
+            onValueChange = { email = it; emailTouched = true },
+            isError = showEmailError,
+            errorMessage = if (showEmailError) emailError else null
         )
 
         Spacer(modifier = Modifier.height(20.dp))
@@ -173,14 +201,15 @@ fun ProfileScreen(
             label = stringResource(R.string.profile_career),
             value = career,
             isEditing = isEditing,
-            onValueChange = { career = it }
+            onValueChange = { career = it },
+            placeholder = stringResource(R.string.profile_career_hint)
         )
 
         Spacer(modifier = Modifier.height(20.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
@@ -193,9 +222,11 @@ fun ProfileScreen(
                 )
             )
 
-Box(
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Box(
                 modifier = Modifier
-                    .width(140.dp)
+                    .width(160.dp)
                     .shadow(
                         elevation = 2.dp,
                         shape = RoundedCornerShape(30.dp),
@@ -208,7 +239,7 @@ Box(
                     )
                     .border(
                         width = 1.dp,
-                        color = PurpleGradia,
+                        color = if (showSemesterError) MaterialTheme.colorScheme.error else PurpleGradia,
                         shape = RoundedCornerShape(30.dp)
                     )
                     .padding(horizontal = 16.dp, vertical = 10.dp)
@@ -218,9 +249,17 @@ Box(
                         modifier = Modifier.fillMaxWidth(),
                         contentAlignment = Alignment.Center
                     ) {
+                        if (semester.isEmpty()) {
+                            Text(
+                                text = stringResource(R.string.profile_semester_hint),
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                                fontFamily = InterFontFamily,
+                                fontSize = 16.sp
+                            )
+                        }
                         BasicTextField(
                             value = semester,
-                            onValueChange = { semester = it },
+                            onValueChange = { semester = it; semesterTouched = true },
                             modifier = Modifier
                                 .width(80.dp)
                                 .heightIn(min = 20.dp),
@@ -231,7 +270,7 @@ Box(
                                 fontSize = 16.sp,
                                 textAlign = TextAlign.Center
                             ),
-                            cursorBrush = SolidColor(PurpleGradia)
+                            cursorBrush = SolidColor(if (showSemesterError) MaterialTheme.colorScheme.error else PurpleGradia)
                         )
                     }
                 } else {
@@ -254,6 +293,16 @@ Box(
             }
         }
 
+        if (showSemesterError && semesterError != null) {
+            Text(
+                text = semesterError,
+                color = MaterialTheme.colorScheme.error,
+                fontSize = 11.sp,
+                fontFamily = InterFontFamily,
+                modifier = Modifier.padding(start = 8.dp)
+            )
+        }
+
         Spacer(modifier = Modifier.height(20.dp))
 
         PasswordField(
@@ -272,7 +321,10 @@ Box(
             Button(
                 onClick = {
                     if (isEditing) {
+                        attemptedSave = true
+                        if (!isValid) return@Button
                         scope.launch {
+                            isSaving = true
                             try {
                                 originalUser?.let { user ->
                                     userRepository.updateUser(
@@ -285,19 +337,39 @@ Box(
                                         )
                                     )
                                 }
+                                val hadPendingPassword = pendingNewPassword != null
+                                var passwordSaved = !hadPendingPassword
                                 pendingNewPassword?.let { newPassword ->
-                                    authRepository.updatePassword(newPassword)
-                                    pendingNewPassword = null
+                                    try {
+                                        authRepository.updatePassword(newPassword)
+                                        pendingNewPassword = null
+                                        passwordSaved = true
+                                    } catch (e: Exception) {
+                                        passwordSaved = false
+                                    }
                                 }
                                 isEditing = false
+                                val message = when {
+                                    hadPendingPassword && passwordSaved -> context.getString(R.string.profile_success_profile_and_password)
+                                    hadPendingPassword && !passwordSaved -> context.getString(R.string.profile_error_password_not_saved)
+                                    else -> context.getString(R.string.profile_success_updated)
+                                }
+                                snackbarHostState.showSnackbar(message)
                             } catch (e: Exception) {
-                                // Error al guardar, permanece en modo edición
+                                snackbarHostState.showSnackbar(
+                                    getFirebaseErrorMessage(context, e)
+                                )
                             }
+                            isSaving = false
                         }
                     } else {
                         isEditing = true
+                        attemptedSave = false
+                        emailTouched = false
+                        semesterTouched = false
                     }
                 },
+                enabled = !isSaving,
                 modifier = Modifier
                     .width(160.dp)
                     .height(44.dp),
@@ -313,7 +385,11 @@ Box(
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = if (isEditing) stringResource(R.string.profile_save) else stringResource(R.string.profile_edit),
+                    text = when {
+                        isSaving -> stringResource(R.string.profile_saving)
+                        isEditing -> stringResource(R.string.profile_save)
+                        else -> stringResource(R.string.profile_edit)
+                    },
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontWeight = FontWeight.SemiBold,
                         fontFamily = InterFontFamily,
@@ -334,6 +410,9 @@ Box(
                             photoUri = user.fotoUrl
                         }
                         isEditing = false
+                        attemptedSave = false
+                        emailTouched = false
+                        semesterTouched = false
                     },
                     modifier = Modifier
                         .width(160.dp)
@@ -366,9 +445,15 @@ Box(
         Spacer(modifier = Modifier.height(100.dp))
     }
 
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
+    }
+
     if (showChangePasswordDialog) {
         ChangePasswordDialog(
-            userEmail = email,
+            userEmail = authRepository.getCurrentFirebaseEmail() ?: originalUser?.email ?: email,
             onDismiss = { showChangePasswordDialog = false },
             onPasswordChanged = { newPassword ->
                 pendingNewPassword = newPassword
@@ -398,6 +483,9 @@ fun ProfileField(
     value: String,
     isEditing: Boolean,
     onValueChange: (String) -> Unit,
+    isError: Boolean = false,
+    errorMessage: String? = null,
+    placeholder: String? = null,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
@@ -428,12 +516,20 @@ fun ProfileField(
                 )
                 .border(
                     width = 1.dp,
-                    color = PurpleGradia,
+                    color = if (isError) MaterialTheme.colorScheme.error else PurpleGradia,
                     shape = RoundedCornerShape(30.dp)
                 )
                 .padding(horizontal = 16.dp, vertical = 10.dp)
         ) {
             if (isEditing) {
+                if (value.isEmpty() && placeholder != null) {
+                    Text(
+                        text = placeholder,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                        fontFamily = InterFontFamily,
+                        fontSize = 16.sp
+                    )
+                }
                 BasicTextField(
                     value = value,
                     onValueChange = onValueChange,
@@ -446,7 +542,7 @@ fun ProfileField(
                         fontSize = 16.sp
                     ),
                     singleLine = true,
-                    cursorBrush = SolidColor(PurpleGradia)
+                    cursorBrush = SolidColor(if (isError) MaterialTheme.colorScheme.error else PurpleGradia)
                 )
             } else {
                 Text(
@@ -459,6 +555,16 @@ fun ProfileField(
                     )
                 )
             }
+        }
+
+        if (isError && errorMessage != null) {
+            Text(
+                text = errorMessage,
+                color = MaterialTheme.colorScheme.error,
+                fontSize = 11.sp,
+                fontFamily = InterFontFamily,
+                modifier = Modifier.padding(top = 4.dp, start = 8.dp)
+            )
         }
     }
 }
@@ -617,7 +723,7 @@ fun ChangePasswordDialog(
                                         onPasswordChanged(newPassword)
                                     },
                                     onFailure = { e ->
-                                        errorMessage = e.message ?: context.getString(R.string.profile_error_wrong_password)
+                                        errorMessage = getFirebaseErrorMessage(context, e)
                                     }
                                 )
                                 isLoading = false
