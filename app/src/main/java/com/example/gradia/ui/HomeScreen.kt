@@ -259,7 +259,9 @@ fun HomeScreen(
                                         )
                                     }
                                 }
-                            } else if (selectedTab in setOf(1, 5, 7, 9)) {
+                            } else if (selectedTab == 7) {
+                                // Ajustes: sin acciones en la barra superior (no aplica ordenar/filtrar)
+                            } else if (selectedTab in setOf(1, 5, 9)) {
                                 Box {
                                     IconButton(onClick = { showMenu = true }) {
                                         Icon(

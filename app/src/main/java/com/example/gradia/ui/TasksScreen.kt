@@ -57,6 +57,7 @@ fun TasksScreen(
     var showSubjectDropdown by remember { mutableStateOf(false) }
     var showOnboarding by remember { mutableStateOf(!OnboardingPrefs.isDismissed(ctx, "tasks")) }
     var taskToDelete by remember { mutableStateOf<Long?>(null) }
+    var showDeleteSelectedConfirm by remember { mutableStateOf(false) }
     var pendingSave by remember { mutableStateOf(false) }
 
     if (showDatePicker) {
@@ -128,6 +129,48 @@ fun TasksScreen(
             },
             dismissButton = {
                 TextButton(onClick = { taskToDelete = null }) {
+                    Text(
+                        text = stringResource(R.string.action_cancel),
+                        color = PurpleGradia
+                    )
+                }
+            }
+        )
+    }
+
+    if (showDeleteSelectedConfirm) {
+        AlertDialog(
+            onDismissRequest = { showDeleteSelectedConfirm = false },
+            shape = RoundedCornerShape(24.dp),
+            title = {
+                Text(
+                    text = stringResource(R.string.delete_selected_confirm_title),
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontFamily = InterFontFamily
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(R.string.delete_selected_confirm_body, state.selectedTaskIds.size),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontFamily = InterFontFamily
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.deleteSelectedTasks()
+                    showDeleteSelectedConfirm = false
+                }) {
+                    Text(
+                        text = stringResource(R.string.action_delete),
+                        color = MaterialTheme.colorScheme.error,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteSelectedConfirm = false }) {
                     Text(
                         text = stringResource(R.string.action_cancel),
                         color = PurpleGradia
@@ -293,8 +336,7 @@ fun TasksScreen(
                 MultiSelectBanner(
                     selectedCount = state.selectedTaskIds.size,
                     onDeleteSelected = {
-                        taskToDelete = state.selectedTaskIds.first()
-                        viewModel.deleteSelectedTasks()
+                        showDeleteSelectedConfirm = true
                     },
                     onClearSelection = viewModel::clearTaskSelection
                 )

@@ -202,6 +202,8 @@
     <string name="achievements_dialog_motivation">Keep it up!</string>
     <string name="delete_confirm_title">Delete task</string>
     <string name="delete_confirm_body">Are you sure you want to delete this task? This action cannot be undone.</string>
+    <string name="delete_selected_confirm_title">Delete tasks</string>
+    <string name="delete_selected_confirm_body">Are you sure you want to delete %d selected task(s)? This action cannot be undone.</string>
     <string name="save_confirm_title">Save changes</string>
     <string name="save_confirm_body">Do you want to save the changes made to this task?</string>
 
