@@ -153,6 +153,14 @@
     <string name="profile_error_new_password_short">New password must be at least 6 characters</string>
     <string name="profile_error_passwords_mismatch">Passwords do not match</string>
     <string name="profile_error_wrong_password">Current password is incorrect</string>
+    <string name="profile_success_updated">Profile updated successfully</string>
+    <string name="profile_success_profile_and_password">Profile and password updated successfully</string>
+    <string name="profile_error_update">Error saving. Please try again.</string>
+    <string name="profile_error_password_not_saved">Profile saved, but password was not updated.</string>
+    <string name="profile_saving">Saving…</string>
+    <string name="profile_error_photo">Could not save profile photo</string>
+    <string name="profile_error_semester_required">Semester is required</string>
+    <string name="profile_error_semester_invalid">Enter a valid number (1-12)</string>
 
     <!-- Home -->
     <string name="home_default_username">User</string>

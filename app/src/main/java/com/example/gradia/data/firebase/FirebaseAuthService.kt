@@ -109,6 +109,10 @@ class FirebaseAuthService(private val context: Context) {
         return auth.currentUser?.uid
     }
 
+    fun getCurrentFirebaseEmail(): String? {
+        return auth.currentUser?.email
+    }
+
     fun getLinkedProviders(): List<String> {
         return auth.currentUser?.providerData?.map { it.providerId }?.distinct() ?: emptyList()
     }

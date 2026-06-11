@@ -179,6 +179,14 @@
     <string name="profile_error_new_password_short">La nueva contraseña debe tener al menos 6 caracteres</string>
     <string name="profile_error_passwords_mismatch">Las nuevas contraseñas no coinciden</string>
     <string name="profile_error_wrong_password">Contraseña actual incorrecta</string>
+    <string name="profile_success_updated">Información editada correctamente</string>
+    <string name="profile_success_profile_and_password">Perfil y contraseña actualizados correctamente</string>
+    <string name="profile_error_update">Error al guardar. Intente nuevamente.</string>
+    <string name="profile_error_password_not_saved">Perfil guardado, pero la contraseña no se actualizó.</string>
+    <string name="profile_saving">Guardando…</string>
+    <string name="profile_error_photo">No se pudo guardar la foto de perfil</string>
+    <string name="profile_error_semester_required">El semestre es obligatorio</string>
+    <string name="profile_error_semester_invalid">Ingresa un número válido (1-12)</string>
 
     <!-- Home -->
     <string name="home_default_username">Usuario</string>
