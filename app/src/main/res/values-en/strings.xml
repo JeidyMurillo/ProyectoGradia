@@ -449,6 +449,9 @@
     <string name="notif_passing_body">You passed %1$s with a partial average of %2$s. Keep it up!</string>
     <string name="notif_reminder_body">In %1$s (%2$s)</string>
     <string name="notif_now">now</string>
+    <string name="notif_urgent_section">Urgent</string>
+    <string name="notif_upcoming_section">Upcoming</string>
+    <string name="notif_completed_section">Completed</string>
 
     <!-- Final Grade -->
     <string name="final_grade_title">What do I need to score?</string>

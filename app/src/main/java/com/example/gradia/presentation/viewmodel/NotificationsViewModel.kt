@@ -11,14 +11,23 @@ import com.example.gradia.domain.repository.SubjectRepository
 import com.example.gradia.domain.usecase.CalculateCurrentAverageUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.temporal.ChronoUnit
 
 data class NotificationsUiState(
     val reminders: List<NotificationItem.Reminder> = emptyList(),
     val incompleteSubjects: List<NotificationItem.IncompleteSubject> = emptyList(),
     val lowAverages: List<NotificationItem.LowAverage> = emptyList(),
-    val passingGrades: List<NotificationItem.PassingGrade> = emptyList()
+    val passingGrades: List<NotificationItem.PassingGrade> = emptyList(),
+    val urgentNotifications: List<NotificationItem.ActivityProximityNotification> = emptyList(),
+    val upcomingNotifications: List<NotificationItem.ActivityProximityNotification> = emptyList(),
+    val completedNotifications: List<NotificationItem.ActivityProximityNotification> = emptyList()
 ) {
-    val totalCount: Int get() = reminders.size + incompleteSubjects.size + lowAverages.size + passingGrades.size
+    val totalCount: Int get() =
+        reminders.size + incompleteSubjects.size + lowAverages.size + passingGrades.size +
+        urgentNotifications.size + upcomingNotifications.size + completedNotifications.size
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -33,6 +42,7 @@ class NotificationsViewModel(
         userRepository.getCurrentUser()
             .flatMapLatest { user ->
                 val userId = user?.id ?: return@flatMapLatest flowOf(NotificationsUiState())
+                val userName = user.nombre.ifBlank { "Estudiante" }
                 val currentSemester = user.semestre.toIntOrNull()
 
                 subjectRepository.getSubjects()
@@ -72,17 +82,70 @@ class NotificationsViewModel(
                                 ) { pairs -> buildSubjectNotifs(pairs.toList()) }
                             }
 
-                        combine(remindersFlow, subjectNotifsFlow) { reminders, sn ->
+                        val proximityFlow: Flow<List<NotificationItem.ActivityProximityNotification>> =
+                            eventoRepository.getEventosByUser(userId).map { eventos ->
+                                eventos.mapNotNull { ev ->
+                                    val daysRemaining = calculateDaysRemaining(ev.fecha)
+                                    buildProximityNotification(ev, daysRemaining, userName, subjectNameMap)
+                                }
+                                    .sortedWith(
+                                        compareBy<NotificationItem.ActivityProximityNotification> { !it.isCompleted && it.daysRemaining < 0 }
+                                            .thenBy { !it.isCompleted && it.daysRemaining <= 1 }
+                                            .thenBy { !it.isCompleted && it.daysRemaining <= 3 }
+                                            .thenBy { !it.isCompleted && it.daysRemaining <= 7 }
+                                            .thenBy { it.isCompleted }
+                                    )
+                            }
+
+                        combine(remindersFlow, subjectNotifsFlow, proximityFlow) { reminders, sn, proximity ->
+                            val urgent = proximity.filter { !it.isCompleted && it.daysRemaining <= 1 }
+                            val upcoming = proximity.filter { !it.isCompleted && it.daysRemaining > 1 }
+                            val completed = proximity.filter { it.isCompleted }
                             NotificationsUiState(
                                 reminders = reminders,
                                 incompleteSubjects = sn.incomplete,
                                 lowAverages = sn.low,
-                                passingGrades = sn.passing
+                                passingGrades = sn.passing,
+                                urgentNotifications = urgent,
+                                upcomingNotifications = upcoming,
+                                completedNotifications = completed
                             )
                         }
                     }
             }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), NotificationsUiState())
+
+    private fun buildProximityNotification(
+        ev: com.example.gradia.data.local.entity.Evento,
+        daysRemaining: Long,
+        userName: String,
+        subjectNameMap: Map<Long, String>
+    ): NotificationItem.ActivityProximityNotification? {
+        val subjectName = ev.asignaturaId?.let { subjectNameMap[it] }
+        val activityName = ev.titulo
+        val name = userName
+
+        val message = when {
+            ev.completado -> "Excelente trabajo, $name. Has completado '$activityName'. Una preocupación menos para tu semestre."
+            daysRemaining < 0 -> "$name, tenemos una pequeña emergencia académica. '$activityName' ya venció. Revisémosla cuanto antes."
+            daysRemaining == 0L -> "¡Hoy es el gran día, $name! '$activityName' vence hoy. Tu misión, si decides aceptarla, es entregarla antes de que termine el día."
+            daysRemaining == 1L -> "¡Último aviso, $name! '$activityName' vence mañana. El tiempo corre más rápido que el WiFi durante un examen."
+            daysRemaining in 2..3 -> "¡Atención, $name! '$activityName' vence en $daysRemaining días. Todavía hay tiempo, pero ya no es momento de ignorarla."
+            daysRemaining in 4..6 -> "$name, tu actividad '$activityName' empieza a acercarse. Tu yo del futuro agradecerá que la adelantes un poco."
+            daysRemaining == 7L -> "Hola, $name. Tu actividad '$activityName' está tranquila por ahora, pero dentro de una semana tocará ponerse manos a la obra."
+            else -> null
+        } ?: return null
+
+        return NotificationItem.ActivityProximityNotification(
+            activityTitle = activityName,
+            activityType = ev.tipo,
+            subjectName = subjectName,
+            dueDateMillis = ev.fecha,
+            daysRemaining = daysRemaining,
+            isCompleted = ev.completado,
+            message = message
+        )
+    }
 
     private data class SubjectNotifs(
         val incomplete: List<NotificationItem.IncompleteSubject> = emptyList(),
@@ -122,5 +185,14 @@ class NotificationsViewModel(
         }
 
         return SubjectNotifs(incomplete, low, passing)
+    }
+
+    companion object {
+        private fun calculateDaysRemaining(fechaMillis: Long): Long {
+            val today = LocalDate.now()
+            val date = Instant.ofEpochMilli(fechaMillis)
+                .atZone(ZoneId.systemDefault()).toLocalDate()
+            return ChronoUnit.DAYS.between(today, date)
+        }
     }
 }
